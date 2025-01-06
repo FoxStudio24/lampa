@@ -70,15 +70,15 @@
 
         this.visible = function () {
           if (card.poster_path) this.img_poster.src = Lampa.Api.img(card.poster_path);
-          else if (card.profile_path) this.img_poster.src = Lampa.Api.img(card.profile_path);
-          else if (card.poster) this.img_poster.src = card.poster;
-          else if (card.img) this.img_poster.src = card.img;
-          else this.img_poster.src = './img/img_broken.svg';
+            else if (card.profile_path) this.img_poster.src = Lampa.Api.img(card.profile_path);
+            else if (card.poster) this.img_poster.src = card.poster;
+            else if (card.img) this.img_poster.src = card.img;
+            else this.img_poster.src = './img/img_broken.svg';
           if (card.still_path) this.img_episode.src = Lampa.Api.img(episode.still_path, 'w300');
-          else if (card.backdrop_path) this.img_episode.src = Lampa.Api.img(card.backdrop_path, 'w300');
-          else if (episode.img) this.img_episode.src = episode.img;
-          else if (card.img) this.img_episode.src = card.img;
-          else this.img_episode.src = './img/img_broken.svg';
+            else if (card.backdrop_path)  this.img_episode.src = Lampa.Api.img(card.backdrop_path, 'w300');
+            else if (episode.img) this.img_episode.src = episode.img;
+            else if (card.img) this.img_episode.src = card.img;
+            else this.img_episode.src = './img/img_broken.svg';
           if (this.onVisible) this.onVisible(this.card, card);
         };
 
@@ -137,7 +137,7 @@
                 json.title = Lampa.Lang.translate('Популярные сериалы');
                 call(json);
               }, call);
-            },
+            },							
             function (call) {
               owner.get('discover/tv?with_networks=213&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Популярно на Netflix');
@@ -149,7 +149,7 @@
                 json.title = Lampa.Lang.translate('Популярно на HBO');
                 call(json);
               }, call);
-            },
+            },		
             function (call) {
               owner.get('discover/tv?with_networks=2552&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Популярно на Apple TV+');
@@ -157,8 +157,14 @@
               }, call);
             },
             function (call) {
+              owner.get('discover/tv?with_networks=2739&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
+                json.title = Lampa.Lang.translate('Популярно на Disney+');
+                call(json);
+              }, call);
+            },
+            function (call) {
               owner.get('discover/tv?with_networks=2493&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
-                json.title = Lampa.Lang.translate('Новинки на Start');
+                json.title = Lampa.Lang.translate('Новинки на КиноПоиск');
                 call(json);
               }, call);
             },
@@ -209,7 +215,7 @@
                 json.title = Lampa.Lang.translate('Новинки на ТНТ');
                 call(json);
               }, call);
-            },
+            },			
           ];
 
           Lampa.Arrays.insert(parts_data, 0, Lampa.Api.partPersons(parts_data, parts_data.length-1, 'movie'));
@@ -252,4 +258,4 @@
 
     if (!window.plugin_tmdb_mod_ready) startPlugin();
 
-})( );
+})();
