@@ -4,7 +4,7 @@
     function startPlugin() {
       window.plugin_tmdb_mod_ready = true;
 
-      var Episode = function (data) {
+      var Episode = function(data) {
         var card = data.card || data;
         var episode = data.next_episode_to_air || data.episode || {};
         if (card.source == undefined) card.source = 'tmdb';
@@ -139,87 +139,80 @@
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=213&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=213&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Популярно на Netflix');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=49&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=49&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Популярно на HBO');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=2552&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=2552&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Популярно на Apple TV+');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=2739&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-                json.title = Lampa.Lang.translate('Популярно на Disney+');
-                call(json);
-              }, call);
-            },
-            function (call) {
-              owner.get('discover/tv?with_networks=2493&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=2493&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Start');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=2859&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=2859&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Premier');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=4085&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=4085&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на KION');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=3923&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=3923&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на ИВИ');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=3871&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=3871&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Okko');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=3827&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=3827&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на КиноПоиск');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=5806&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=5806&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Wink');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=806&region=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=806&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на СТС');
                 call(json);
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=1191&sort_by=first_air_date.desc.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
+              owner.get('discover/tv?with_networks=1191&sort_by=first_air_date.desc.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на ТНТ');
-                json.logo = "https://static.tnt-online.ru/images/2023/logo_tnt.png"; // Added TNT logo
                 call(json);
               }, call);
             },
           ];
 
-          Lampa.Arrays.insert(parts_data, 0, Lampa.Api.partPersons(parts_data, parts_data.length - 1, 'movie'));
+          Lampa.Arrays.insert(parts_data, 0, Lampa.Api.partPersons(parts_data, parts_data.length-1, 'movie'));
           parrent.genres.movie.forEach(function (genre) {
             var event = function event(call) {
               owner.get('discover/movie?with_genres=' + genre.id, params, function (json) {
@@ -247,7 +240,7 @@
             return tmdb_mod;
           }
         });
-        Lampa.Params.select('source', Object.assign({}, Lampa.Params.values['source'], { 'tmdb_mod': 'tmdb_mod' }), 'tmdb');
+        Lampa.Params.select('source', Object.assign({}, Lampa.Params.values['source'], {'tmdb_mod': 'tmdb_mod'}), 'tmdb');
       }
 
       if (window.appready) add(); else {
@@ -259,4 +252,4 @@
 
     if (!window.plugin_tmdb_mod_ready) startPlugin();
 
-})();
+})( );
