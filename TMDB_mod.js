@@ -1,4 +1,4 @@
-(function (  ) {
+(function () {
     'use strict';
 
     function startPlugin() {
@@ -164,6 +164,12 @@
               }, call);
             },
             function (call) {
+              owner.get('discover/tv?with_networks=3827&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
+                json.title = Lampa.Lang.translate('Новинки на КиноПоиск');
+                call(json);
+              }, call);
+            },
+            function (call) {
               owner.get('discover/tv?with_networks=2493&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Start');
                 call(json);
@@ -190,12 +196,6 @@
             function (call) {
               owner.get('discover/tv?with_networks=3871&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на Okko');
-                call(json);
-              }, call);
-            },
-            function (call) {
-              owner.get('discover/tv?with_networks=3827&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
-                json.title = Lampa.Lang.translate('Новинки на КиноПоиск');
                 call(json);
               }, call);
             },
@@ -259,4 +259,4 @@
 
     if (!window.plugin_tmdb_mod_ready) startPlugin();
 
-})( );
+})();
