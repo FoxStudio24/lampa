@@ -158,12 +158,6 @@
               }, call);
             },
             function (call) {
-              owner.get('discover/tv?with_networks=2739&sort=now.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
-                json.title = Lampa.Lang.translate('Популярно на Disney+');
-                call(json);
-              }, call);
-            },
-            function (call) {
               owner.get('discover/tv?with_networks=3827&region=RU|XX&sort_by=first_air_date.desc&air_date.lte='+(new Date()).toISOString().substr(0,10), params, function (json) {
                 json.title = Lampa.Lang.translate('Новинки на КиноПоиск');
                 call(json);
