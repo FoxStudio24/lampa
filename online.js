@@ -3,32 +3,34 @@
 
   var Defined = {
     api: 'lampac',
-    localhost: 'https://ab2024.ru/',
-    apn: ''
+    localhost: 'https://linguistic-ema-lampac1-6a2d1aaf.koyeb.app/',
+    apn: '',
+    rchtype: undefined
   };
-  
-  var rchtype = 'web';
-  var check = function check(good) {
-	rchtype = Lampa.Platform.is('android') ? 'apk' : good ? 'cors' : 'web';
-  }
-  
+
   var unic_id = Lampa.Storage.get('lampac_unic_id', '');
   if (!unic_id) {
 	unic_id = Lampa.Utils.uid(8).toLowerCase();
 	Lampa.Storage.set('lampac_unic_id', unic_id);
   }
   
-  if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
-  else 
-  {
-	var net = new Lampa.Reguest();
-	net.silent('https://github.com/', function() {
-	  check(true);
-	}, function() {
-	  check(false);
-	}, false, {
-	  dataType: 'text'
-	});
+  if (window.rchtype === undefined) {
+    window.rchtype = 'web';
+    var check = function check(good) {
+      window.rchtype = Lampa.Platform.is('android') ? 'apk' : good ? 'cors' : 'web';
+    }
+
+    if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
+    else {
+      var net = new Lampa.Reguest();
+      net.silent('https://linguistic-ema-lampac1-6a2d1aaf.koyeb.app'.indexOf(location.host) >= 0 ? 'https://github.com/' : 'https://linguistic-ema-lampac1-6a2d1aaf.koyeb.app/cors/check', function() {
+        check(true);
+      }, function() {
+        check(false);
+      }, false, {
+        dataType: 'text'
+      });
+    }
   }
 
   function BlazorNet() {
@@ -95,7 +97,7 @@
       season: [],
       voice: []
     };
-    var balansers_with_search = ['eneyida', 'seasonvar', 'lostfilmhd', 'kinotochka', 'kinopub', 'kinoprofi', 'kinokrad', 'kinobase', 'filmix', 'filmixtv', 'redheadsound', 'animevost', 'animego', 'animedia', 'animebesst', 'anilibria', 'rezka', 'rhsprem', 'kodik', 'remux', 'animelib', 'kinoukr'];
+    var balansers_with_search = ['kinotochka', 'kinopub', 'lumex', 'filmix', 'filmixtv', 'redheadsound', 'animevost', 'animego', 'animedia', 'animebesst', 'anilibria', 'rezka', 'rhsprem', 'kodik', 'remux', 'animelib', 'kinoukr', 'rc/filmix', 'rc/fxapi', 'rc/kinopub', 'rc/rhs', 'vcdn'];
 	
     function account(url) {
       url = url + '';
@@ -111,9 +113,6 @@
         var token = '';
         if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
       }
-      
-      url = Lampa.Utils.addUrlComponent(url, 'ab_token=' + Lampa.Storage.get('token'));
-
       return url;
     }
 
@@ -229,15 +228,16 @@
       var _this2 = this;
       var load = function load() {
         if (hubConnection) {
+          clearTimeout(hub_timer);
           hubConnection.stop();
           hubConnection = null;
+		  console.log('RCH', 'hubConnection stop');
         }
         hubConnection = new signalR.HubConnectionBuilder().withUrl(json.ws).build();
-        hubConnection.on("RchClient", function(rchId, url, data, headers) {
-          var reff = $('head meta[name=\"referrer\"]').attr('content');
+        hubConnection.on("RchClient", function(rchId, url, data, headers, returnHeaders) {
 
+          console.log('RCH', url);
           function result(html) {
-            $('head meta[name=\"referrer\"]').attr('content', reff);
             if (Lampa.Arrays.isObject(html) || Lampa.Arrays.isArray(html)) html = JSON.stringify(html);
             network.silent(json.result, false, false, {
               id: rchId,
@@ -248,29 +248,39 @@
             });
           }
 		  
-          $('head meta[name=\"referrer\"]').attr('content', 'origin');
-          network["native"](url, result, function() {
-            result('');
-          }, data, {
-            dataType: 'text',
-            timeout: 1000 * json.timeout,
-            headers: headers
-          });
+		  if (url == 'eval')
+			result(eval(data))
+		  else {
+			network["native"](url, result, function() {
+              console.log('RCH', 'result empty');
+              result('');
+			}, data, {
+              dataType: 'text',
+              timeout: 1000 * json.timeout,
+              headers: headers,
+			  returnHeaders: returnHeaders
+			});
+		  }
         });
         hubConnection.start().then(function() {
-          hubConnection.invoke("Registry", "rch").then(function() {
+          hubConnection.invoke("RchRegistry", JSON.stringify({version:138, host:location.host, rchtype:window.rchtype})).then(function() {
+            console.log('RCH', 'hubConnection start');
             if(!noreset) _this2.find();
 			else noreset()
           });
         })["catch"](function(err) {
+          console.log('RCH', err.toString());
           return console.error(err.toString());
         });
-        hub_timer = setTimeout(function() {
-          hubConnection.stop();
-        }, 1000 * json.keepalive);
+		if (json.keepalive > 0) {
+          hub_timer = setTimeout(function() {
+            hubConnection.stop();
+			hubConnection = null;
+          }, 1000 * json.keepalive);
+		}
       };
       if (typeof signalR == 'undefined') {
-        Lampa.Utils.putScript(["https://lam7.akter-black.com/signalr-6.0.25_es5.js"], function() {}, false, function() {
+        Lampa.Utils.putScript(["https://linguistic-ema-lampac1-6a2d1aaf.koyeb.app/signalr-6.0.25_es5.js"], function() {}, false, function() {
           load();
         }, true);
       } else load();
@@ -322,7 +332,7 @@
       query.push('original_language=' + (object.movie.original_language || ''));
       query.push('year=' + ((object.movie.release_date || object.movie.first_air_date || '0000') + '').slice(0, 4));
       query.push('source=' + card_source);
-	  query.push('rchtype=' + rchtype);
+	  query.push('rchtype=' + window.rchtype);
       query.push('clarification=' + (object.clarification ? 1 : 0));
       if (Lampa.Storage.get('account_email', '')) query.push('cub_id=' + Lampa.Utils.hash(Lampa.Storage.get('account_email', '')));
       return url + (url.indexOf('?') >= 0 ? '&' : '?') + query.join('&');
@@ -365,7 +375,7 @@
     this.lifeSource = function() {
       var _this3 = this;
       return new Promise(function(resolve, reject) {
-        var url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (/*_this3.memkey || */''));
+        var url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
         var red = false;
         var gou = function gou(json, any) {
           if (json.accsdb) return reject(json);
@@ -390,11 +400,6 @@
             life_wait_times++;
             filter_sources = [];
             sources = {};
-            
-            // json.online = json.online.filter(function(item) {
-            //     return window.location.host === 'ab2024.ru' ? true : item.balanser !== 'filmix';
-            // })
-            
             json.online.forEach(function(j) {
               var name = balanserName(j);
               sources[name] = {
@@ -519,18 +524,6 @@
     this.getFileUrl = function(file, call) {
 	  var _this = this;
 	  
-	  function addAbToken(string) {
-        return string + '&ab_token=' + Lampa.Storage.get('token');
-	  }
-	  
-	  if (file.stream && file.stream.indexOf('alloha') >= 0) {
-        file.stream = addAbToken(file.stream);
-	  }
-	  
-	  if (file.url && file.url.indexOf('alloha') >= 0) {
-        file.url = addAbToken(file.url);
-	  }
-	  
       if(Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')){
 		  var newfile = Lampa.Arrays.clone(file)
 		  newfile.method = 'play'
@@ -596,8 +589,11 @@
               var playlist = [];
               var first = _this5.toPlayElement(item);
               first.url = json.url;
+			  first.headers = json.headers;
               first.quality = json_call.quality || item.qualitys;
               first.subtitles = json.subtitles;
+			  first.vast_url = json.vast_url;
+			  first.vast_msg = json.vast_msg;
               _this5.appendAPN(first);
               _this5.setDefaultQuality(first);
               if (item.season) {
@@ -1104,35 +1100,7 @@
             Lampa.Timeline.update(element.timeline);
           };
           html.on('hover:enter', function() {
-            if (object.movie.id) {
-                Lampa.Favorite.add('history', object.movie, 100);
-                var user = Lampa.Storage.get('ab_account')
-
-                if (object && object.movie && user) {
-                    try {
-                        $.ajax('//tracker.abmsx.tech/track', {
-                            method: 'post',
-                            type: 'POST',
-                              contentType: 'application/json', 
-                              data: JSON.stringify({
-                                "balancer": balanser,
-                                "id": object.movie.id,
-                                "token": user.token,
-                                "userId": user.id,
-                                "name": object.search,
-                                "season": element.season || 0,
-                                "episode": element.episode || 0
-                            }),
-                            error: function(e) {
-                                console.log('track error request', e)
-                            }
-                        })
-                    } catch(e) {
-                        console.log('track error', e)
-                    }
-
-                }
-            }
+            if (object.movie.id) Lampa.Favorite.add('history', object.movie, 100);
             if (params.onEnter) params.onEnter(element, html, data);
           }).on('hover:focus', function(e) {
             last = e.target;
@@ -1374,7 +1342,7 @@
       var html = Lampa.Template.get('lampac_does_not_answer', {
         balanser: balanser
       });
-      if(er && er.accsdb) html.find('.online-empty__title').text(er.msg)
+      if(er && er.accsdb) html.find('.online-empty__title').html(er.msg)
 	  
       var tic = er && er.accsdb ? 10 : 5;
       html.find('.cancel').on('hover:enter', function() {
@@ -1473,14 +1441,14 @@
     window.lampac_plugin = true;
     var manifst = {
       type: 'video',
-      version: '1.3.4',
-      name: 'Lampac',
-      description: 'Плагин для просмотра онлайн сериалов и фильмов',
+      version: '1.4.0',
+      name: 'Lampac12232321',
+      description: 'онлайн сериалов и фильмов',
       component: 'lampac',
       onContextMenu: function onContextMenu(object) {
         return {
           name: Lampa.Lang.translate('lampac_watch'),
-          description: 'Плагин для просмотра онлайн сериалов и фильмов'
+          description: 'онлайн сериалов и фильмов'
         };
       },
       onContextLauch: function onContextLauch(object) {
@@ -1506,7 +1474,7 @@
     Lampa.Manifest.plugins = manifst;
     Lampa.Lang.add({
       lampac_watch: { //
-        ru: 'Смотреть онлайн',
+        ru: 'Смотреть',
         en: 'Watch online',
         uk: 'Дивитися онлайн',
         zh: '在线观看'
@@ -1658,7 +1626,7 @@
       }
     } catch (e) {}
     if (Lampa.Manifest.app_digital >= 177) {
-      var balansers_sync = ["filmix", "fxapi", "kinobase", "rezka", "voidboost", "videocdn", "videodb", "collaps", "hdvb", "zetflix", "kodik", "ashdi", "eneyida", "kinoukr", "kinokrad", "kinotochka", "kinoprofi", "remux", "iframevideo", "cdnmovies", "anilibria", "animedia", "animego", "animevost", "animebesst", "redheadsound", "alloha", "seasonvar", "kinopub", "vokino"];
+      var balansers_sync = ["filmix", 'filmixtv',"fxapi", "rezka", "rhsprem", "lumex", "videodb", "collaps", "hdvb", "zetflix", "kodik", "ashdi", "kinoukr", "kinotochka", "remux", "iframevideo", "cdnmovies", "anilibria", "animedia", "animego", "animevost", "animebesst", "redheadsound", "alloha", "animelib", "moonanime", "kinopub", "vibix", "vdbmovies", "fancdn", "cdnvideohub", "vokino", "rc/filmix", "rc/fxapi", "rc/kinopub", "rc/rhs", "vcdn"];
       balansers_sync.forEach(function(name) {
         Lampa.Storage.sync('online_choice_' + name, 'object_object');
       });
