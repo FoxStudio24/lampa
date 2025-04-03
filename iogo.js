@@ -18,7 +18,8 @@
             var e = a.data.movie;
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
-            var t = Lampa.TMDB.api(apiPath + "/images?api_key=" + Lampa.TMDB.key() + "&language=" + Lampa.Storage.get("language"));
+            // Убираем параметр language, чтобы получить все логотипы
+            var t = Lampa.TMDB.api(apiPath + "/images?api_key=" + Lampa.TMDB.key());
             console.log("API URL:", t);
             $.get(t, (function(e) {
                 if (e.logos && e.logos.length > 0) {
@@ -37,13 +38,9 @@
                     }
                     if (logo && logo.file_path) {
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
-                        var title = isSerial ? e.name : e.title || "Без названия";
-                        console.log("Отображаем логотип:", logoPath, "Название:", title);
+                        console.log("Отображаем логотип:", logoPath);
                         a.object.activity.render().find(".full-start-new__title").html(
-                            '<div style="display: flex; align-items: center;">' +
-                                '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
-                                '<span style="margin-left: 10px; font-size: 16px; color: #fff;">' + title + '</span>' +
-                            '</div>'
+                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
                         );
                     } else {
                         console.log("Логотип невалидный (нет file_path):", logo);
