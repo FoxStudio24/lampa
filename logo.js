@@ -10,7 +10,7 @@
         },
         field: {
             name: "Логотипы вместо названий",
-            description: "Заменяет текст на логотипы для фильмов, сериалов и т.д."
+            description: "Отображает логотипы фильмов вместо текста"
         }
     }),
     window.logoplugin || (window.logoplugin = !0, Lampa.Listener.follow("full", (function(a) {
@@ -37,6 +37,15 @@
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
                         console.log("Отображаем логотип:", logoPath);
 
+                        // Функция для определения тени в зависимости от фона
+                        var titleElement = a.object.activity.render().find(".full-start-new__title")[0];
+                        var bgColor = window.getComputedStyle(titleElement).backgroundColor;
+                        console.log("Цвет фона:", bgColor);
+                        var rgb = bgColor.match(/\d+/g); // Извлекаем RGB-значения
+                        var brightness = rgb ? (parseInt(rgb[0]) * 0.299 + parseInt(rgb[1]) * 0.587 + parseInt(rgb[2]) * 0.114) : 0;
+                        console.log("Яркость фона:", brightness);
+                        var shadow = brightness > 128 ? "0 0 15px rgba(0, 0, 0, 0.8)" : "0 0 15px rgba(255, 255, 255, 0.8)"; // Чёрная или белая тень
+
                         // Если логотип не русский, запрашиваем русское название
                         if (!isRussianLogo) {
                             var titleApi = Lampa.TMDB.api(apiPath + "?api_key=" + Lampa.TMDB.key() + "&language=ru");
@@ -47,7 +56,7 @@
                                 if (russianTitle) {
                                     a.object.activity.render().find(".full-start-new__title").html(
                                         '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                            '<img style="margin-top: 5px; max-height: 125px; box-shadow: ' + shadow + ';" src="' + logoPath + '" />' +
                                             '<span style="margin-top: 5px; font-size: 32px; color: #fff;">' + russianTitle + '</span>' +
                                         '</div>' +
                                         '<style>' +
@@ -60,7 +69,7 @@
                                 } else {
                                     a.object.activity.render().find(".full-start-new__title").html(
                                         '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                            '<img style="margin-top: 5px; max-height: 125px; box-shadow: ' + shadow + ';" src="' + logoPath + '" />' +
                                         '</div>' +
                                         '<style>' +
                                             '@keyframes fadeIn {' +
@@ -74,7 +83,7 @@
                         } else {
                             a.object.activity.render().find(".full-start-new__title").html(
                                 '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                                    '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                    '<img style="margin-top: 5px; max-height: 125px; box-shadow: ' + shadow + ';" src="' + logoPath + '" />' +
                                 '</div>' +
                                 '<style>' +
                                     '@keyframes fadeIn {' +
