@@ -34,10 +34,12 @@
                     if (e.logos && e.logos[0]) {
                         var logoPath = e.logos[0].file_path;
                         if (logoPath !== "") {
-                            // Определяем высоту логотипа в зависимости от устройства
-                            var maxHeight = window.innerWidth > 768 ? "250px" : "125px"; // 250px для ПК, 125px для мобильных
+                            // Базовый стиль с фиксированной высотой
+                            var baseStyle = "margin-top: 5px; max-height: 125px;";
+                            // Увеличение в 2 раза для ПК через transform
+                            var scaleStyle = window.innerWidth > 768 ? "transform: scale(2); transform-origin: top center;" : "";
                             a.object.activity.render().find(".full-start-new__title").html(
-                                '<img style="margin-top: 5px; max-height: ' + maxHeight + ';" src="' + 
+                                '<img style="' + baseStyle + scaleStyle + '" src="' + 
                                 Lampa.TMDB.image("/t/p/w300" + logoPath.replace(".svg", ".png")) + '" />'
                             );
                         }
