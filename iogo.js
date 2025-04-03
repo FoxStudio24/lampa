@@ -16,25 +16,29 @@
     window.logoplugin || (window.logoplugin = !0, Lampa.Listener.follow("full", (function(a) {
         if ("complite" == a.type && "1" != Lampa.Storage.get("logo_glav")) {
             var e = a.data.movie;
-            // Определяем тип контента: фильм или сериал
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
             var t = Lampa.TMDB.api(apiPath + "/images?api_key=" + Lampa.TMDB.key() + "&language=" + Lampa.Storage.get("language"));
             console.log("API URL:", t);
             $.get(t, (function(e) {
                 if (e.logos && e.logos.length > 0) {
-                    console.log("Logos found:", e.logos);
+                    console.log("Все логотипы:", e.logos);
                     // Ищем русский логотип
                     var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
-                    // Если русского нет, ищем английский
                     if (!logo) {
+                        // Если нет русского, ищем английский
                         logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
-                        console.log("English logo:", logo ? "found" : "not found");
+                        console.log("Английский логотип:", logo ? "найден" : "не найден");
                     }
-                    // Если логотип найден (русский или английский)
-                    if (logo && logo.file_path !== "") {
+                    if (!logo) {
+                        // Если нет ни русского, ни английского, берём первый доступный
+                        logo = e.logos[0];
+                        console.log("Взят первый доступный логотип:", logo);
+                    }
+                    if (logo && logo.file_path) {
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
-                        var title = isSerial ? e.name : e.title;
+                        var title = isSerial ? e.name : e.title || "Без названия";
+                        console.log("Отображаем логотип:", logoPath, "Название:", title);
                         a.object.activity.render().find(".full-start-new__title").html(
                             '<div style="display: flex; align-items: center;">' +
                                 '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
@@ -42,10 +46,10 @@
                             '</div>'
                         );
                     } else {
-                        console.log("No suitable logo (ru or en) found for:", e.title || e.name);
+                        console.log("Логотип невалидный (нет file_path):", logo);
                     }
                 } else {
-                    console.log("No logos available for:", e.title || e.name);
+                    console.log("Логотипы отсутствуют для:", e.title || e.name);
                 }
             }))
         }
