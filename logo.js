@@ -23,16 +23,13 @@
             $.get(t, (function(e) {
                 if (e.logos && e.logos.length > 0) {
                     console.log("Все логотипы:", e.logos);
-                    // Ищем русский логотип
                     var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
-                    var isRussianLogo = !!logo; // Запоминаем, русский ли логотип
+                    var isRussianLogo = !!logo;
                     if (!logo) {
-                        // Если нет русского, ищем английский
                         logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
                         console.log("Английский логотип:", logo ? "найден" : "не найден");
                     }
                     if (!logo) {
-                        // Если нет ни русского, ни английского, берём первый доступный
                         logo = e.logos[0];
                         console.log("Взят первый доступный логотип:", logo);
                     }
@@ -47,25 +44,44 @@
                             $.get(titleApi, (function(data) {
                                 var russianTitle = isSerial ? data.name : data.title;
                                 console.log("Русское название из TMDB:", russianTitle);
-                                // Если русское название есть, показываем его под логотипом
                                 if (russianTitle) {
                                     a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; flex-direction: column; align-items: flex-start;">' +
+                                        '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
                                             '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
                                             '<span style="margin-top: 5px; font-size: 32px; color: #fff;">' + russianTitle + '</span>' +
-                                        '</div>'
+                                        '</div>' +
+                                        '<style>' +
+                                            '@keyframes fadeIn {' +
+                                                'from { opacity: 0; }' +
+                                                'to { opacity: 1; }' +
+                                            '}' +
+                                        '</style>'
                                     );
                                 } else {
-                                    // Если русского названия нет, показываем только логотип
                                     a.object.activity.render().find(".full-start-new__title").html(
-                                        '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
+                                        '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
+                                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                        '</div>' +
+                                        '<style>' +
+                                            '@keyframes fadeIn {' +
+                                                'from { opacity: 0; }' +
+                                                'to { opacity: 1; }' +
+                                            '}' +
+                                        '</style>'
                                     );
                                 }
                             }));
                         } else {
-                            // Если логотип русский, показываем только его
                             a.object.activity.render().find(".full-start-new__title").html(
-                                '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
+                                '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
+                                    '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                '</div>' +
+                                '<style>' +
+                                    '@keyframes fadeIn {' +
+                                        'from { opacity: 0; }' +
+                                        'to { opacity: 1; }' +
+                                    '}' +
+                                '</style>'
                             );
                         }
                     } else {
