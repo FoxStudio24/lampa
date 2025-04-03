@@ -20,28 +20,32 @@
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
             var t = Lampa.TMDB.api(apiPath + "/images?api_key=" + Lampa.TMDB.key() + "&language=" + Lampa.Storage.get("language"));
-            console.log(t),
+            console.log("API URL:", t);
             $.get(t, (function(e) {
                 if (e.logos && e.logos.length > 0) {
+                    console.log("Logos found:", e.logos);
                     // Ищем русский логотип
                     var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
-                    // Если русского нет, берём английский
+                    // Если русского нет, ищем английский
                     if (!logo) {
                         logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
+                        console.log("English logo:", logo ? "found" : "not found");
                     }
-                    // Если логотип найден
+                    // Если логотип найден (русский или английский)
                     if (logo && logo.file_path !== "") {
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
-                        // Получаем русское название (name для сериалов, title для фильмов)
                         var title = isSerial ? e.name : e.title;
-                        // Формируем HTML: логотип слева, текст справа
                         a.object.activity.render().find(".full-start-new__title").html(
                             '<div style="display: flex; align-items: center;">' +
                                 '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
                                 '<span style="margin-left: 10px; font-size: 16px; color: #fff;">' + title + '</span>' +
                             '</div>'
                         );
+                    } else {
+                        console.log("No suitable logo (ru or en) found for:", e.title || e.name);
                     }
+                } else {
+                    console.log("No logos available for:", e.title || e.name);
                 }
             }))
         }
