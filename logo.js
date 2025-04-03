@@ -47,12 +47,12 @@
                             $.get(titleApi, (function(data) {
                                 var russianTitle = isSerial ? data.name : data.title;
                                 console.log("Русское название из TMDB:", russianTitle);
-                                // Если русское название есть, показываем его справа
+                                // Если русское название есть, показываем его под логотипом
                                 if (russianTitle) {
                                     a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; align-items: center;">' +
+                                        '<div style="display: flex; flex-direction: column; align-items: center;">' +
                                             '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
-                                            '<span style="margin-left: 10px; font-size: 16px; color: #fff;">' + russianTitle + '</span>' +
+                                            '<span style="margin-top: 5px; font-size: 16px; color: #fff;">' + russianTitle + '</span>' +
                                         '</div>'
                                     );
                                 } else {
