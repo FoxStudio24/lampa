@@ -34,12 +34,12 @@
                     if (e.logos && e.logos[0]) {
                         var logoPath = e.logos[0].file_path;
                         if (logoPath !== "") {
-                            // Базовый стиль с фиксированной высотой
-                            var baseStyle = "margin-top: 5px; max-height: 125px;";
-                            // Увеличение в 2 раза для ПК через transform
-                            var scaleStyle = window.innerWidth > 768 ? "transform: scale(2); transform-origin: top center;" : "";
-                            a.object.activity.render().find(".full-start-new__title").html(
-                                '<img style="' + baseStyle + scaleStyle + '" src="' + 
+                            // Стили для изображения
+                            var imgStyle = "margin-top: 5px; max-height: 125px;";
+                            // Стили для контейнера: масштабирование только на ПК
+                            var containerStyle = window.innerWidth > 768 ? "transform: scale(2); transform-origin: top center;" : "";
+                            a.object.activity.render().find(".full-start-new__title").css("cssText", containerStyle).html(
+                                '<img style="' + imgStyle + '" src="' + 
                                 Lampa.TMDB.image("/t/p/w300" + logoPath.replace(".svg", ".png")) + '" />'
                             );
                         }
