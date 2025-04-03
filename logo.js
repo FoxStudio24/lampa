@@ -18,14 +18,14 @@
             var e = a.data.movie;
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
-            // Убираем параметр language, чтобы получить все логотипы
             var t = Lampa.TMDB.api(apiPath + "/images?api_key=" + Lampa.TMDB.key());
-            console.log("API URL:", t);
+            console.log("API URL для логотипов:", t);
             $.get(t, (function(e) {
                 if (e.logos && e.logos.length > 0) {
                     console.log("Все логотипы:", e.logos);
                     // Ищем русский логотип
                     var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
+                    var isRussianLogo = !!logo; // Запоминаем, русский ли логотип
                     if (!logo) {
                         // Если нет русского, ищем английский
                         logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
@@ -39,9 +39,35 @@
                     if (logo && logo.file_path) {
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
                         console.log("Отображаем логотип:", logoPath);
-                        a.object.activity.render().find(".full-start-new__title").html(
-                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
-                        );
+
+                        // Если логотип не русский, запрашиваем русское название
+                        if (!isRussianLogo) {
+                            var titleApi = Lampa.TMDB.api(apiPath + "?api_key=" + Lampa.TMDB.key() + "&language=ru");
+                            console.log("API URL для названия:", titleApi);
+                            $.get(titleApi, (function(data) {
+                                var russianTitle = isSerial ? data.name : data.title;
+                                console.log("Русское название из TMDB:", russianTitle);
+                                // Если русское название есть, показываем его справа
+                                if (russianTitle) {
+                                    a.object.activity.render().find(".full-start-new__title").html(
+                                        '<div style="display: flex; align-items: center;">' +
+                                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                            '<span style="margin-left: 10px; font-size: 16px; color: #fff;">' + russianTitle + '</span>' +
+                                        '</div>'
+                                    );
+                                } else {
+                                    // Если русского названия нет, показываем только логотип
+                                    a.object.activity.render().find(".full-start-new__title").html(
+                                        '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
+                                    );
+                                }
+                            }));
+                        } else {
+                            // Если логотип русский, показываем только его
+                            a.object.activity.render().find(".full-start-new__title").html(
+                                '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />'
+                            );
+                        }
                     } else {
                         console.log("Логотип невалидный (нет file_path):", logo);
                     }
