@@ -31,14 +31,24 @@
 
                 console.log(t);
                 $.get(t, function(e) {
-                    if (e.logos && e.logos[0]) {
-                        var logoPath = e.logos[0].file_path;
-                        if (logoPath !== "") {
-                            // Определяем высоту логотипа в зависимости от устройства
-                            var maxHeight = window.innerWidth > 768 ? "250px" : "125px"; // 250px для ПК, 125px для мобильных
+                    if (e.logos && e.logos.length > 0) {
+                        // Ищем русский логотип
+                        var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
+                        // Если русского нет, берём английский
+                        if (!logo) {
+                            logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
+                        }
+                        // Если логотип найден
+                        if (logo && logo.file_path !== "") {
+                            var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
+                            // Получаем название на русском (title для фильмов, name для сериалов)
+                            var title = isSerial ? e.name : e.title;
+                            // Формируем HTML с логотипом и текстом под ним
                             a.object.activity.render().find(".full-start-new__title").html(
-                                '<img style="margin-top: 5px; max-height: ' + maxHeight + ';" src="' + 
-                                Lampa.TMDB.image("/t/p/w300" + logoPath.replace(".svg", ".png")) + '" />'
+                                '<div style="text-align: center;">' +
+                                    '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />' +
+                                    '<div style="font-size: 14px; margin-top: 5px; color: #fff;">' + title + '</div>' +
+                                '</div>'
                             );
                         }
                     }
