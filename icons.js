@@ -16,7 +16,7 @@
                     
                     // Добавляем PNG изображение перед текстом
                     button.prepend(
-                        '<img style="width: 24px; height: 24px; margin-right: 5px; vertical-align: middle;" src="https://cdn-icons-png.flaticon.com/512/7476/7476981.png" />'
+                        '<img style="width: 35px; height: 35px; margin-right: 5px; vertical-align: middle;" src="https://cdn-icons-png.flaticon.com/512/7476/7476981.png" />'
                     );
                 }
             }
