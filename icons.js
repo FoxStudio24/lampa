@@ -54,7 +54,10 @@
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
 
-                // Добавляем tabindex для всех кнопок
+                // Отладка: проверяем, найдены ли кнопки
+                console.log("Найдено кнопок с классом .full-start__button:", render.find('.full-start__button').length);
+
+                // Добавляем tabindex
                 render.find('.full-start__button').attr('tabindex', '0');
 
                 // 1. Кнопка "Онлайн"
@@ -65,6 +68,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />' +
                         '<span>Смотреть онлайн</span>'
                     );
+                    console.log("Онлайн кнопка обновлена:", onlineButton.html());
                 }
 
                 // 2. Кнопка "Торренты"
@@ -75,6 +79,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />' +
                         '<span>Торренты</span>'
                     );
+                    console.log("Торрент кнопка обновлена:", torrentButton.html());
                 }
 
                 // 3. Кнопка "Трейлеры"
@@ -85,6 +90,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />' +
                         '<span>Трейлеры</span>'
                     );
+                    console.log("Трейлер кнопка обновлена:", trailerButton.html());
                 }
 
                 // 4. Кнопка "Избранное"
@@ -95,6 +101,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />' +
                         '<span>Избранное</span>'
                     );
+                    console.log("Избранное кнопка обновлена:", bookButton.html());
                 }
 
                 // 5. Кнопка "ИИ/Опции"
@@ -105,6 +112,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />' +
                         '<span>Опции</span>'
                     );
+                    console.log("Опции кнопка обновлена:", optionsButton.html());
                 }
             }
         });
