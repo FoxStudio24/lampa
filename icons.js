@@ -35,16 +35,16 @@
             .full-start__button:hover,
             .full-start__button:focus,
             .full-start__button.active {
-                background-color: #fff;
-                color: #000;
-                width: auto;
-                padding: 0.3em 1em;
-                border-radius: 9999em;
+                background-color: #fff !important;
+                color: #000 !important;
+                width: auto !important;
+                padding: 0.3em 1em !important;
+                border-radius: 9999em !important;
             }
             .full-start__button:hover span,
             .full-start__button:focus span,
             .full-start__button.active span {
-                display: inline;
+                display: inline !important;
             }
         `;
         document.head.appendChild(style);
@@ -53,6 +53,9 @@
             if (a.type === "complite") {
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
+
+                // Добавляем tabindex для фокуса
+                render.find('.full-start__button').attr('tabindex', '0');
 
                 // 1. Кнопка "Онлайн"
                 var onlineButton = render.find('.full-start__button.view--online');
