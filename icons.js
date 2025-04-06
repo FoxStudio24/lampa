@@ -46,7 +46,7 @@
             .full-start__button.active span {
                 display: inline !important;
             }
-            /* Для отладки фокуса */
+            /* Индикатор фокуса */
             .full-start__button:focus {
                 outline: 2px solid red !important;
             }
@@ -58,18 +58,18 @@
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
 
-                // Добавляем tabindex и обработчики для всех кнопок
+                // Проверяем, что кнопки найдены
                 var buttons = render.find('.full-start__button');
+                console.log('Найдено кнопок:', buttons.length);
+
                 buttons.each(function() {
                     var button = $(this);
                     button.attr('tabindex', '0'); // Делаем фокусируемыми
 
-                    // Отладка фокуса
-                    button.on('focus', function() {
-                        console.log('Фокус на кнопке:', button.attr('class'));
-                    });
-                    button.on('blur', function() {
-                        console.log('Фокус снят с кнопки:', button.attr('class'));
+                    // Обработчик клика для принудительного переключения
+                    button.on('click', function() {
+                        console.log('Клик по кнопке:', button.attr('class'));
+                        button.toggleClass('active');
                     });
                 });
 
@@ -81,6 +81,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />' +
                         '<span>Смотреть онлайн</span>'
                     );
+                    console.log('Онлайн кнопка:', onlineButton.html());
                 }
 
                 // 2. Кнопка "Торренты"
@@ -91,6 +92,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />' +
                         '<span>Торренты</span>'
                     );
+                    console.log('Торрент кнопка:', torrentButton.html());
                 }
 
                 // 3. Кнопка "Трейлеры"
@@ -101,6 +103,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />' +
                         '<span>Трейлеры</span>'
                     );
+                    console.log('Трейлер кнопка:', trailerButton.html());
                 }
 
                 // 4. Кнопка "Избранное"
@@ -111,6 +114,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />' +
                         '<span>Избранное</span>'
                     );
+                    console.log('Избранное кнопка:', bookButton.html());
                 }
 
                 // 5. Кнопка "ИИ/Опции"
@@ -121,6 +125,7 @@
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />' +
                         '<span>Опции</span>'
                     );
+                    console.log('Опции кнопка:', optionsButton.html());
                 }
             }
         });
