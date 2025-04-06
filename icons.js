@@ -1,62 +1,59 @@
 !function() {
     "use strict";
 
-    // Проверяем, что плагин ещё не инициализирован
     if (!window.buttonplugin) {
         window.buttonplugin = true;
 
-        // Функция для определения размера в зависимости от устройства
         function getIconSize() {
             return window.innerWidth > 768 ? "40px" : "25px";
         }
 
-        // Добавляем стили для кнопок
         var style = document.createElement('style');
         style.textContent = `
             .full-start__button {
                 margin-right: 0.75em;
                 font-size: 1.3em;
                 background-color: rgba(0, 0, 0, 0.22);
-                padding: 0.3em; /* Круглый вид без текста */
+                padding: 0.3em;
                 display: flex;
-                border-radius: 50%; /* Круглая форма */
+                border-radius: 50%;
                 align-items: center;
                 justify-content: center;
                 height: 2.8em;
-                width: 2.8em; /* Изначально круг */
+                width: 2.8em;
                 flex-shrink: 0;
                 backdrop-filter: blur(5px);
                 -webkit-backdrop-filter: blur(5px);
-                transition: all 0.3s ease; /* Плавный переход для всех изменений */
-                overflow: hidden; /* Скрываем текст за пределами круга */
+                transition: all 0.3s ease;
+                overflow: hidden;
             }
             .full-start__button span {
-                display: none; /* Скрываем текст изначально */
-                margin-left: 0.5em; /* Отступ для текста при появлении */
-                white-space: nowrap; /* Текст в одну строку */
+                display: none;
+                margin-left: 0.5em;
+                white-space: nowrap;
             }
             .full-start__button:hover,
+            .full-start__button:focus,
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
-                width: auto; /* Растягиваем под содержимое */
-                padding: 0.3em 1em; /* Увеличиваем padding для текста */
-                border-radius: 999999999999em; /* Возвращаем вытянутую форму */
+                width: auto;
+                padding: 0.3em 1em;
+                border-radius: 999999999999em;
             }
             .full-start__button:hover span,
+            .full-start__button:focus span,
             .full-start__button.active span {
-                display: inline; /* Показываем текст при наведении/активации */
+                display: inline;
             }
         `;
         document.head.appendChild(style);
 
-        // Подписываемся на событие полной загрузки интерфейса
         Lampa.Listener.follow("full", function(a) {
             if (a.type === "complite") {
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
 
-                // 1. Кнопка "Онлайн"
                 var onlineButton = render.find('.full-start__button.view--online');
                 if (onlineButton.length) {
                     onlineButton.find('svg').remove();
@@ -65,7 +62,6 @@
                     );
                 }
 
-                // 2. Кнопка "Торренты"
                 var torrentButton = render.find('.full-start__button.view--torrent');
                 if (torrentButton.length) {
                     torrentButton.find('svg').remove();
@@ -74,7 +70,6 @@
                     );
                 }
 
-                // 3. Кнопка "Трейлеры"
                 var trailerButton = render.find('.full-start__button.view--trailer');
                 if (torrentButton.length) {
                     trailerButton.find('svg').remove();
@@ -83,7 +78,6 @@
                     );
                 }
 
-                // 4. Кнопка "Избранное"
                 var bookButton = render.find('.full-start__button.button--book');
                 if (bookButton.length) {
                     bookButton.find('svg').remove();
@@ -92,7 +86,6 @@
                     );
                 }
 
-                // 5. Кнопка "ИИ/Опции"
                 var optionsButton = render.find('.full-start__button.button--options');
                 if (optionsButton.length) {
                     optionsButton.find('svg').remove();
