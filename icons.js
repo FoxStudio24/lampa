@@ -17,11 +17,13 @@
                 margin-right: 0.75em;
                 font-size: 1.3em;
                 background-color: rgba(0, 0, 0, 0.22);
-                padding: 0.3em 1em;
+                padding: 0.3em; /* Уменьшаем padding, так как ширина фиксирована */
                 display: flex;
-                border-radius: 999999999999em;
+                border-radius: 50%; /* Круглая форма */
                 align-items: center;
+                justify-content: center; /* Центрируем содержимое по горизонтали */
                 height: 2.8em;
+                width: 2.8em; /* Делаем ширину равной высоте для круга */
                 flex-shrink: 0;
                 backdrop-filter: blur(5px);
                 -webkit-backdrop-filter: blur(5px);
@@ -31,6 +33,9 @@
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
+            }
+            .full-start__button span {
+                display: none; /* Скрываем текст, чтобы уместить в круг */
             }
         `;
         document.head.appendChild(style);
