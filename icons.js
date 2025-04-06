@@ -38,13 +38,16 @@
             .full-start__button:hover {
                 background-color: #fff;
                 color: #000;
-                width: auto;
-                padding: 0.3em 1em;
-                border-radius: 999999999999em;
             }
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
+                width: auto;
+                padding: 0.3em 1em;
+                border-radius: 999999999999em;
+            }
+            .full-start__button.active span {
+                display: inline;
             }
         `;
         document.head.appendChild(style);
