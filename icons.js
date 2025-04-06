@@ -25,6 +25,11 @@
                 flex-shrink: 0;
                 backdrop-filter: blur(5px);
                 -webkit-backdrop-filter: blur(5px);
+                transition: transform 0.3s ease; /* Плавный переход для масштабирования */
+            }
+            .full-start__button:hover,
+            .full-start__button.active {
+                transform: scale(1.1); /* Увеличение на 10% */
             }
         `;
         document.head.appendChild(style);
