@@ -34,9 +34,6 @@
                 background-color: #fff;
                 color: #000;
             }
-            .full-start__button span {
-                display: none; /* Скрываем текст, чтобы уместить в круг */
-            }
         `;
         document.head.appendChild(style);
 
