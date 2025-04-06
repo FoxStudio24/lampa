@@ -7,8 +7,27 @@
 
         // Функция для определения размера в зависимости от устройства
         function getIconSize() {
-            return window.innerWidth > 768 ? "32px" : "20px";
+            return window.innerWidth > 768 ? "40px" : "25px";
         }
+
+        // Добавляем стили для кнопок
+        var style = document.createElement('style');
+        style.textContent = `
+            .full-start__button {
+                margin-right: 0.75em;
+                font-size: 1.3em;
+                background-color: rgba(0, 0, 0, 0.22);
+                padding: 0.3em 1em;
+                display: flex;
+                border-radius: 999999999999em;
+                align-items: center;
+                height: 2.8em;
+                flex-shrink: 0;
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+            }
+        `;
+        document.head.appendChild(style);
 
         // Подписываемся на событие полной загрузки интерфейса
         Lampa.Listener.follow("full", function(a) {
@@ -21,7 +40,7 @@
                 if (onlineButton.length) {
                     onlineButton.find('svg').remove();
                     onlineButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; margin-right: 5px; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />'
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />'
                     );
                 }
 
@@ -30,7 +49,7 @@
                 if (torrentButton.length) {
                     torrentButton.find('svg').remove();
                     torrentButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; margin-right: 5px; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />'
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />'
                     );
                 }
 
@@ -39,7 +58,7 @@
                 if (trailerButton.length) {
                     trailerButton.find('svg').remove();
                     trailerButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; margin-right: 5px; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />'
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />'
                     );
                 }
 
@@ -48,7 +67,7 @@
                 if (bookButton.length) {
                     bookButton.find('svg').remove();
                     bookButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; margin-right: 5px; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />'
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />'
                     );
                 }
 
@@ -57,7 +76,7 @@
                 if (optionsButton.length) {
                     optionsButton.find('svg').remove();
                     optionsButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; margin-right: 5px; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />'
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />'
                     );
                 }
             }
