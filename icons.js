@@ -25,7 +25,7 @@
                 flex-shrink: 0;
                 backdrop-filter: blur(5px);
                 -webkit-backdrop-filter: blur(5px);
-                transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход для цветов */
+                transition: background-color 0.3s ease, color 0.3s ease;
             }
             .full-start__button:hover,
             .full-start__button.active {
@@ -50,7 +50,7 @@
                     );
                 }
 
-                // 2. Кнопкаfive "Торренты"
+                // 2. Кнопка "Торренты"
                 var torrentButton = render.find('.full-start__button.view--torrent');
                 if (torrentButton.length) {
                     torrentButton.find('svg').remove();
@@ -81,7 +81,7 @@
                 var optionsButton = render.find('.full-start__button.button--options');
                 if (optionsButton.length) {
                     optionsButton.find('svg').remove();
-                    onlineButton.prepend(
+                    optionsButton.prepend(
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />'
                     );
                 }
