@@ -42,12 +42,12 @@
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
-                width: auto;
-                padding: 0.3em 1em;
-                border-radius: 999999999999em;
+                width: auto; /* Растягиваем под содержимое */
+                padding: 0.3em 1em; /* Увеличиваем padding */
+                border-radius: 999999999999em; /* Вытянутая форма */
             }
             .full-start__button.active span {
-                display: inline;
+                display: inline; /* Показываем текст */
             }
         `;
         document.head.appendChild(style);
@@ -78,7 +78,7 @@
 
                 // 3. Кнопка "Трейлеры"
                 var trailerButton = render.find('.full-start__button.view--trailer');
-                if (torrentButton.length) {
+                if (trailerButton.length) { // Исправлено условие с torrentButton на trailerButton
                     trailerButton.find('svg').remove();
                     trailerButton.prepend(
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />'
