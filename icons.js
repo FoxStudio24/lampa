@@ -42,9 +42,6 @@
                 padding: 0.3em 1em;
                 border-radius: 999999999999em;
             }
-            .full-start__button:hover span {
-                display: inline;
-            }
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
