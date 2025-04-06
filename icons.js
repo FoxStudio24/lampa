@@ -35,16 +35,20 @@
             .full-start__button:hover,
             .full-start__button:focus,
             .full-start__button.active {
-                background-color: #fff;
-                color: #000;
-                width: auto;
-                padding: 0.3em 1em;
-                border-radius: 9999em;
+                background-color: #fff !important;
+                color: #000 !important;
+                width: auto !important;
+                padding: 0.3em 1em !important;
+                border-radius: 9999em !important;
             }
             .full-start__button:hover span,
             .full-start__button:focus span,
             .full-start__button.active span {
-                display: inline;
+                display: inline !important;
+            }
+            /* Для отладки фокуса */
+            .full-start__button:focus {
+                outline: 2px solid red !important;
             }
         `;
         document.head.appendChild(style);
@@ -54,67 +58,69 @@
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
 
-                // Добавляем tabindex
-                render.find('.full-start__button').attr('tabindex', '0');
+                // Добавляем tabindex и обработчики для всех кнопок
+                var buttons = render.find('.full-start__button');
+                buttons.each(function() {
+                    var button = $(this);
+                    button.attr('tabindex', '0'); // Делаем фокусируемыми
+
+                    // Отладка фокуса
+                    button.on('focus', function() {
+                        console.log('Фокус на кнопке:', button.attr('class'));
+                    });
+                    button.on('blur', function() {
+                        console.log('Фокус снят с кнопки:', button.attr('class'));
+                    });
+                });
 
                 // 1. Кнопка "Онлайн"
                 var onlineButton = render.find('.full-start__button.view--online');
                 if (onlineButton.length) {
                     onlineButton.find('svg').remove();
-                    onlineButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />'
+                    onlineButton.html(
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A1%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D1%82%D1%8C.svg" />' +
+                        '<span>Смотреть онлайн</span>'
                     );
-                    if (!onlineButton.find('span').length) {
-                        onlineButton.append('<span>Смотреть онлайн</span>');
-                    }
                 }
 
                 // 2. Кнопка "Торренты"
                 var torrentButton = render.find('.full-start__button.view--torrent');
                 if (torrentButton.length) {
                     torrentButton.find('svg').remove();
-                    torrentButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />'
+                    torrentButton.html(
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%A2%D0%BE%D1%80%D1%80%D0%B5%D0%BD%D1%82.svg" />' +
+                        '<span>Торренты</span>'
                     );
-                    if (!torrentButton.find('span').length) {
-                        torrentButton.append('<span>Торренты</span>');
-                    }
                 }
 
                 // 3. Кнопка "Трейлеры"
                 var trailerButton = render.find('.full-start__button.view--trailer');
                 if (trailerButton.length) {
                     trailerButton.find('svg').remove();
-                    trailerButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />'
+                    trailerButton.html(
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />' +
+                        '<span>Трейлеры</span>'
                     );
-                    if (!trailerButton.find('span').length) {
-                        trailerButton.append('<span>Трейлеры</span>');
-                    }
                 }
 
                 // 4. Кнопка "Избранное"
                 var bookButton = render.find('.full-start__button.button--book');
                 if (bookButton.length) {
                     bookButton.find('svg').remove();
-                    bookButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />'
+                    bookButton.html(
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%97%D0%B0%D0%BA%D0%BB%D0%B0%D0%B4%D0%BA%D0%B8.svg" />' +
+                        '<span>Избранное</span>'
                     );
-                    if (!bookButton.find('span').length) {
-                        bookButton.append('<span>Избранное</span>');
-                    }
                 }
 
                 // 5. Кнопка "ИИ/Опции"
                 var optionsButton = render.find('.full-start__button.button--options');
                 if (optionsButton.length) {
                     optionsButton.find('svg').remove();
-                    optionsButton.prepend(
-                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />'
+                    optionsButton.html(
+                        '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />' +
+                        '<span>Опции</span>'
                     );
-                    if (!optionsButton.find('span').length) {
-                        optionsButton.append('<span>Опции</span>');
-                    }
                 }
             }
         });
