@@ -26,6 +26,7 @@
                 -webkit-backdrop-filter: blur(5px);
                 transition: all 0.3s ease;
                 overflow: hidden;
+                outline: none; /* Убираем стандартный outline */
             }
             .full-start__button span {
                 display: none;
@@ -46,6 +47,10 @@
             .full-start__button.active span {
                 display: inline !important;
             }
+            /* Для отладки: визуальный индикатор фокуса */
+            .full-start__button:focus {
+                box-shadow: 0 0 5px red !important; /* Красная обводка при фокусе */
+            }
         `;
         document.head.appendChild(style);
 
@@ -54,8 +59,22 @@
                 var render = a.object.activity.render();
                 var iconSize = getIconSize();
 
-                // Добавляем tabindex для фокуса
-                render.find('.full-start__button').attr('tabindex', '0');
+                // Находим все кнопки и добавляем tabindex + обработчики
+                var buttons = render.find('.full-start__button');
+                buttons.each(function() {
+                    var button = $(this);
+                    button.attr('tabindex', '0'); // Делаем кнопки фокусируемыми
+
+                    // Добавляем обработчик фокуса для отладки
+                    button.on('focus', function() {
+                        console.log('Кнопка в фокусе:', button.attr('class'));
+                        button.addClass('active'); // Принудительно добавляем .active
+                    });
+                    button.on('blur', function() {
+                        console.log('Кнопка потеряла фокус:', button.attr('class'));
+                        button.removeClass('active'); // Убираем .active при потере фокуса
+                    });
+                });
 
                 // 1. Кнопка "Онлайн"
                 var onlineButton = render.find('.full-start__button.view--online');
@@ -101,7 +120,7 @@
                 var optionsButton = render.find('.full-start__button.button--options');
                 if (optionsButton.length) {
                     optionsButton.find('svg').remove();
-                    optionsButton.html(
+                    onlineButton.html(
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%98%D0%98.svg" />' +
                         '<span>Опции</span>'
                     );
