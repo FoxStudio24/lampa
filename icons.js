@@ -17,22 +17,35 @@
                 margin-right: 0.75em;
                 font-size: 1.3em;
                 background-color: rgba(0, 0, 0, 0.22);
-                padding: 0.3em; /* Уменьшаем padding, так как ширина фиксирована */
+                padding: 0.3em; /* Круглый вид без текста */
                 display: flex;
                 border-radius: 50%; /* Круглая форма */
                 align-items: center;
-                justify-content: center; /* Центрируем содержимое по горизонтали */
+                justify-content: center;
                 height: 2.8em;
-                width: 2.8em; /* Делаем ширину равной высоте для круга */
+                width: 2.8em; /* Изначально круг */
                 flex-shrink: 0;
                 backdrop-filter: blur(5px);
                 -webkit-backdrop-filter: blur(5px);
-                transition: background-color 0.3s ease, color 0.3s ease;
+                transition: all 0.3s ease; /* Плавный переход для всех изменений */
+                overflow: hidden; /* Скрываем текст за пределами круга */
+            }
+            .full-start__button span {
+                display: none; /* Скрываем текст изначально */
+                margin-left: 0.5em; /* Отступ для текста при появлении */
+                white-space: nowrap; /* Текст в одну строку */
             }
             .full-start__button:hover,
             .full-start__button.active {
                 background-color: #fff;
                 color: #000;
+                width: auto; /* Растягиваем под содержимое */
+                padding: 0.3em 1em; /* Увеличиваем padding для текста */
+                border-radius: 999999999999em; /* Возвращаем вытянутую форму */
+            }
+            .full-start__button:hover span,
+            .full-start__button.active span {
+                display: inline; /* Показываем текст при наведении/активации */
             }
         `;
         document.head.appendChild(style);
@@ -63,7 +76,7 @@
 
                 // 3. Кнопка "Трейлеры"
                 var trailerButton = render.find('.full-start__button.view--trailer');
-                if (trailerButton.length) {
+                if (torrentButton.length) {
                     trailerButton.find('svg').remove();
                     trailerButton.prepend(
                         '<img style="width: ' + iconSize + '; height: ' + iconSize + '; vertical-align: middle;" src="https://raw.githubusercontent.com/FoxStudio24/lampa/3f759f21cc988dbaf8c817d2d921ba535f416ace/icons/%D0%AE%D1%82%D1%83%D0%B1.svg" />'
