@@ -20,7 +20,7 @@ https://foxstudio24.github.io/lampa/TMDB_mod.js
 
 ### 🔹 Способ 2: Через файл `lampainit.js` в **Lampac**
 
-Откройте файл `lampainit.js` и добавьте в него следующий код:
+Откройте файл `lampainit.js` и добавьте в него следующий код к примеру :
 
 ```js
 Lampa.Utils.putScriptAsync(["https://foxstudio24.github.io/lampa/TMDB_mod.js"], function() {});
