@@ -6,7 +6,7 @@
         window.backgroundsliderplugin = true;
 
         // Ваш API-ключ TMDB (замените на свой)
-        const TMDB_API_KEY = 'ВАШ_API_КЛЮЧ_HERE';
+        const TMDB_API_KEY = '06936145fe8e20be28b02e26b55d3ce6';
 
         // Создаем стиль для плавной анимации
         const style = document.createElement('style');
