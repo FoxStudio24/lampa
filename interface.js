@@ -88,12 +88,18 @@
         // Слушаем событие полной загрузки интерфейса
         Lampa.Listener.follow('full', function(e) {
             if (e.type === 'complite') {
-                // Получаем ID фильма из текущего объекта
-                const movieId = e.object.movie.id || e.object.movie.tmdb_id;
+                // Логируем e.object для отладки
+                console.log('e.object:', e.object);
+
+                // Проверяем наличие данных о фильме
+                const movie = e.object.data || e.object.item || e.object;
+                const movieId = movie && (movie.id || movie.tmdb_id || movie.movie_id);
+
                 if (movieId) {
+                    console.log('Найден movieId:', movieId);
                     initSlider(movieId);
                 } else {
-                    console.error('ID фильма не найден');
+                    console.error('ID фильма не найден в e.object:', e.object);
                 }
             }
         });
