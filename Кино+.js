@@ -2,10 +2,10 @@
     'use strict';
 
     var Defined = {
-        api_url: 'https://portal.lumex.host/api/',
-        api_token: 'c9368010a6ff29b02795712d3dd8fdab', // Проверьте, действителен ли этот токен
+        api_url: '/api/proxy', // Прокси на вашем домене
+        api_token: 'c9368010a6ff29b02795712d3dd8fdab',
         tmdb_api_url: 'https://api.themoviedb.org/3/',
-        tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6' // Замените на ваш TMDB API-ключ
+        tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6'
     };
 
     var unic_id = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -91,14 +91,13 @@
         this.search = function() {
             var _this = this;
             this.reset();
-            var tmdb_id = object.movie.id; // TMDB ID
+            var tmdb_id = object.movie.id;
             var title = object.movie.title || object.movie.name;
             var year = (object.movie.release_date || object.movie.first_air_date || '0000').slice(0, 4);
             var isSerial = object.movie.number_of_seasons > 0;
 
             console.log('Параметры поиска:', { tmdb_id, title, year, isSerial });
 
-            // Шаг 1: Получаем Kinopoisk ID и IMDB ID из TMDB
             var tmdb_endpoint = isSerial ? 'tv' : 'movie';
             var tmdb_url = Defined.tmdb_api_url + tmdb_endpoint + '/' + tmdb_id + '/external_ids?api_key=' + Defined.tmdb_api_key;
 
@@ -116,8 +115,7 @@
                     return;
                 }
 
-                // Шаг 2: Ищем контент в Lumex по Kinopoisk ID или IMDB ID
-                var lumex_url = Defined.api_url + 'short?api_token=' + Defined.api_token;
+                var lumex_url = Defined.api_url + '?api_token=' + Defined.api_token;
                 if (kinopoisk_id) {
                     lumex_url += '&kinopoisk_id=' + encodeURIComponent(kinopoisk_id);
                     console.log('Используем Kinopoisk ID:', kinopoisk_id);
@@ -126,7 +124,7 @@
                     console.log('Используем IMDB ID:', imdb_id);
                 }
 
-                console.log('Запрос к Lumex API (short):', lumex_url);
+                console.log('Запрос к Lumex API через прокси:', lumex_url);
 
                 network.silent(account(lumex_url), function(json) {
                     console.log('Ответ от Lumex API (short):', JSON.stringify(json, null, 2));
@@ -151,12 +149,12 @@
         this.searchByTitleAndYear = function(title, year, isSerial) {
             var _this = this;
             var endpoint = isSerial ? 'tv-series' : 'movies';
-            var url = Defined.api_url + endpoint + '?api_token=' + Defined.api_token +
+            var url = Defined.api_url + '?api_token=' + Defined.api_token +
                       '&query=' + encodeURIComponent(title) +
                       '&year=' + year +
                       '&limit=10';
 
-            console.log('Запрос к Lumex API (' + endpoint + '):', url);
+            console.log('Запрос к Lumex API через прокси (' + endpoint + '):', url);
 
             network.timeout(10000);
             network.silent(account(url), function(json) {
@@ -177,10 +175,10 @@
             var _this = this;
             if (!contentData || !contentData.id || (contentData.content_type !== 'tv_series' && contentData.type !== 'serial')) return;
 
-            var url = Defined.api_url + 'tv-series/' + contentData.id + '/episodes?api_token=' + Defined.api_token +
+            var url = Defined.api_url + '?api_token=' + Defined.api_token +
                       '&season_num=' + seasonNum;
 
-            console.log('Запрос эпизодов:', url);
+            console.log('Запрос эпизодов через прокси:', url);
 
             network.timeout(10000);
             network.silent(account(url), function(json) {
@@ -519,7 +517,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.7',
+            version: '1.0.8',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из Lumex',
             component: 'kinoplus'
