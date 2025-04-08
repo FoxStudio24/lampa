@@ -3,7 +3,7 @@
 
     var Defined = {
         api_url: 'https://portal.lumex.host/api/',
-        api_token: 'c9368010a6ff29b02795712d3dd8fdab'
+        api_token: 'c9368010a6ff29b02795712d3dd8fdab' // Проверьте, действителен ли этот токен
     };
 
     var unic_id = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -42,7 +42,7 @@
             season: [],
             episode: []
         };
-        var contentData = null; // Для хранения данных контента
+        var contentData = null;
 
         function account(url) {
             var uid = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -65,7 +65,7 @@
                     } else if (a.stype == 'season') {
                         choice.season = b.index;
                         choice.season_num = filter_find.season[b.index].num;
-                        choice.episode = 0; // Сбрасываем эпизод при смене сезона
+                        choice.episode = 0;
                         _this.loadEpisodes(choice.season_num);
                     } else if (a.stype == 'episode') {
                         choice.episode = b.index;
@@ -89,11 +89,11 @@
         this.search = function() {
             var _this = this;
             this.reset();
-            var kinopoisk_id = object.movie.kinopoisk_id;
+            var kinopoisk_id = object.movie.kinopoisk_id || object.movie.id;
             var title = object.movie.title || object.movie.name;
             var year = (object.movie.release_date || object.movie.first_air_date || '0000').slice(0, 4);
 
-            console.log('Поиск контента:', { kinopoisk_id, title, year });
+            console.log('Параметры поиска:', { kinopoisk_id, title, year, number_of_seasons: object.movie.number_of_seasons });
 
             var url = Defined.api_url + 'short?api_token=' + Defined.api_token;
             if (kinopoisk_id) {
@@ -106,42 +106,16 @@
 
             network.timeout(10000);
             network.silent(account(url), function(json) {
-                console.log('Ответ от API (short):', json);
+                console.log('Ответ от API (short):', JSON.stringify(json, null, 2));
                 if (json.result && json.data && json.data.length > 0) {
                     contentData = json.data[0];
                     _this.parse(json);
                 } else {
-                    _this.searchByTitleAndYear(title, year);
+                    _this.empty('Контент не найден по kinopoisk_id или названию');
                 }
             }, function(error) {
                 console.error('Ошибка при запросе (short):', error);
-                _this.searchByTitleAndYear(title, year);
-            }, false, { dataType: 'json' });
-        };
-
-        this.searchByTitleAndYear = function(title, year) {
-            var _this = this;
-            var isSerial = object.movie.number_of_seasons > 0;
-            var endpoint = isSerial ? 'tv-series' : 'movies';
-            var url = Defined.api_url + endpoint + '?api_token=' + Defined.api_token +
-                      '&query=' + encodeURIComponent(title) +
-                      '&year=' + year +
-                      '&limit=10';
-
-            console.log('Запрос к API (' + endpoint + '):', url);
-
-            network.timeout(10000);
-            network.silent(account(url), function(json) {
-                console.log('Ответ от API (' + endpoint + '):', json);
-                if (json.result && json.data && json.data.length > 0) {
-                    contentData = json.data[0];
-                    _this.parse({ result: true, data: json.data });
-                } else {
-                    _this.empty('Контент не найден по названию и году');
-                }
-            }, function(error) {
-                console.error('Ошибка при запросе (' + endpoint + '):', error);
-                _this.empty('Ошибка при поиске по названию и году');
+                _this.empty('Ошибка при запросе к API: ' + (error.statusText || 'Неизвестная ошибка'));
             }, false, { dataType: 'json' });
         };
 
@@ -156,13 +130,13 @@
 
             network.timeout(10000);
             network.silent(account(url), function(json) {
-                console.log('Ответ с эпизодами:', json);
+                console.log('Ответ с эпизодами:', JSON.stringify(json, null, 2));
                 if (json.result && json.data) {
                     filter_find.episode = json.data.map(function(e) {
                         return {
                             title: e.ru_title || 'Эпизод ' + e.num,
                             num: e.num,
-                            media: e.media
+                            media: e.media || []
                         };
                     });
                     var choice = _this.getChoice();
@@ -170,9 +144,12 @@
                     choice.episode_num = filter_find.episode[0] ? filter_find.episode[0].num : 1;
                     _this.saveChoice(choice);
                     _this.displayContent();
+                } else {
+                    _this.empty('Эпизоды не найдены');
                 }
             }, function(error) {
                 console.error('Ошибка при загрузке эпизодов:', error);
+                _this.empty('Ошибка при загрузке эпизодов');
             }, false, { dataType: 'json' });
         };
 
@@ -181,11 +158,11 @@
             var content = json.data[0];
             if (!content) return this.empty('Контент не найден в данных');
 
-            console.log('Обработка контента:', content);
+            console.log('Обработка контента:', JSON.stringify(content, null, 2));
 
-            filter_find.translation = content.translations.map(function(t) {
+            filter_find.translation = (content.translations || []).map(function(t) {
                 return {
-                    title: t.short_title || t.title,
+                    title: t.short_title || t.title || 'Неизвестный перевод',
                     id: t.id,
                     iframe_src: t.iframe_src
                 };
@@ -198,19 +175,23 @@
                         if (media.qualities && media.qualities.length > 0) {
                             media.qualities.forEach(function(q) {
                                 videos.push({
-                                    title: content.ru_title || content.title,
+                                    title: content.ru_title || content.title || 'Без названия',
                                     url: q.url,
                                     quality: q.resolution + 'p',
-                                    translation: media.translation.short_title || media.translation.title,
+                                    translation: media.translation.short_title || media.translation.title || 'Неизвестный перевод',
                                     translation_id: media.translation.id,
                                     method: 'play'
                                 });
                             });
+                        } else {
+                            console.log('Качества не найдены для медиа:', media);
                         }
                     });
+                } else {
+                    console.log('Медиа не найдены для фильма:', content);
                 }
             } else if (content.content_type === 'tv_series' || content.type === 'serial') {
-                filter_find.season = Array.from({ length: content.season_count || content.seasons_count }, (_, i) => ({
+                filter_find.season = Array.from({ length: content.season_count || content.seasons_count || 1 }, (_, i) => ({
                     title: 'Сезон ' + (i + 1),
                     num: i + 1
                 }));
@@ -218,20 +199,19 @@
                 var choice = this.getChoice();
                 var selectedSeason = choice.season_num || 1;
 
-                if (content.episodes) {
+                if (content.episodes && content.episodes.length > 0) {
                     filter_find.episode = content.episodes
                         .filter(function(e) { return parseInt(e.season_num) === selectedSeason; })
                         .map(function(e) {
                             return {
                                 title: e.ru_title || 'Эпизод ' + e.num,
                                 num: e.num,
-                                media: e.media
+                                media: e.media || []
                             };
                         });
                 } else {
-                    // Если эпизоды не предоставлены, попробуем загрузить их через API
                     this.loadEpisodes(selectedSeason);
-                    return; // Прерываем выполнение, пока не загрузятся эпизоды
+                    return;
                 }
 
                 var selectedEpisode = choice.episode_num || (filter_find.episode[0] ? filter_find.episode[0].num : 1);
@@ -239,19 +219,21 @@
                     return e.num === selectedEpisode;
                 });
 
-                if (episode && episode.media) {
+                if (episode && episode.media && episode.media.length > 0) {
                     episode.media.forEach(function(media) {
                         videos.push({
                             title: episode.ru_title || 'Эпизод ' + episode.num,
                             url: media.translation.iframe_src,
                             quality: media.max_quality + 'p',
-                            translation: media.translation.short_title || media.translation.title,
+                            translation: media.translation.short_title || media.translation.title || 'Неизвестный перевод',
                             translation_id: media.translation.id,
                             method: 'play',
                             season: selectedSeason,
                             episode: selectedEpisode
                         });
                     });
+                } else {
+                    console.log('Медиа не найдены для эпизода:', episode);
                 }
             }
 
@@ -483,7 +465,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.4',
+            version: '1.0.5',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из Lumex',
             component: 'kinoplus'
