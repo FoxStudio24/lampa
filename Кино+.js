@@ -49,7 +49,7 @@
             return url;
         }
 
-        this.initialize = function() {
+        this.create = function() {
             var _this = this;
             this.loading(true);
             filter.onBack = function() {
@@ -189,7 +189,6 @@
 
                 if (episode && episode.media) {
                     episode.media.forEach(function(media) {
-                        // Предполагаем, что для сериалов качество берется из max_quality
                         videos.push({
                             title: episode.ru_title || 'Эпизод ' + episode.num,
                             url: media.translation.iframe_src,
@@ -293,8 +292,6 @@
         this.displayContent = function() {
             var choice = this.getChoice();
             var videos = [];
-            // Перестраиваем список видео на основе выбранного перевода, сезона и эпизода
-            // Здесь нужно заново запросить данные или фильтровать существующие
             this.search();
         };
 
@@ -377,7 +374,7 @@
         this.start = function() {
             if (!initialized) {
                 initialized = true;
-                this.initialize();
+                this.create();
             }
             Lampa.Background.immediately(Lampa.Utils.cardImgBackgroundBlur(object.movie));
             Lampa.Controller.add('content', {
@@ -402,6 +399,14 @@
             Lampa.Controller.toggle('content');
         };
 
+        this.pause = function() {
+            // Пустая реализация метода pause
+        };
+
+        this.stop = function() {
+            // Пустая реализация метода stop
+        };
+
         this.render = function() {
             return files.render();
         };
@@ -421,7 +426,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.2',
+            version: '1.0.3',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из Lumex',
             component: 'kinoplus'
