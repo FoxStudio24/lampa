@@ -42,6 +42,7 @@
             season: [],
             episode: []
         };
+        var contentData = null; // Для хранения данных контента
 
         function account(url) {
             var uid = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -65,6 +66,7 @@
                         choice.season = b.index;
                         choice.season_num = filter_find.season[b.index].num;
                         choice.episode = 0; // Сбрасываем эпизод при смене сезона
+                        _this.loadEpisodes(choice.season_num);
                     } else if (a.stype == 'episode') {
                         choice.episode = b.index;
                         choice.episode_num = filter_find.episode[b.index].num;
@@ -91,6 +93,8 @@
             var title = object.movie.title || object.movie.name;
             var year = (object.movie.release_date || object.movie.first_air_date || '0000').slice(0, 4);
 
+            console.log('Поиск контента:', { kinopoisk_id, title, year });
+
             var url = Defined.api_url + 'short?api_token=' + Defined.api_token;
             if (kinopoisk_id) {
                 url += '&kinopoisk_id=' + encodeURIComponent(kinopoisk_id);
@@ -98,14 +102,19 @@
                 url += '&title=' + encodeURIComponent(title);
             }
 
+            console.log('Запрос к API (short):', url);
+
             network.timeout(10000);
             network.silent(account(url), function(json) {
+                console.log('Ответ от API (short):', json);
                 if (json.result && json.data && json.data.length > 0) {
+                    contentData = json.data[0];
                     _this.parse(json);
                 } else {
                     _this.searchByTitleAndYear(title, year);
                 }
-            }, function() {
+            }, function(error) {
+                console.error('Ошибка при запросе (short):', error);
                 _this.searchByTitleAndYear(title, year);
             }, false, { dataType: 'json' });
         };
@@ -119,22 +128,60 @@
                       '&year=' + year +
                       '&limit=10';
 
+            console.log('Запрос к API (' + endpoint + '):', url);
+
             network.timeout(10000);
             network.silent(account(url), function(json) {
+                console.log('Ответ от API (' + endpoint + '):', json);
                 if (json.result && json.data && json.data.length > 0) {
+                    contentData = json.data[0];
                     _this.parse({ result: true, data: json.data });
                 } else {
-                    _this.empty();
+                    _this.empty('Контент не найден по названию и году');
                 }
-            }, function() {
-                _this.empty();
+            }, function(error) {
+                console.error('Ошибка при запросе (' + endpoint + '):', error);
+                _this.empty('Ошибка при поиске по названию и году');
+            }, false, { dataType: 'json' });
+        };
+
+        this.loadEpisodes = function(seasonNum) {
+            var _this = this;
+            if (!contentData || !contentData.id || (contentData.content_type !== 'tv_series' && contentData.type !== 'serial')) return;
+
+            var url = Defined.api_url + 'tv-series/' + contentData.id + '/episodes?api_token=' + Defined.api_token +
+                      '&season_num=' + seasonNum;
+
+            console.log('Запрос эпизодов:', url);
+
+            network.timeout(10000);
+            network.silent(account(url), function(json) {
+                console.log('Ответ с эпизодами:', json);
+                if (json.result && json.data) {
+                    filter_find.episode = json.data.map(function(e) {
+                        return {
+                            title: e.ru_title || 'Эпизод ' + e.num,
+                            num: e.num,
+                            media: e.media
+                        };
+                    });
+                    var choice = _this.getChoice();
+                    choice.episode = 0;
+                    choice.episode_num = filter_find.episode[0] ? filter_find.episode[0].num : 1;
+                    _this.saveChoice(choice);
+                    _this.displayContent();
+                }
+            }, function(error) {
+                console.error('Ошибка при загрузке эпизодов:', error);
             }, false, { dataType: 'json' });
         };
 
         this.parse = function(json) {
             var _this = this;
-            var content = json.data[0]; // Берем первый результат
-            if (!content) return this.empty();
+            var content = json.data[0];
+            if (!content) return this.empty('Контент не найден в данных');
+
+            console.log('Обработка контента:', content);
 
             filter_find.translation = content.translations.map(function(t) {
                 return {
@@ -146,18 +193,22 @@
 
             var videos = [];
             if (content.content_type === 'movie' || content.type === 'movie') {
-                content.media.forEach(function(media) {
-                    media.qualities.forEach(function(q) {
-                        videos.push({
-                            title: content.ru_title || content.title,
-                            url: q.url,
-                            quality: q.resolution + 'p',
-                            translation: media.translation.short_title || media.translation.title,
-                            translation_id: media.translation.id,
-                            method: 'play'
-                        });
+                if (content.media && content.media.length > 0) {
+                    content.media.forEach(function(media) {
+                        if (media.qualities && media.qualities.length > 0) {
+                            media.qualities.forEach(function(q) {
+                                videos.push({
+                                    title: content.ru_title || content.title,
+                                    url: q.url,
+                                    quality: q.resolution + 'p',
+                                    translation: media.translation.short_title || media.translation.title,
+                                    translation_id: media.translation.id,
+                                    method: 'play'
+                                });
+                            });
+                        }
                     });
-                });
+                }
             } else if (content.content_type === 'tv_series' || content.type === 'serial') {
                 filter_find.season = Array.from({ length: content.season_count || content.seasons_count }, (_, i) => ({
                     title: 'Сезон ' + (i + 1),
@@ -167,8 +218,8 @@
                 var choice = this.getChoice();
                 var selectedSeason = choice.season_num || 1;
 
-                filter_find.episode = content.episodes
-                    ? content.episodes
+                if (content.episodes) {
+                    filter_find.episode = content.episodes
                         .filter(function(e) { return parseInt(e.season_num) === selectedSeason; })
                         .map(function(e) {
                             return {
@@ -176,15 +227,16 @@
                                 num: e.num,
                                 media: e.media
                             };
-                        })
-                    : Array.from({ length: content.episodes_count || 1 }, (_, i) => ({
-                        title: 'Эпизод ' + (i + 1),
-                        num: i + 1
-                    }));
+                        });
+                } else {
+                    // Если эпизоды не предоставлены, попробуем загрузить их через API
+                    this.loadEpisodes(selectedSeason);
+                    return; // Прерываем выполнение, пока не загрузятся эпизоды
+                }
 
-                var selectedEpisode = choice.episode_num || filter_find.episode[0].num;
-                var episode = content.episodes && content.episodes.find(function(e) {
-                    return parseInt(e.season_num) === selectedSeason && e.num === selectedEpisode;
+                var selectedEpisode = choice.episode_num || (filter_find.episode[0] ? filter_find.episode[0].num : 1);
+                var episode = filter_find.episode.find(function(e) {
+                    return e.num === selectedEpisode;
                 });
 
                 if (episode && episode.media) {
@@ -203,7 +255,10 @@
                 }
             }
 
-            if (videos.length === 0) return this.empty();
+            if (videos.length === 0) {
+                console.log('Видео не найдены:', videos);
+                return this.empty('Видео не найдены для данного контента');
+            }
 
             videos.sort(function(a, b) {
                 var qA = parseInt(a.quality) || 0;
@@ -290,9 +345,11 @@
         };
 
         this.displayContent = function() {
-            var choice = this.getChoice();
-            var videos = [];
-            this.search();
+            if (contentData) {
+                this.parse({ result: true, data: [contentData] });
+            } else {
+                this.search();
+            }
         };
 
         this.draw = function(items) {
@@ -361,14 +418,14 @@
             }
         };
 
-        this.empty = function() {
+        this.empty = function(message) {
             scroll.clear();
-            scroll.append(Lampa.Template.get('kinoplus_empty', {}));
+            scroll.append(Lampa.Template.get('kinoplus_empty', { message: message || '#{kinoplus_no_content}' }));
             this.loading(false);
         };
 
         this.doesNotAnswer = function() {
-            this.empty();
+            this.empty('Сервер не отвечает');
         };
 
         this.start = function() {
@@ -426,7 +483,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.3',
+            version: '1.0.4',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из Lumex',
             component: 'kinoplus'
@@ -467,7 +524,7 @@
         `);
 
         Lampa.Template.add('kinoplus_empty', `
-            <div>#{kinoplus_no_content}</div>
+            <div>{message}</div>
         `);
 
         var button = `
