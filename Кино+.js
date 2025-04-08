@@ -2,7 +2,9 @@
     'use strict';
 
     var Defined = {
-        localhost: 'https://example.com/', // Замените на ваш прокси-сервер, если нужен
+        // Для реального использования нужен прокси-сервер или API
+        vkvideo_url: 'https://vkvideo.ru/',
+        rutube_url: 'https://rutube.ru/'
     };
 
     var unic_id = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -21,32 +23,49 @@
         var filter = new Lampa.Filter(object);
         var sources = {
             'vkvideo': {
-                url: 'https://vkvideo.ru/',
+                url: Defined.vkvideo_url,
                 name: 'VK Video',
                 show: true
             },
             'rutube': {
-                url: 'https://rutube.ru/',
+                url: Defined.rutube_url,
                 name: 'Rutube',
                 show: true
             }
         };
         var last;
-        var balanser = 'vkvideo';
+        var balanser = Lampa.Storage.get('kinoplus_balanser', 'vkvideo');
         var initialized;
         var filter_sources = ['vkvideo', 'rutube'];
         var filter_translate = {
             quality: 'Качество',
             source: 'Источник'
         };
-        var filter_find = {
-            quality: []
-        };
 
         function account(url) {
             var uid = Lampa.Storage.get('kinoplus_unic_id', '');
             if (uid) url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(uid));
             return url;
+        }
+
+        // Функция имитации поиска (тестовые данные)
+        function mockSearch(balanser, title, year) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Пример тестовых данных
+                    const mockResults = {
+                        'vkvideo': [
+                            { title: `${title} (${year})`, url: 'https://vk.com/video/test1', quality: '1080p' },
+                            { title: `${title} HD`, url: 'https://vk.com/video/test2', quality: '720p' }
+                        ],
+                        'rutube': [
+                            { title: `${title} Full HD`, url: 'https://rutube.ru/video/test1', quality: '1080p' },
+                            { title: `${title} SD`, url: 'https://rutube.ru/video/test2', quality: '480p' }
+                        ]
+                    };
+                    resolve({ results: mockResults[balanser] || [] });
+                }, 1000); // Имитация задержки сети
+            });
         }
 
         this.initialize = function() {
@@ -87,16 +106,21 @@
         };
 
         this.search = function() {
+            var _this = this;
             this.reset();
-            var url = this.requestParams(sources[balanser].url);
-            network.timeout(10000);
-            network.native(account(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, {
-                dataType: 'json'
+            var title = object.movie.title || object.movie.name;
+            var year = (object.movie.release_date || object.movie.first_air_date || '0000').slice(0, 4);
+
+            // Используем mockSearch вместо реального запроса
+            mockSearch(balanser, title, year).then(function(json) {
+                _this.parse(json);
+            }).catch(function() {
+                _this.doesNotAnswer();
             });
         };
 
         this.parse = function(json) {
-            if (!json || !json.results) return this.empty();
+            if (!json || !json.results || json.results.length === 0) return this.empty();
             
             var videos = json.results.map(function(item) {
                 return {
@@ -108,7 +132,6 @@
                 };
             });
             
-            // Сортировка по качеству (предполагаем, что качество указано как "1080p", "720p" и т.д.)
             videos.sort(function(a, b) {
                 var qA = parseInt(a.quality) || 0;
                 var qB = parseInt(b.quality) || 0;
@@ -234,7 +257,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.0',
+            version: '1.0.1',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из VK и Rutube',
             component: 'kinoplus'
