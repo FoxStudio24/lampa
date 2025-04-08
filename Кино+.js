@@ -3,7 +3,9 @@
 
     var Defined = {
         api_url: 'https://portal.lumex.host/api/',
-        api_token: 'c9368010a6ff29b02795712d3dd8fdab' // Проверьте, действителен ли этот токен
+        api_token: 'c9368010a6ff29b02795712d3dd8fdab', // Проверьте, действителен ли этот токен
+        tmdb_api_url: 'https://api.themoviedb.org/3/',
+        tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6' // Замените на ваш TMDB API-ключ
     };
 
     var unic_id = Lampa.Storage.get('kinoplus_unic_id', '');
@@ -89,33 +91,50 @@
         this.search = function() {
             var _this = this;
             this.reset();
-            var kinopoisk_id = object.movie.kinopoisk_id || object.movie.id;
+            var tmdb_id = object.movie.id; // Предполагаем, что TMDB ID находится в object.movie.id
             var title = object.movie.title || object.movie.name;
             var year = (object.movie.release_date || object.movie.first_air_date || '0000').slice(0, 4);
 
-            console.log('Параметры поиска:', { kinopoisk_id, title, year, number_of_seasons: object.movie.number_of_seasons });
+            console.log('Параметры поиска:', { tmdb_id, title, year, number_of_seasons: object.movie.number_of_seasons });
 
-            var url = Defined.api_url + 'short?api_token=' + Defined.api_token;
-            if (kinopoisk_id) {
-                url += '&kinopoisk_id=' + encodeURIComponent(kinopoisk_id);
-            } else {
-                url += '&title=' + encodeURIComponent(title);
-            }
+            // Шаг 1: Получаем Kinopoisk ID из TMDB
+            var tmdb_url = Defined.tmdb_api_url + 'movie/' + tmdb_id + '/external_ids?api_key=' + Defined.tmdb_api_key;
 
-            console.log('Запрос к API (short):', url);
+            console.log('Запрос к TMDB API для получения Kinopoisk ID:', tmdb_url);
 
             network.timeout(10000);
-            network.silent(account(url), function(json) {
-                console.log('Ответ от API (short):', JSON.stringify(json, null, 2));
-                if (json.result && json.data && json.data.length > 0) {
-                    contentData = json.data[0];
-                    _this.parse(json);
-                } else {
-                    _this.empty('Контент не найден по kinopoisk_id или названию');
+            network.silent(tmdb_url, function(tmdb_response) {
+                console.log('Ответ от TMDB API:', JSON.stringify(tmdb_response, null, 2));
+                var kinopoisk_id = tmdb_response.kinopoisk_id || null;
+
+                if (!kinopoisk_id) {
+                    _this.empty('Kinopoisk ID не найден для TMDB ID: ' + tmdb_id);
+                    return;
                 }
+
+                console.log('Получен Kinopoisk ID:', kinopoisk_id);
+
+                // Шаг 2: Ищем контент в Lumex по Kinopoisk ID
+                var lumex_url = Defined.api_url + 'short?api_token=' + Defined.api_token + '&kinopoisk_id=' + encodeURIComponent(kinopoisk_id);
+
+                console.log('Запрос к Lumex API (short):', lumex_url);
+
+                network.silent(account(lumex_url), function(json) {
+                    console.log('Ответ от Lumex API (short):', JSON.stringify(json, null, 2));
+                    if (json.result && json.data && json.data.length > 0) {
+                        contentData = json.data[0];
+                        _this.parse(json);
+                    } else {
+                        _this.empty('Контент не найден в Lumex по Kinopoisk ID: ' + kinopoisk_id);
+                    }
+                }, function(error) {
+                    console.error('Ошибка при запросе к Lumex API:', error);
+                    _this.empty('Ошибка при запросе к Lumex API: ' + (error.statusText || 'Неизвестная ошибка'));
+                }, false, { dataType: 'json' });
+
             }, function(error) {
-                console.error('Ошибка при запросе (short):', error);
-                _this.empty('Ошибка при запросе к API: ' + (error.statusText || 'Неизвестная ошибка'));
+                console.error('Ошибка при запросе к TMDB API:', error);
+                _this.empty('Ошибка при получении Kinopoisk ID из TMDB: ' + (error.statusText || 'Неизвестная ошибка'));
             }, false, { dataType: 'json' });
         };
 
@@ -465,7 +484,7 @@
         window.kinoplus_plugin = true;
         var manifest = {
             type: 'video',
-            version: '1.0.5',
+            version: '1.0.6',
             name: 'Кино+',
             description: 'Плагин для просмотра видео из Lumex',
             component: 'kinoplus'
