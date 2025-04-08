@@ -2,39 +2,100 @@
     "use strict";
 
     // Проверяем, что плагин ещё не инициализирован
-    if (!window.interfaceplugin) {
-        window.interfaceplugin = true;
+    if (!window.backgroundsliderplugin) {
+        window.backgroundsliderplugin = true;
 
-        // Создаем стиль
-        var style = document.createElement('style');
+        // Ваш API-ключ TMDB (замените на свой)
+        const TMDB_API_KEY = 'ВАШ_API_КЛЮЧ_HERE';
+
+        // Создаем стиль для плавной анимации
+        const style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = `
-            .settings-folder {
-                margin: 15px; /* внешние отступы со всех сторон */
-                border-radius: 15px; /* закругления */
+            .full-start__background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0;
+                transition: opacity 1s ease-in-out;
             }
-body.glass--style .selectbox-item.focus,
-body.glass--style .settings-folder.focus,
-body.glass--style .settings-param.focus {
-    background: linear-gradient(135deg, #8b75cb, #9b79d6, #b79cec, #6a4fbb);
-    color: #fff;
-    box-shadow: 
-        inset 0 0 0 3px rgba(255, 255, 255, 0.2), /* внутренняя белая рамка */
-        0 4px 14px rgba(139, 117, 203, 0.4);     /* внешняя тень */
-    transform: scale(1.01);
-    transition: all 0.3s ease;
-}
-.selectbox-item {
-      margin: 15px; /* внешние отступы со всех сторон */
-      border-radius: 15px; /* закругления */
-}
-
-
-
-
+            .full-start__background.active {
+                opacity: 1;
+            }
         `;
-        
-        // Добавляем стиль в head
         document.getElementsByTagName('head')[0].appendChild(style);
+
+        // Функция для получения изображений по ID фильма из TMDB
+        async function getMovieImages(movieId) {
+            try {
+                const response = await fetch(
+                    `https://api.themoviedb.org/3/movie/${movieId}/images?api_key=${TMDB_API_KEY}`
+                );
+                const data = await response.json();
+                // Берем до 3 фоновых изображений, если их нет — возвращаем запасной вариант
+                const backdrops = data.backdrops
+                    .map(backdrop => `https://image.tmdb.org/t/p/w1280${backdrop.file_path}`)
+                    .slice(0, 3);
+                return backdrops.length > 0 
+                    ? backdrops 
+                    : ['https://image.tmdb.org/t/p/w1280/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg'];
+            } catch (error) {
+                console.error('Ошибка загрузки изображений из TMDB:', error);
+                // Запасной вариант при ошибке
+                return ['https://image.tmdb.org/t/p/w1280/2Nti3gYAX513wvhp8IiLL6ZDyOm.jpg'];
+            }
+        }
+
+        // Функция для создания и управления слайдером
+        async function initSlider(movieId) {
+            const container = document.querySelector('.full-start__background');
+            if (!container) return;
+
+            // Очищаем существующий фон
+            container.innerHTML = '';
+
+            // Получаем изображения из TMDB
+            const images = await getMovieImages(movieId);
+
+            // Создаем изображения
+            images.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'full-start__background' + (index === 0 ? ' active' : '');
+                container.parentElement.appendChild(img);
+            });
+
+            // Получаем все изображения фона
+            const backgroundImages = document.querySelectorAll('.full-start__background');
+            let currentIndex = 0;
+
+            // Функция смены изображения
+            function changeBackground() {
+                backgroundImages[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % backgroundImages.length;
+                backgroundImages[currentIndex].classList.add('active');
+            }
+
+            // Очищаем предыдущий интервал, если он был
+            if (window.backgroundInterval) clearInterval(window.backgroundInterval);
+            // Запускаем слайдер
+            window.backgroundInterval = setInterval(changeBackground, 10000); // Смена каждые 10 секунд
+        }
+
+        // Слушаем событие полной загрузки интерфейса
+        Lampa.Listener.follow('full', function(e) {
+            if (e.type === 'complite') {
+                // Получаем ID фильма из текущего объекта
+                const movieId = e.object.movie.id || e.object.movie.tmdb_id;
+                if (movieId) {
+                    initSlider(movieId);
+                } else {
+                    console.error('ID фильма не найден');
+                }
+            }
+        });
     }
 }();
