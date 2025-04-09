@@ -140,67 +140,67 @@
           },
           function (call) {
             owner.get('discover/tv?with_networks=213&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Популярно на <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="platform-logo">';
+              json.title = '⏺ Популярно на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Netflix.png" alt="Netflix" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=49&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Популярно на <img src="https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg" alt="HBO" class="platform-logo">';
+              json.title = '⏺ Популярно на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/HBO.png" alt="HBO" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=2552&sort=now.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Популярно на <img src="https://images.icon-icons.com/2890/PNG/512/apps_technology_logo_apple_tv_television_smart_tv_connect_icon_182742.png" alt="Apple TV+" class="platform-logo">';
+              json.title = '⏺ Популярно на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Apple%20tv.png" alt="Apple TV+" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=2493®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Новинки на <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Kinopoisk_colored_logo_%282021-present%29.svg" alt="Кинопоиск" class="platform-logo">';
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BF%D0%BE%D0%B8%D1%81%D0%BA.png" alt="Кинопоиск" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=2859®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Новинки на <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/LOGO_PREMIER_2022.png" alt="Premier" class="platform-logo">';
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Premier.png" alt="Premier" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=4085®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = Lampa.Lang.translate('⏺ Новинки на KION');
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Kion.png" alt="Kion" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=3923®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Новинки на <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Ivi_logo.svg" alt="Иви" class="platform-logo">';
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/%D0%B8%D0%B2%D0%B8.png" alt="Иви" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=3871®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = Lampa.Lang.translate('⏺ Новинки на Okko');
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Okko.png" alt="Okko" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=5806®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = Lampa.Lang.translate('⏺ Новинки на Wink');
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/Wink.png" alt="Wink" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=806®ion=RU|XX&sort_by=first_air_date.desc&air_date.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = Lampa.Lang.translate('⏺ Новинки на СТС');
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/%D1%81%D1%82%D1%81.png" alt="СТС" class="platform-logo">';
               call(json);
             }, call);
           },
           function (call) {
             owner.get('discover/tv?with_networks=1191&sort_by=first_air_date.desc.lte=' + (new Date()).toISOString().substr(0, 10), params, function (json) {
-              json.title = '⏺ Новинки на <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Logo_tnt.png" alt="ТНТ" class="platform-logo">';
+              json.title = '⏺ Новинки на <img src="https://raw.githubusercontent.com/FoxStudio24/lampa/main/logo%20%D1%82%D0%B5%D0%BB%D0%B8%D1%81%D0%B5%D1%82%D1%8C/%D1%82%D0%BD%D1%82.png" alt="ТНТ" class="platform-logo">';
               call(json);
             }, call);
           },
@@ -252,7 +252,7 @@
       Lampa.Template.add('tmdb_mod_css', `
         <style>
           .platform-logo {
-            width: 80px; /* Увеличиваем размер */
+            width: 80px; /* Размер можно скорректировать */
             height: auto;
             vertical-align: middle;
             margin-left: 5px;
