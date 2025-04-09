@@ -26,9 +26,9 @@
 
         var manifest = {
             type: 'info',
-            version: '1.0.4',
+            version: '1.0.10',
             name: 'Streaming Network Logo',
-            description: 'Плагин для отображения логотипа телесети или стриминговой платформы в карточке контента',
+            description: 'Плагин для отображения логотипа телесети в карточке контента',
             component: 'streaming_network_logo'
         };
 
@@ -36,8 +36,8 @@
 
         Lampa.Lang.add({
             streaming_network_logo_no_provider: {
-                ru: 'Телесеть или платформа не найдена',
-                en: 'Network or platform not found'
+                ru: 'Телесеть не найдена',
+                en: 'Network not found'
             }
         });
 
@@ -47,31 +47,48 @@
             .streaming-network-logo-container {
                 position: absolute;
                 top: 10px;
-                right: 30px;
+                right: 10px;
                 z-index: 10;
             }
             .streaming-network-logo {
-                max-width: 200px; /* Увеличиваем размер */
+                max-width: 200px; /* Увеличенный размер */
                 max-height: 80px;
                 object-fit: contain;
                 border-radius: 8px; /* Небольшие закругления */
                 background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
+                backdrop-filter: blur(5px); /* Эффект размытия */
+                -webkit-backdrop-filter: blur(5px); /* Поддержка для WebKit-браузеров */
                 padding: 5px; /* Отступы внутри для красоты */
+            }
+            /* Скрываем логотипы на мобильных устройствах (ширина до 768px) */
+            @media (max-width: 768px) {
+                .streaming-network-logo-container {
+                    display: none !important;
+                }
+            }
+            /* Скрываем надпись "Телесеть" */
+            .full-start-new__body .label--network {
+                display: none !important;
             }
             </style>
         `);
         $('body').append(Lampa.Template.get('streaming_network_logo_css', {}, true));
 
-        // Функция для получения и отображения логотипа телесети или стриминговой платформы
+        // Функция для получения и отображения логотипа телесети (для сериалов и фильмов)
         function addStreamingNetworkLogo(e) {
             var movie = e.data.movie || e.movie;
-            if (!movie || !movie.id) return;
+            if (!movie || !movie.id) {
+                console.log('Ошибка: movie или movie.id не определены');
+                return;
+            }
 
             var tmdb_id = movie.id;
             var isSerial = movie.number_of_seasons > 0;
             var tmdb_endpoint = isSerial ? 'tv' : 'movie';
-            var tmdb_url = Defined.tmdb_api_url + tmdb_endpoint + '/' + tmdb_id + (isSerial ? '' : '/watch/providers') + '?api_key=' + Defined.tmdb_api_key;
+            var tmdb_url = Defined.tmdb_api_url + tmdb_endpoint + '/' + tmdb_id + '?api_key=' + Defined.tmdb_api_key;
 
+            console.log('TMDB ID:', tmdb_id);
+            console.log('Это сериал?', isSerial);
             console.log('Запрос к TMDB API:', tmdb_url);
 
             var network = new Lampa.Reguest();
@@ -82,45 +99,33 @@
                 var logoUrl = null;
                 var providerName = '';
 
-                if (isSerial) {
-                    // Для сериалов используем поле networks
-                    var networks = response.networks || [];
-                    if (networks.length > 0) {
-                        var networkWithLogo = networks.find(function(n) {
-                            return n.logo_path && n.logo_path !== '';
-                        });
-                        if (networkWithLogo) {
-                            providerName = networkWithLogo.name;
-                            // Проверяем, есть ли пользовательский логотип
-                            if (Defined.custom_logos[providerName]) {
-                                logoUrl = Defined.custom_logos[providerName];
-                            } else {
-                                logoUrl = Defined.tmdb_image_base_url + networkWithLogo.logo_path;
-                            }
+                // Используем поле networks для сериалов и фильмов
+                var networks = response.networks || [];
+                console.log('Networks:', networks);
+                if (networks.length > 0) {
+                    var networkWithLogo = networks.find(function(n) {
+                        return n.logo_path && n.logo_path !== '';
+                    });
+                    if (networkWithLogo) {
+                        providerName = networkWithLogo.name;
+                        // Проверяем, есть ли пользовательский логотип
+                        if (Defined.custom_logos[providerName]) {
+                            logoUrl = Defined.custom_logos[providerName];
+                            console.log('Используется пользовательский логотип для:', providerName);
+                        } else {
+                            logoUrl = Defined.tmdb_image_base_url + networkWithLogo.logo_path;
+                            console.log('Используется логотип из TMDB для:', providerName);
                         }
+                        console.log('Найдена телесеть:', providerName);
+                    } else {
+                        console.log('Телесеть с логотипом не найдена');
                     }
                 } else {
-                    // Для фильмов используем watch/providers
-                    var providers = response.results && (response.results['RU'] || response.results['US']) || {};
-                    var flatrate = providers.flatrate || providers.buy || providers.rent || [];
-                    if (flatrate.length > 0) {
-                        var providerWithLogo = flatrate.find(function(p) {
-                            return p.logo_path && p.logo_path !== '';
-                        });
-                        if (providerWithLogo) {
-                            providerName = providerWithLogo.provider_name;
-                            // Проверяем, есть ли пользовательский логотип
-                            if (Defined.custom_logos[providerName]) {
-                                logoUrl = Defined.custom_logos[providerName];
-                            } else {
-                                logoUrl = Defined.tmdb_image_base_url + providerWithLogo.logo_path;
-                            }
-                        }
-                    }
+                    console.log('Поле networks пустое');
                 }
 
                 if (!logoUrl) {
-                    console.log('Телесеть или платформа с логотипом не найдена');
+                    console.log('Телесеть с логотипом не найдена');
                     return;
                 }
 
@@ -142,7 +147,7 @@
                 logoContainer.append(logoImg);
                 fullStartBody.append(logoContainer);
 
-                console.log('Логотип добавлен:', providerName);
+                console.log('Логотип телесети добавлен:', providerName);
 
             }, function(error) {
                 console.error('Ошибка при запросе к TMDB API:', error);
