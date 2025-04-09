@@ -252,7 +252,7 @@
       Lampa.Template.add('tmdb_mod_css', `
         <style>
           .platform-logo {
-            width: 80px; /* Размер можно скорректировать */
+            width: 100px; /* Размер можно скорректировать */
             height: auto;
             vertical-align: middle;
             margin-left: 5px;
