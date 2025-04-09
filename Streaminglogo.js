@@ -4,7 +4,22 @@
     var Defined = {
         tmdb_api_url: 'https://api.themoviedb.org/3/',
         tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6', // Ваш TMDB API-ключ
-        tmdb_image_base_url: 'https://image.tmdb.org/t/p/original'
+        tmdb_image_base_url: 'https://image.tmdb.org/t/p/original',
+        custom_logos: {
+            'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+            'Кинопоиск': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Kinopoisk_colored_logo_%282021-present%29.svg',
+            'Иви': 'https://upload.wikimedia.org/wikipedia/commons/5/55/Ivi_logo.svg',
+            'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/archive/2/28/20230909231730%21Apple_TV_Plus_Logo.svg',
+            'HBO': 'https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg',
+            'MGM+': 'https://upload.wikimedia.org/wikipedia/commons/4/49/MGM%2B_logo.svg',
+            'Sky': 'https://upload.wikimedia.org/wikipedia/en/a/a6/Sky_Group_logo_2020.svg',
+            'Premier': 'https://upload.wikimedia.org/wikipedia/commons/2/21/LOGO_PREMIER_2022.png',
+            'ТНТ': 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Logo_tnt.png',
+            'Amazon Prime Video': 'https://upload.wikimedia.org/wikipedia/commons/4/43/Amazon_Prime_Video_logo_%282022%29.svg',
+            'Amediateka': 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Amediateka_logo.svg',
+            'Peacock': 'https://upload.wikimedia.org/wikipedia/commons/d/d3/NBCUniversal_Peacock_Logo.svg',
+            'START': 'https://upload.wikimedia.org/wikipedia/commons/5/5d/START_logo_2021.svg'
+        }
     };
 
     function startPlugin() {
@@ -12,7 +27,7 @@
 
         var manifest = {
             type: 'info',
-            version: '1.0.1',
+            version: '1.0.2',
             name: 'Streaming Network Logo',
             description: 'Плагин для отображения логотипа телесети или стриминговой платформы в карточке контента',
             component: 'streaming_network_logo'
@@ -41,7 +56,7 @@
                 max-height: 60px;
                 object-fit: contain;
                 border-radius: 5px;
-                /* Убираем фон */
+                /* Без фона */
             }
             </style>
         `);
@@ -75,8 +90,13 @@
                             return n.logo_path && n.logo_path !== '';
                         });
                         if (networkWithLogo) {
-                            logoUrl = Defined.tmdb_image_base_url + networkWithLogo.logo_path;
                             providerName = networkWithLogo.name;
+                            // Проверяем, есть ли пользовательский логотип
+                            if (Defined.custom_logos[providerName]) {
+                                logoUrl = Defined.custom_logos[providerName];
+                            } else {
+                                logoUrl = Defined.tmdb_image_base_url + networkWithLogo.logo_path;
+                            }
                         }
                     }
                 } else {
@@ -88,8 +108,13 @@
                             return p.logo_path && p.logo_path !== '';
                         });
                         if (providerWithLogo) {
-                            logoUrl = Defined.tmdb_image_base_url + providerWithLogo.logo_path;
                             providerName = providerWithLogo.provider_name;
+                            // Проверяем, есть ли пользовательский логотип
+                            if (Defined.custom_logos[providerName]) {
+                                logoUrl = Defined.custom_logos[providerName];
+                            } else {
+                                logoUrl = Defined.tmdb_image_base_url + providerWithLogo.logo_path;
+                            }
                         }
                     }
                 }
