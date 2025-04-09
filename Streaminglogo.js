@@ -9,7 +9,6 @@
             'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
             'Кинопоиск': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Kinopoisk_colored_logo_%282021-present%29.svg',
             'Иви': 'https://upload.wikimedia.org/wikipedia/commons/5/55/Ivi_logo.svg',
-            'Apple TV+': 'https://upload.wikimedia.org/wikipedia/commons/archive/2/28/20230909231730%21Apple_TV_Plus_Logo.svg',
             'HBO': 'https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg',
             'MGM+': 'https://upload.wikimedia.org/wikipedia/commons/4/49/MGM%2B_logo.svg',
             'Sky': 'https://upload.wikimedia.org/wikipedia/en/a/a6/Sky_Group_logo_2020.svg',
