@@ -27,7 +27,7 @@
 
         var manifest = {
             type: 'info',
-            version: '1.0.3',
+            version: '1.0.4',
             name: 'Streaming Network Logo',
             description: 'Плагин для отображения логотипа телесети или стриминговой платформы в карточке контента',
             component: 'streaming_network_logo'
@@ -52,8 +52,8 @@
                 z-index: 10;
             }
             .streaming-network-logo {
-                max-width: 100px; /* Уменьшаем размер */
-                max-height: 40px;
+                max-width: 200px; /* Увеличиваем размер */
+                max-height: 80px;
                 object-fit: contain;
                 border-radius: 8px; /* Небольшие закругления */
                 background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
