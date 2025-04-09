@@ -8,82 +8,97 @@
     };
 
     function startPlugin() {
-        window.production_logo_plugin = true;
+        window.streaming_network_logo_plugin = true;
 
         var manifest = {
             type: 'info',
-            version: '1.0.0',
-            name: 'Production Logo',
-            description: 'Плагин для отображения логотипа компании-производителя в карточке контента',
-            component: 'production_logo'
+            version: '1.0.1',
+            name: 'Streaming Network Logo',
+            description: 'Плагин для отображения логотипа телесети или стриминговой платформы в карточке контента',
+            component: 'streaming_network_logo'
         };
 
         Lampa.Manifest.plugins = manifest;
 
         Lampa.Lang.add({
-            production_logo_no_company: {
-                ru: 'Компания-производитель не найдена',
-                en: 'Production company not found'
+            streaming_network_logo_no_provider: {
+                ru: 'Телесеть или платформа не найдена',
+                en: 'Network or platform not found'
             }
         });
 
         // Добавляем стили для логотипа
-        Lampa.Template.add('production_logo_css', `
+        Lampa.Template.add('streaming_network_logo_css', `
             <style>
-            .production-logo-container {
+            .streaming-network-logo-container {
                 position: absolute;
                 top: 10px;
                 right: 10px;
                 z-index: 10;
             }
-            .production-logo {
-                max-width: 100px;
-                max-height: 40px;
+            .streaming-network-logo {
+                max-width: 150px; /* Увеличиваем размер */
+                max-height: 60px;
                 object-fit: contain;
                 border-radius: 5px;
-                background: rgba(0, 0, 0, 0.5);
-                padding: 5px;
+                /* Убираем фон */
             }
             </style>
         `);
-        $('body').append(Lampa.Template.get('production_logo_css', {}, true));
+        $('body').append(Lampa.Template.get('streaming_network_logo_css', {}, true));
 
-        // Функция для получения и отображения логотипа компании-производителя
-        function addProductionLogo(e) {
+        // Функция для получения и отображения логотипа телесети или стриминговой платформы
+        function addStreamingNetworkLogo(e) {
             var movie = e.data.movie || e.movie;
             if (!movie || !movie.id) return;
 
             var tmdb_id = movie.id;
             var isSerial = movie.number_of_seasons > 0;
             var tmdb_endpoint = isSerial ? 'tv' : 'movie';
-            var tmdb_url = Defined.tmdb_api_url + tmdb_endpoint + '/' + tmdb_id + '?api_key=' + Defined.tmdb_api_key;
+            var tmdb_url = Defined.tmdb_api_url + tmdb_endpoint + '/' + tmdb_id + (isSerial ? '' : '/watch/providers') + '?api_key=' + Defined.tmdb_api_key;
 
-            console.log('Запрос к TMDB API для получения данных о контенте:', tmdb_url);
+            console.log('Запрос к TMDB API:', tmdb_url);
 
             var network = new Lampa.Reguest();
             network.timeout(10000);
             network.silent(tmdb_url, function(response) {
                 console.log('Ответ от TMDB API:', JSON.stringify(response, null, 2));
 
-                // Проверяем, есть ли компании-производители
-                var companies = response.production_companies || [];
-                if (companies.length === 0) {
-                    console.log('Компании-производители не найдены');
+                var logoUrl = null;
+                var providerName = '';
+
+                if (isSerial) {
+                    // Для сериалов используем поле networks
+                    var networks = response.networks || [];
+                    if (networks.length > 0) {
+                        var networkWithLogo = networks.find(function(n) {
+                            return n.logo_path && n.logo_path !== '';
+                        });
+                        if (networkWithLogo) {
+                            logoUrl = Defined.tmdb_image_base_url + networkWithLogo.logo_path;
+                            providerName = networkWithLogo.name;
+                        }
+                    }
+                } else {
+                    // Для фильмов используем watch/providers
+                    var providers = response.results && (response.results['RU'] || response.results['US']) || {};
+                    var flatrate = providers.flatrate || providers.buy || providers.rent || [];
+                    if (flatrate.length > 0) {
+                        var providerWithLogo = flatrate.find(function(p) {
+                            return p.logo_path && p.logo_path !== '';
+                        });
+                        if (providerWithLogo) {
+                            logoUrl = Defined.tmdb_image_base_url + providerWithLogo.logo_path;
+                            providerName = providerWithLogo.provider_name;
+                        }
+                    }
+                }
+
+                if (!logoUrl) {
+                    console.log('Телесеть или платформа с логотипом не найдена');
                     return;
                 }
 
-                // Ищем первую компанию с логотипом
-                var company = companies.find(function(c) {
-                    return c.logo_path && c.logo_path !== '';
-                });
-
-                if (!company) {
-                    console.log('Логотип компании не найден');
-                    return;
-                }
-
-                var logoPath = company.logo_path;
-                var logoUrl = Defined.tmdb_image_base_url + logoPath;
                 console.log('URL логотипа:', logoUrl);
 
                 // Находим блок full-start-new__body
@@ -94,15 +109,15 @@
                 }
 
                 // Удаляем старый логотип, если он есть
-                fullStartBody.find('.production-logo-container').remove();
+                fullStartBody.find('.streaming-network-logo-container').remove();
 
                 // Добавляем контейнер с логотипом
-                var logoContainer = $('<div class="production-logo-container"></div>');
-                var logoImg = $('<img class="production-logo" src="' + logoUrl + '" alt="' + company.name + '">');
+                var logoContainer = $('<div class="streaming-network-logo-container"></div>');
+                var logoImg = $('<img class="streaming-network-logo" src="' + logoUrl + '" alt="' + providerName + '">');
                 logoContainer.append(logoImg);
                 fullStartBody.append(logoContainer);
 
-                console.log('Логотип компании добавлен:', company.name);
+                console.log('Логотип добавлен:', providerName);
 
             }, function(error) {
                 console.error('Ошибка при запросе к TMDB API:', error);
@@ -112,10 +127,10 @@
         // Подписываемся на событие открытия карточки контента
         Lampa.Listener.follow('full', function(e) {
             if (e.type === 'complite') {
-                addProductionLogo(e);
+                addStreamingNetworkLogo(e);
             }
         });
     }
 
-    if (!window.production_logo_plugin) startPlugin();
+    if (!window.streaming_network_logo_plugin) startPlugin();
 })();
