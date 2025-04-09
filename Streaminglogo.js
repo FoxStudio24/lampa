@@ -48,17 +48,15 @@
             .streaming-network-logo-container {
                 position: absolute;
                 top: 10px;
-                right: 10px;
+                right: 30px;
                 z-index: 10;
             }
             .streaming-network-logo {
-                max-width: 300px; /* Увеличиваем размер */
-                max-height: 100px;
+                max-width: 200px; /* Увеличиваем размер */
+                max-height: 80px;
                 object-fit: contain;
                 border-radius: 8px; /* Небольшие закругления */
                 background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
-                backdrop-filter: blur(15px); /* Эффект размытия */
-                -webkit-backdrop-filter: blur(5px); /* Поддержка для WebKit-браузеров */
                 padding: 5px; /* Отступы внутри для красоты */
             }
             </style>
