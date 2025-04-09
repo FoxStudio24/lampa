@@ -27,7 +27,7 @@
 
         var manifest = {
             type: 'info',
-            version: '1.0.2',
+            version: '1.0.3',
             name: 'Streaming Network Logo',
             description: 'Плагин для отображения логотипа телесети или стриминговой платформы в карточке контента',
             component: 'streaming_network_logo'
@@ -52,11 +52,14 @@
                 z-index: 10;
             }
             .streaming-network-logo {
-                max-width: 150px; /* Увеличиваем размер */
-                max-height: 60px;
+                max-width: 100px; /* Уменьшаем размер */
+                max-height: 40px;
                 object-fit: contain;
-                border-radius: 5px;
-                /* Без фона */
+                border-radius: 8px; /* Небольшие закругления */
+                background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
+                backdrop-filter: blur(5px); /* Эффект размытия */
+                -webkit-backdrop-filter: blur(5px); /* Поддержка для WebKit-браузеров */
+                padding: 5px; /* Отступы внутри для красоты */
             }
             </style>
         `);
