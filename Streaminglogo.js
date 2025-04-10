@@ -47,7 +47,7 @@
             .streaming-network-logo-container {
                 position: absolute;
                 top: 10px;
-                right: 10px;
+                right: 50px;
                 z-index: 10;
             }
             .streaming-network-logo {
