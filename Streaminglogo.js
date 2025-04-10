@@ -49,6 +49,8 @@
                 top: 10px;
                 right: 50px;
                 z-index: 10;
+                backdrop-filter: blur(15px); /* Эффект размытия */
+                -webkit-backdrop-filter: blur(15px); /* Поддержка для WebKit-браузеров */
             }
             .streaming-network-logo {
                 max-width: 200px; /* Увеличенный размер */
@@ -56,8 +58,8 @@
                 object-fit: contain;
                 border-radius: 8px; /* Небольшие закругления */
                 background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
-                backdrop-filter: blur(5px); /* Эффект размытия */
-                -webkit-backdrop-filter: blur(5px); /* Поддержка для WebKit-браузеров */
+                backdrop-filter: blur(15px); /* Эффект размытия */
+                -webkit-backdrop-filter: blur(15px); /* Поддержка для WebKit-браузеров */
                 padding: 5px; /* Отступы внутри для красоты */
             }
             /* Скрываем логотипы на мобильных устройствах (ширина до 768px) */
