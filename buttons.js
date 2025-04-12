@@ -1,26 +1,11 @@
-// Версия плагина: 0.1 Alpha
-
-// Плагин изменяет порядок отображения кнопок на странице. Кнопки будут отображаться в следующем порядке:
-// - Онлайн-кнопки
-// - Торрент-кнопки
-// - Кнопки трейлеров
-// - Все остальные кнопки
-
-// В процессе работы плагин очищает параметр 'full_btn_priority'.
-// После удаления плагина этот параметр должен восстановиться.
-
-
-
 Lampa.Platform.tv();
 
 (function () {
     'use strict';
 
     function startPlugin() {
-
         // Проверяем, есть ли full_btn_priority в Storage
         if (Lampa.Storage.get('full_btn_priority') !== undefined) {
-            // Устанавливаем full_btn_priority в пустой объект только если он уже был
             Lampa.Storage.set('full_btn_priority', '{}');
         }
 
@@ -37,13 +22,16 @@ Lampa.Platform.tv();
 
                     // Определяем категории кнопок по наличию слов в классах
                     var onlineButtons = allButtons.filter(function () {
-                        return $(this).attr('class').includes('online');
+                        var className = $(this).attr('class') || ''; // Если class отсутствует, используем пустую строку
+                        return className.includes('online');
                     });
                     var torrentButtons = allButtons.filter(function () {
-                        return $(this).attr('class').includes('torrent');
+                        var className = $(this).attr('class') || '';
+                        return className.includes('torrent');
                     });
                     var trailerButtons = allButtons.filter(function () {
-                        return $(this).attr('class').includes('trailer');
+                        var className = $(this).attr('class') || '';
+                        return className.includes('trailer');
                     });
 
                     // Создаем массив порядка кнопок
@@ -66,9 +54,10 @@ Lampa.Platform.tv();
 
                     // Обрабатываем все остальные кнопки с клонированием
                     allButtons.filter(function () {
-                        return !$(this).attr('class').includes('online') &&
-                               !$(this).attr('class').includes('torrent') &&
-                               !$(this).attr('class').includes('trailer');
+                        var className = $(this).attr('class') || '';
+                        return !className.includes('online') &&
+                               !className.includes('torrent') &&
+                               !className.includes('trailer');
                     }).each(function () {
                         var $clone = $(this).clone(true); // Клонируем с событиями
                         buttonOrder.push($clone);
