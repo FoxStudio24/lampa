@@ -5,7 +5,7 @@
   function startPlugin() {
     console.log('ExtraFeatures: Запуск плагина...');
 
-    // Добавляем языковые настройки
+    // Добавляем языковые настройки (для названия раздела)
     try {
       Lampa.Lang.add({
         extra_features: {
@@ -16,33 +16,6 @@
           zh: '额外功能',
           pt: 'Recursos Extras',
           bg: 'Допълнителни функции'
-        },
-        colored_ratings: {
-          ru: 'Цветные рейтинги',
-          en: 'Colored Ratings',
-          uk: 'Кольорові рейтинги',
-          be: 'Каляровыя рэйтынгі',
-          zh: '彩色评分',
-          pt: 'Classificações Coloridas',
-          bg: 'Цветни рейтинги'
-        },
-        colored_ratings_show: {
-          ru: 'Показать',
-          en: 'Show',
-          uk: 'Показати',
-          be: 'Паказаць',
-          zh: '显示',
-          pt: 'Mostrar',
-          bg: 'Показване'
-        },
-        colored_ratings_hide: {
-          ru: 'Скрыть',
-          en: 'Hide',
-          uk: 'Приховати',
-          be: 'Схаваць',
-          zh: '隐藏',
-          pt: 'Ocultar',
-          bg: 'Скриване'
         }
       });
       console.log('ExtraFeatures: Языковые настройки добавлены');
@@ -51,20 +24,28 @@
       return;
     }
 
-    // Добавляем стили для цветного фона карточек
+    // Добавляем стили для цветного фона элемента .card__vote
     var style = `
       <style>
-        .card--colored-rating[data-rating-above-7] {
+        .card__vote.rating-above-7 {
           background: rgba(0, 255, 0, 0.2) !important; /* Прозрачно-зеленый */
+          border-radius: 5px; /* Скругление углов */
+          padding: 2px 5px; /* Отступы для красоты */
         }
-        .card--colored-rating[data-rating-below-6] {
+        .card__vote.rating-below-6 {
           background: rgba(255, 255, 0, 0.2) !important; /* Прозрачно-желтый */
+          border-radius: 5px;
+          padding: 2px 5px;
         }
-        .card--colored-rating[data-rating-below-5] {
+        .card__vote.rating-below-5 {
           background: rgba(255, 0, 0, 0.2) !important; /* Прозрачно-красный */
+          border-radius: 5px;
+          padding: 2px 5px;
         }
-        .card--colored-rating[data-rating-below-4] {
+        .card__vote.rating-below-4 {
           background: rgba(128, 128, 128, 0.2) !important; /* Прозрачно-серый */
+          border-radius: 5px;
+          padding: 2px 5px;
         }
       </style>
     `;
@@ -78,38 +59,19 @@
       return;
     }
 
-    // Иконка для настроек
+    // Новая иконка (шестеренка с звездочкой)
     var icon = `
       <svg width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1.5" y="1.5" width="33" height="25" rx="3.5" stroke="white" stroke-width="3"/>
-        <path d="M5 14H22V18H5V14Z" fill="white"/>
-        <path d="M5 20H15V23H5V20Z" fill="white"/>
-        <path d="M25 20H31V23H25V20Z" fill="white"/>
-        <circle cx="30" cy="8" r="3" fill="green"/>
+        <path d="M18 2C9.163 2 2 9.163 2 18s7.163 16 16 16 16-7.163 16-16S26.837 2 18 2zm0 2c7.732 0 14 6.268 14 14s-6.268 14-14 14S4 25.732 4 18 10.268 4 18 4zm-1 5l1-3 1 3h3l-2.5 2 1 3-2.5-2-2.5 2 1-3-2.5-2h3zm6 6v2h-3v3h-2v-3h-3v-2h3v-3h2v3h3z" fill="white"/>
       </svg>
     `;
 
-    // Добавляем настройки в меню
+    // Добавляем настройки в меню (просто как заголовок, без переключателя)
     try {
       Lampa.SettingsApi.addComponent({
         component: 'extra_features',
         icon: icon,
         name: Lampa.Lang.translate('extra_features')
-      });
-      Lampa.SettingsApi.addParam({
-        component: 'extra_features',
-        param: {
-          name: 'colored_ratings',
-          type: 'select',
-          values: {
-            show: Lampa.Lang.translate('colored_ratings_show'),
-            hide: Lampa.Lang.translate('colored_ratings_hide')
-          },
-          default: 'hide'
-        },
-        field: {
-          name: Lampa.Lang.translate('colored_ratings')
-        }
       });
       console.log('ExtraFeatures: Настройки добавлены');
     } catch (e) {
@@ -117,51 +79,35 @@
       return;
     }
 
-    // Функция для применения цветного фона карточек
+    // Функция для применения цветного фона к .card__vote
     function applyColoredRatings() {
-      var shouldShow = Lampa.Storage.field('colored_ratings') === 'show';
-      console.log('ExtraFeatures: Проверка настройки colored_ratings:', shouldShow);
+      var $votes = $('.card__vote');
+      $votes.each(function () {
+        var $vote = $(this);
+        $vote.removeClass('rating-above-7 rating-below-6 rating-below-5 rating-below-4'); // Удаляем старые классы
 
-      var $cards = $('.card');
-      $cards.each(function () {
-        var $card = $(this);
-        var $vote = $card.find('.card__vote');
-        $card.removeClass('card--colored-rating'); // Удаляем старый класс
-        $card.removeAttr('data-rating-above-7 data-rating-below-6 data-rating-below-5 data-rating-below-4'); // Удаляем старые атрибуты
+        var ratingText = $vote.text().trim();
+        var rating = parseFloat(ratingText);
 
-        if (shouldShow && $vote.length) {
-          var ratingText = $vote.text().trim();
-          var rating = parseFloat(ratingText);
-
-          if (!isNaN(rating)) {
-            $card.addClass('card--colored-rating'); // Добавляем класс для стилизации
-            if (rating > 7) {
-              $card.attr('data-rating-above-7', '');
-            } else if (rating < 6 && rating >= 5) {
-              $card.attr('data-rating-below-6', '');
-            } else if (rating < 5 && rating >= 4) {
-              $card.attr('data-rating-below-5', '');
-            } else if (rating < 4) {
-              $card.attr('data-rating-below-4', '');
-            }
-            console.log('ExtraFeatures: Карточка с рейтингом', rating, 'обработана');
-          } else {
-            console.log('ExtraFeatures: Не удалось распознать рейтинг в карточке:', ratingText);
+        if (!isNaN(rating)) {
+          if (rating > 7) {
+            $vote.addClass('rating-above-7');
+          } else if (rating < 6 && rating >= 5) {
+            $vote.addClass('rating-below-6');
+          } else if (rating < 5 && rating >= 4) {
+            $vote.addClass('rating-below-5');
+          } else if (rating < 4) {
+            $vote.addClass('rating-below-4');
           }
+          console.log('ExtraFeatures: Элемент .card__vote с рейтингом', rating, 'обработан');
+        } else {
+          console.log('ExtraFeatures: Не удалось распознать рейтинг в .card__vote:', ratingText);
         }
       });
     }
 
     // Применяем цветные рейтинги при загрузке страницы
     applyColoredRatings();
-
-    // Следим за изменениями настроек
-    Lampa.Storage.listener.follow('change', function (event) {
-      if (event.name === 'colored_ratings') {
-        console.log('ExtraFeatures: Настройка colored_ratings изменена:', event.value);
-        applyColoredRatings();
-      }
-    });
 
     // Следим за динамической загрузкой контента
     Lampa.Listener.follow('app', function (e) {
