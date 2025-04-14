@@ -24,28 +24,20 @@
       return;
     }
 
-    // Добавляем стили для цветного фона элемента .card__vote
+    // Добавляем стили для окрашивания текста в .card__vote
     var style = `
       <style>
-        .card__vote.rating-above-7 {
-          background: rgba(0, 255, 0, 0.2) !important; /* Прозрачно-зеленый */
-          border-radius: 5px; /* Скругление углов */
-          padding: 2px 5px; /* Отступы для красоты */
+        .card__vote.rating-6-to-7 {
+          color: #00FF00 !important; /* Зеленый */
         }
-        .card__vote.rating-below-6 {
-          background: rgba(255, 255, 0, 0.2) !important; /* Прозрачно-желтый */
-          border-radius: 5px;
-          padding: 2px 5px;
+        .card__vote.rating-5-to-6 {
+          color: #FFFF00 !important; /* Желтый */
         }
-        .card__vote.rating-below-5 {
-          background: rgba(255, 0, 0, 0.2) !important; /* Прозрачно-красный */
-          border-radius: 5px;
-          padding: 2px 5px;
+        .card__vote.rating-4-to-5 {
+          color: #FF0000 !important; /* Красный */
         }
-        .card__vote.rating-below-4 {
-          background: rgba(128, 128, 128, 0.2) !important; /* Прозрачно-серый */
-          border-radius: 5px;
-          padding: 2px 5px;
+        .card__vote.rating-0-to-4 {
+          color: #808080 !important; /* Серый */
         }
       </style>
     `;
@@ -59,7 +51,7 @@
       return;
     }
 
-    // Новая иконка (шестеренка с звездочкой)
+    // Иконка (шестеренка с звездочкой, оставляем как есть)
     var icon = `
       <svg width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M18 2C9.163 2 2 9.163 2 18s7.163 16 16 16 16-7.163 16-16S26.837 2 18 2zm0 2c7.732 0 14 6.268 14 14s-6.268 14-14 14S4 25.732 4 18 10.268 4 18 4zm-1 5l1-3 1 3h3l-2.5 2 1 3-2.5-2-2.5 2 1-3-2.5-2h3zm6 6v2h-3v3h-2v-3h-3v-2h3v-3h2v3h3z" fill="white"/>
@@ -79,25 +71,25 @@
       return;
     }
 
-    // Функция для применения цветного фона к .card__vote
+    // Функция для окрашивания текста в .card__vote
     function applyColoredRatings() {
       var $votes = $('.card__vote');
       $votes.each(function () {
         var $vote = $(this);
-        $vote.removeClass('rating-above-7 rating-below-6 rating-below-5 rating-below-4'); // Удаляем старые классы
+        $vote.removeClass('rating-6-to-7 rating-5-to-6 rating-4-to-5 rating-0-to-4'); // Удаляем старые классы
 
         var ratingText = $vote.text().trim();
         var rating = parseFloat(ratingText);
 
         if (!isNaN(rating)) {
-          if (rating > 7) {
-            $vote.addClass('rating-above-7');
-          } else if (rating < 6 && rating >= 5) {
-            $vote.addClass('rating-below-6');
-          } else if (rating < 5 && rating >= 4) {
-            $vote.addClass('rating-below-5');
-          } else if (rating < 4) {
-            $vote.addClass('rating-below-4');
+          if (rating >= 6 && rating <= 7) {
+            $vote.addClass('rating-6-to-7');
+          } else if (rating >= 5 && rating < 6) {
+            $vote.addClass('rating-5-to-6');
+          } else if (rating >= 4 && rating < 5) {
+            $vote.addClass('rating-4-to-5');
+          } else if (rating >= 0 && rating < 4) {
+            $vote.addClass('rating-0-to-4');
           }
           console.log('ExtraFeatures: Элемент .card__vote с рейтингом', rating, 'обработан');
         } else {
