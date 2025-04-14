@@ -5,7 +5,7 @@
   function startPlugin() {
     console.log('ExtraFeatures: Запуск плагина...');
 
-    // Добавляем языковые настройки (для названия раздела)
+    // Добавляем языковые настройки
     try {
       Lampa.Lang.add({
         extra_features: {
@@ -16,6 +16,33 @@
           zh: '额外功能',
           pt: 'Recursos Extras',
           bg: 'Допълнителни функции'
+        },
+        new_fonts: {
+          ru: 'Новые шрифты',
+          en: 'New Fonts',
+          uk: 'Нові шрифти',
+          be: 'Новыя шрыфты',
+          zh: '新字体',
+          pt: 'Novas Fontes',
+          bg: 'Нови шрифтове'
+        },
+        new_fonts_show: {
+          ru: 'Показать',
+          en: 'Show',
+          uk: 'Показати',
+          be: 'Паказаць',
+          zh: '显示',
+          pt: 'Mostrar',
+          bg: 'Показване'
+        },
+        new_fonts_hide: {
+          ru: 'Скрыть',
+          en: 'Hide',
+          uk: 'Приховати',
+          be: 'Схаваць',
+          zh: '隐藏',
+          pt: 'Ocultar',
+          bg: 'Скриване'
         }
       });
       console.log('ExtraFeatures: Языковые настройки добавлены');
@@ -24,20 +51,12 @@
       return;
     }
 
-    // Добавляем стили для окрашивания текста в .card__vote
+    // Добавляем стили для шрифта Martian Mono
     var style = `
       <style>
-        .card__vote.rating-6-to-7 {
-          color: #00FF00 !important; /* Зеленый */
-        }
-        .card__vote.rating-5-to-6 {
-          color: #FFFF00 !important; /* Желтый */
-        }
-        .card__vote.rating-4-to-5 {
-          color: #FF0000 !important; /* Красный */
-        }
-        .card__vote.rating-0-to-4 {
-          color: #808080 !important; /* Серый */
+        @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&display=swap');
+        .martian-mono * {
+          font-family: 'Martian Mono', monospace !important;
         }
       </style>
     `;
@@ -51,19 +70,44 @@
       return;
     }
 
-    // Иконка (шестеренка с звездочкой, оставляем как есть)
+    // Новая иконка (из твоего SVG)
     var icon = `
-      <svg width="36" height="28" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 2C9.163 2 2 9.163 2 18s7.163 16 16 16 16-7.163 16-16S26.837 2 18 2zm0 2c7.732 0 14 6.268 14 14s-6.268 14-14 14S4 25.732 4 18 10.268 4 18 4zm-1 5l1-3 1 3h3l-2.5 2 1 3-2.5-2-2.5 2 1-3-2.5-2h3zm6 6v2h-3v3h-2v-3h-3v-2h3v-3h2v3h3z" fill="white"/>
+      <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+        <rect x="304" y="128" style="fill: rgb(255, 255, 255);" width="160" height="352" fill="#FFFFFF"></rect>
+        <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="-37.9375" y1="639.3125" x2="-37.9375" y2="653.3125" gradientTransform="matrix(16 0 0 -16 735 10581)">
+          <stop offset="0" style="stop-color:#4DC4FF"></stop>
+          <stop offset="1" style="stop-color:#4DE1FF"></stop>
+        </linearGradient>
+        <rect x="48" y="128" style="fill: rgb(255, 255, 255);" width="160" height="224" fill="url(#SVGID_1_)"></rect>
+        <g>
+          <path style="fill: rgb(255, 255, 255);" d="M464,112H304c-4.208,0-8.336,1.712-11.312,4.688S288,123.792,288,128v352 c0,4.208,1.712,8.336,4.688,11.312S299.792,496,304,496h160c4.208,0,8.336-1.712,11.312-4.688S480,484.208,480,480V128 c0-4.208-1.712-8.336-4.688-11.312C472.336,113.712,468.208,112,464,112z M448,464H320V144h128V464z" fill="#297BCC"></path>
+          <path style="fill: rgb(255, 255, 255);" d="M208,112H48c-4.208,0-8.336,1.712-11.312,4.688S32,123.792,32,128v224 c0,4.208,1.712,8.336,4.688,11.312S43.792,368,48,368h160c4.208,0,8.336-1.712,11.312-4.688S224,356.208,224,352V128 c0-4.208-1.712-8.336-4.688-11.312C216.336,113.712,212.208,112,208,112z M192,336H64V144h128V336z" fill="#297BCC"></path>
+          <rect y="16" style="fill: rgb(255, 255, 255);" width="512" height="32" fill="#297BCC"></rect>
+        </g>
       </svg>
     `;
 
-    // Добавляем настройки в меню (просто как заголовок, без переключателя)
+    // Добавляем настройки в меню
     try {
       Lampa.SettingsApi.addComponent({
         component: 'extra_features',
         icon: icon,
         name: Lampa.Lang.translate('extra_features')
+      });
+      Lampa.SettingsApi.addParam({
+        component: 'extra_features',
+        param: {
+          name: 'new_fonts',
+          type: 'select',
+          values: {
+            show: Lampa.Lang.translate('new_fonts_show'),
+            hide: Lampa.Lang.translate('new_fonts_hide')
+          },
+          default: 'hide'
+        },
+        field: {
+          name: Lampa.Lang.translate('new_fonts')
+        }
       });
       console.log('ExtraFeatures: Настройки добавлены');
     } catch (e) {
@@ -71,49 +115,44 @@
       return;
     }
 
-    // Функция для окрашивания текста в .card__vote
-    function applyColoredRatings() {
-      var $votes = $('.card__vote');
-      $votes.each(function () {
-        var $vote = $(this);
-        $vote.removeClass('rating-6-to-7 rating-5-to-6 rating-4-to-5 rating-0-to-4'); // Удаляем старые классы
+    // Функция для применения шрифта Martian Mono
+    function applyNewFonts() {
+      var shouldShow = Lampa.Storage.field('new_fonts') === 'show';
+      console.log('ExtraFeatures: Проверка настройки new_fonts:', shouldShow);
 
-        var ratingText = $vote.text().trim();
-        var rating = parseFloat(ratingText);
-
-        if (!isNaN(rating)) {
-          if (rating >= 6 && rating <= 7) {
-            $vote.addClass('rating-6-to-7');
-          } else if (rating >= 5 && rating < 6) {
-            $vote.addClass('rating-5-to-6');
-          } else if (rating >= 4 && rating < 5) {
-            $vote.addClass('rating-4-to-5');
-          } else if (rating >= 0 && rating < 4) {
-            $vote.addClass('rating-0-to-4');
-          }
-          console.log('ExtraFeatures: Элемент .card__vote с рейтингом', rating, 'обработан');
-        } else {
-          console.log('ExtraFeatures: Не удалось распознать рейтинг в .card__vote:', ratingText);
-        }
-      });
+      if (shouldShow) {
+        $('body').addClass('martian-mono');
+        console.log('ExtraFeatures: Шрифт Martian Mono применен');
+      } else {
+        $('body').removeClass('martian-mono');
+        console.log('ExtraFeatures: Шрифт Martian Mono отключен');
+      }
     }
 
-    // Применяем цветные рейтинги при загрузке страницы
-    applyColoredRatings();
+    // Применяем шрифт при загрузке страницы
+    applyNewFonts();
+
+    // Следим за изменениями настроек
+    Lampa.Storage.listener.follow('change', function (event) {
+      if (event.name === 'new_fonts') {
+        console.log('ExtraFeatures: Настройка new_fonts изменена:', event.value);
+        applyNewFonts();
+      }
+    });
 
     // Следим за динамической загрузкой контента
     Lampa.Listener.follow('app', function (e) {
       if (e.type === 'ready' || e.type === 'complete') {
-        console.log('ExtraFeatures: Приложение готово или контент загружен, применение цветных рейтингов...');
-        applyColoredRatings();
+        console.log('ExtraFeatures: Приложение готово или контент загружен, применение шрифта...');
+        applyNewFonts();
       }
     });
 
     // Следим за изменением активности (переход между страницами)
     Lampa.Listener.follow('activity', function (e) {
       if (e.type === 'start') {
-        console.log('ExtraFeatures: Новая активность, применение цветных рейтингов...');
-        setTimeout(applyColoredRatings, 500); // Даем время на рендеринг
+        console.log('ExtraFeatures: Новая активность, применение шрифта...');
+        setTimeout(applyNewFonts, 500); // Даем время на рендеринг
       }
     });
   }
