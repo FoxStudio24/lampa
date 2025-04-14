@@ -9,8 +9,8 @@
             default: "0"
         },
         field: {
-            name: "Логотипы вместо названий",
-            description: "Отображает логотипы фильмов вместо текста"
+            name: "Логотипы вместо названий 2.0",
+            description: "Отображает логотипы фильмов и сериаллов вместо текста"
         }
     }),
     window.logoplugin || (window.logoplugin = !0, Lampa.Listener.follow("full", (function(a) {
