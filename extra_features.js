@@ -51,12 +51,12 @@
       return;
     }
 
-    // Добавляем стили для шрифта Martian Mono
+    // Добавляем стили для шрифта Unbounded
     var style = `
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;700&display=swap');
-        .martian-mono * {
-          font-family: 'Martian Mono', monospace !important;
+        @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;700;900&display=swap');
+        .unbounded-font * {
+          font-family: 'Unbounded', sans-serif !important;
         }
       </style>
     `;
@@ -70,7 +70,7 @@
       return;
     }
 
-    // Новая иконка (из твоего SVG)
+    // Иконка (оставляем ту, что ты предоставил)
     var icon = `
       <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
         <rect x="304" y="128" style="fill: rgb(255, 255, 255);" width="160" height="352" fill="#FFFFFF"></rect>
@@ -115,17 +115,17 @@
       return;
     }
 
-    // Функция для применения шрифта Martian Mono
+    // Функция для применения шрифта Unbounded
     function applyNewFonts() {
       var shouldShow = Lampa.Storage.field('new_fonts') === 'show';
       console.log('ExtraFeatures: Проверка настройки new_fonts:', shouldShow);
 
       if (shouldShow) {
-        $('body').addClass('martian-mono');
-        console.log('ExtraFeatures: Шрифт Martian Mono применен');
+        $('body').addClass('unbounded-font');
+        console.log('ExtraFeatures: Шрифт Unbounded применен');
       } else {
-        $('body').removeClass('martian-mono');
-        console.log('ExtraFeatures: Шрифт Martian Mono отключен');
+        $('body').removeClass('unbounded-font');
+        console.log('ExtraFeatures: Шрифт Unbounded отключен');
       }
     }
 
