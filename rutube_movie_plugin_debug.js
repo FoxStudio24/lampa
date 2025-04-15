@@ -565,6 +565,16 @@
                                 });
                                 levels.push(level);
                             });
+                            // Автоматически выбираем максимальное качество
+                            if (list.length > 0) {
+                                var maxQuality = Math.max(...list);
+                                current_level = maxQuality + 'p';
+                                rutube.setPlaybackQuality(maxQuality);
+                                levels.forEach(function(level) {
+                                    level.selected = level.quality === current_level;
+                                });
+                                console.log('RuTube Plugin: Set maximum quality to:', maxQuality + 'p');
+                            }
                             if (Lampa.PlayerVideo && Lampa.PlayerVideo.listener) {
                                 Lampa.PlayerVideo.listener.send('levels', {levels: levels, current: current_level});
                             }
@@ -660,7 +670,7 @@
                     .replace(/^([03-9]\d|1[0-8]|2[1-9]|20[3-9])\d+$/, '');
                 var search = movie.title || movie.name || movie.original_title || movie.original_name || '';
                 var searchOrig = movie.original_title || movie.original_name || '';
-                var query = cleanString([search, year, 'фильм'].join(' ')); // Убираем "сериал" из запроса
+                var query = cleanString([search, year, 'фильм'].join(' '));
                 var url = proxy + 'https://rutube.ru/api/search/video/' +
                     '?query=' + encodeURIComponent(query) +
                     '&format=json';
@@ -716,7 +726,6 @@
                                 results = data.results.filter(function(r){
                                     r._title = cleanString(r.title);
                                     r._rate = -1;
-                                    // Исключаем трейлеры
                                     var isTrailer = r._title.includes('трейлер') || r._title.includes('trailer') || 
                                                     r._title.includes('тизер') || r._title.includes('teaser');
                                     if (isTrailer) {
@@ -778,11 +787,6 @@
                 }
                 var movie = event.data.movie;
                 var isTv = event.object && event.object.method && event.object.method === 'tv';
-                // Пропускаем сериалы
-                if (isTv) {
-                    console.log('RuTube Plugin: Skipping TV series');
-                    return;
-                }
                 var title = movie.title || movie.name || movie.original_title || movie.original_name || '';
                 if (title === '') {
                     console.error('RuTube Plugin: Movie title is empty');
@@ -792,7 +796,6 @@
                 var searchOk = function (data) {
                     console.log('RuTube Plugin: searchOk called with data:', data);
                     if (data[0]) {
-                        // Преобразуем embed_url в правильный формат
                         data.forEach(function(res) {
                             if (res.embed_url && res.embed_url.includes('/video/')) {
                                 var videoId = res.embed_url.match(/\/video\/([\da-f]{32,})/i);
@@ -830,7 +833,6 @@
         function startPlugin() {
             console.log('RuTube Plugin: startPlugin called');
             window.rutube_movie_plugin = true;
-            // Новая иконка с треугольником воспроизведения и логотипом RuTube
             var button = '<div class="full-start__button selector view--rutube_movie" data-subtitle="#{rutube_movie_rutube}">' +
                 '<svg width="132" height="132" viewBox="0 0 132 132" fill="none" xmlns="http://www.w3.org/2000/svg">' +
                 '<rect x="1" y="1" width="130" height="130" stroke="currentColor" stroke-width="2"/>' +
@@ -843,6 +845,12 @@
                 console.log('RuTube Plugin: Lampa.Listener.follow triggered with event type:', event.type);
                 try {
                     if (event.type === 'complite') {
+                        var isTv = event.object && event.object.method && event.object.method === 'tv';
+                        // Пропускаем сериалы на этапе добавления кнопки
+                        if (isTv) {
+                            console.log('RuTube Plugin: Skipping TV series - button not added');
+                            return;
+                        }
                         var render = event.object.activity.render();
                         console.log('RuTube Plugin: Render object:', render);
                         var btn = $(Lampa.Lang.translate(button));
@@ -866,7 +874,6 @@
                                 Lampa.Player.play(playlist[0]);
                                 Lampa.Player.playlist(playlist);
                             });
-                            // Кнопка уже видна сразу, нет необходимости в removeClass('hide')
                         });
                     }
                 } catch (e) {
