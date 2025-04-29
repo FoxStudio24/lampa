@@ -53,19 +53,6 @@
 
         // Добавляем стили через <style> тег с уникальным ID
         var styles = `
-            /* Сбрасываем цвета, фоны и эффекты */
-            .player-panel.panel--visible,
-            .player-panel.panel--visible * {
-                background: transparent !important;
-                background-color: transparent !important;
-                color: #fff !important;
-                fill: #fff !important;
-                stroke: #fff !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-                border: none !important;
-            }
-
             /* Стили для timeline и кнопок */
             .player-panel.panel--visible .player-panel__timeline {
                 position: relative;
