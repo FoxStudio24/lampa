@@ -56,14 +56,15 @@
             /* Стили для timeline и кнопок */
             .player-panel.panel--visible .player-panel__timeline {
                 position: relative;
-                width: 100%;
+                width: 70%; /* Уменьшаем ширину шкалы до 70% */
                 display: flex;
                 align-items: center;
+                margin: 0 auto; /* Центрируем шкалу */
             }
 
             .player-panel.panel--visible .player-panel__buttons-inline {
                 position: absolute;
-                left: 80%;
+                left: 85%; /* Сдвигаем кнопки ближе к концу уменьшенной шкалы */
                 transform: translateX(-50%);
                 display: flex;
                 align-items: center;
@@ -80,6 +81,13 @@
             .player-panel.panel--visible .player-panel__right {
                 display: none !important;
             }
+
+            /* Убедимся, что время слева и справа остаётся на месте */
+            .player-panel.panel--visible .player-panel__line-one {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
         `;
 
         // Добавляем стили в head
@@ -87,7 +95,7 @@
         console.log('Player Panel Modifier Plugin: Styles applied');
 
         // Логируем успешное выполнение
-        console.log('Player Panel Modifier Plugin: Buttons moved and styles applied successfully');
+        console.log('Player Panel Modifier Plugin: Buttons moved, timeline scaled, and styles applied successfully');
         return true;
     }
 
