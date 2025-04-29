@@ -39,14 +39,14 @@
             return false;
         }
 
-        // Создаём новый контейнер для кнопок рядом с timeline
+        // Создаём новый контейнер для кнопок
         var buttonsContainer = $('<div class="player-panel__buttons-inline"></div>');
         buttons.each(function() {
             $(this).appendTo(buttonsContainer);
         });
 
-        // Вставляем контейнер с кнопками после timeline
-        timeline.after(buttonsContainer);
+        // Вставляем контейнер с кнопками внутрь timeline
+        timeline.append(buttonsContainer);
 
         // Удаляем старые стили, если они были добавлены ранее
         $('#player-panel-modifier-styles').remove();
@@ -56,16 +56,23 @@
             /* Стили для timeline и кнопок */
             .player-panel.panel--visible .player-panel__timeline {
                 position: relative;
-                width: 70%; /* Уменьшаем ширину шкалы до 70% */
+                width: 70%; /* Уменьшенная ширина шкалы */
                 display: flex;
                 align-items: center;
                 margin: 0 auto; /* Центрируем шкалу */
             }
 
+            /* Контейнер полосы прогресса внутри timeline */
+            .player-panel.panel--visible .player-panel__timeline .player-panel__peding,
+            .player-panel.panel--visible .player-panel__timeline .player-panel__position {
+                flex-grow: 1;
+            }
+
             .player-panel.panel--visible .player-panel__buttons-inline {
                 position: absolute;
-                left: 85%; /* Сдвигаем кнопки ближе к концу уменьшенной шкалы */
-                transform: translateX(-50%);
+                right: 0; /* Прижимаем кнопки к правому краю шкалы */
+                top: 50%;
+                transform: translateY(-50%); /* Центрируем по вертикали */
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -95,7 +102,7 @@
         console.log('Player Panel Modifier Plugin: Styles applied');
 
         // Логируем успешное выполнение
-        console.log('Player Panel Modifier Plugin: Buttons moved, timeline scaled, and styles applied successfully');
+        console.log('Player Panel Modifier Plugin: Buttons moved inline with timeline, styles applied successfully');
         return true;
     }
 
