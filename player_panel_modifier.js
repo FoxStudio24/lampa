@@ -45,37 +45,41 @@
             $(this).appendTo(buttonsContainer);
         });
 
-        // Вставляем контейнер с кнопками внутрь timeline
-        timeline.append(buttonsContainer);
+        // Создаём обёртку для timeline и кнопок
+        var wrapper = $('<div class="player-panel__timeline-wrapper"></div>');
+        
+        // Перемещаем timeline в обёртку
+        timeline.wrap(wrapper);
+        var timelineWrapper = timeline.parent('.player-panel__timeline-wrapper');
+
+        // Вставляем кнопки после timeline внутри обёртки
+        timeline.after(buttonsContainer);
 
         // Удаляем старые стили, если они были добавлены ранее
         $('#player-panel-modifier-styles').remove();
 
         // Добавляем стили через <style> тег с уникальным ID
         var styles = `
-            /* Стили для timeline и кнопок */
+            /* Обёртка для timeline и кнопок */
+            .player-panel.panel--visible .player-panel__timeline-wrapper {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            /* Стили для timeline */
             .player-panel.panel--visible .player-panel__timeline {
-                position: relative;
                 width: 70%; /* Уменьшенная ширина шкалы */
                 display: flex;
                 align-items: center;
-                margin: 0 auto; /* Центрируем шкалу */
-            }
-
-            /* Контейнер полосы прогресса внутри timeline */
-            .player-panel.panel--visible .player-panel__timeline .player-panel__peding,
-            .player-panel.panel--visible .player-panel__timeline .player-panel__position {
-                flex-grow: 1;
             }
 
             .player-panel.panel--visible .player-panel__buttons-inline {
-                position: absolute;
-                right: 0; /* Прижимаем кнопки к правому краю шкалы */
-                top: 50%;
-                transform: translateY(-50%); /* Центрируем по вертикали */
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                margin-left: 10px; /* Отступ между шкалой и кнопками */
             }
 
             /* Уменьшаем размер кнопок */
@@ -102,7 +106,7 @@
         console.log('Player Panel Modifier Plugin: Styles applied');
 
         // Логируем успешное выполнение
-        console.log('Player Panel Modifier Plugin: Buttons moved inline with timeline, styles applied successfully');
+        console.log('Player Panel Modifier Plugin: Timeline and buttons aligned side by side, styles applied successfully');
         return true;
     }
 
