@@ -3,13 +3,13 @@
 
 	function rating_kp_imdb(card) {
 		var network = new Lampa.Reguest();
-		var clean_title = kpCleanTitle(card.title);
-		var search_date = card.release_date || card.first_air_date || card.last_air_date || '0000';
+		var clean_title = card && card.title ? kpCleanTitle(card.title) : '';
+		var search_date = card && (card.release_date || card.first_air_date || card.last_air_date) || '0000';
 		var search_year = parseInt((search_date + '').slice(0, 4));
-		var orig = card.original_title || card.original_name;
+		var orig = card && (card.original_title || card.original_name) || '';
 		var kp_prox = '';
 		var params = {
-			id: card.id,
+			id: card && card.id ? card.id : 0,
 			url: kp_prox + 'https://kinopoiskapiunofficial.tech/',
 			rating_url: kp_prox + 'https://rating.kinopoisk.ru/',
 			headers: {
@@ -17,6 +17,16 @@
 			},
 			cache_time: 60 * 60 * 24 * 1000 // 1 день
 		};
+
+		// Отладочный лог для проверки структуры card
+		console.log('Card data:', card);
+
+		// Проверка на существование card
+		if (!card || !params.id) {
+			Lampa.Noty.show('Ошибка: данные о фильме недоступны.');
+			return;
+		}
+
 		getRating();
 
 		function getRating() {
@@ -156,7 +166,7 @@
 								}
 								var movieRating = _setCache(params.id, {
 									kp: ratingKinopoisk,
-									imdb: ratingImdb,
+									imdb: data.ratingImdb,
 									timestamp: new Date().getTime()
 								});
 								return _showRating(movieRating);
@@ -188,7 +198,7 @@
 		}
 
 		function cleanTitle(str) {
-			return str.replace(/[\s.,:;’'`!?]+/g, ' ').trim();
+			return str ? str.replace(/[\s.,:;’'`!?]+/g, ' ').trim() : '';
 		}
 
 		function kpCleanTitle(str) {
@@ -251,10 +261,15 @@
 				kp_rating = kp_rating.endsWith('.0') ? kp_rating.slice(0, -2) : kp_rating;
 				imdb_rating = imdb_rating.endsWith('.0') ? imdb_rating.slice(0, -2) : imdb_rating;
 
-				// Получаем рейтинг TMDB из объекта card (e.data.movie)
-				var tmdb_rating = !isNaN(card.vote_average) && card.vote_average !== null ? parseFloat(card.vote_average).toFixed(1) : '0.0';
+				// Пытаемся получить рейтинг TMDB из объекта card
+				var tmdb_rating = '0.0';
+				if (card && typeof card.vote_average === 'number' && !isNaN(card.vote_average)) {
+					tmdb_rating = parseFloat(card.vote_average).toFixed(1);
+				} else if (card && typeof card.rating === 'number' && !isNaN(card.rating)) {
+					tmdb_rating = parseFloat(card.rating).toFixed(1);
+				}
 				tmdb_rating = tmdb_rating.endsWith('.0') ? tmdb_rating.slice(0, -2) : tmdb_rating;
-				console.log('TMDB vote_average:', card.vote_average, 'Parsed TMDB:', tmdb_rating); // Отладочный лог
+				console.log('TMDB rating attempt - vote_average:', card.vote_average, 'rating:', card.rating, 'Final TMDB:', tmdb_rating);
 
 				// Создаём элементы рейтингов TMDB, KP и IMDb
 				var $tmdbRating = $('<div class="full-start__rating">TMDB ' + tmdb_rating + '</div>');
@@ -297,6 +312,7 @@
 				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
 
 				// Сохраняем существующие элементы (.full-start__pg, .full-start__status)
+				var $rateLine = $('.full-start-new__rate-line', render);
 				if ($rateLine.length) {
 					// Удаляем только старые рейтинги, оставляя .full-start__pg и .full-start__status
 					$rateLine.find('.rating-container').remove();
