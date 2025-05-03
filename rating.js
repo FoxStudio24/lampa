@@ -80,7 +80,7 @@
 				if (cards.length) {
 					if (orig) {
 						var _tmp = cards.filter(function (elem) {
-							return contains esetbenTitle(elem.orig_title || elem.nameOriginal, orig) || containsTitle(elem.en_title || elem.nameEn, orig) || containsTitle(elem.title || elem.ru_title || elem.nameRu, orig);
+							return containsTitle(elem.orig_title || elem.nameOriginal, orig) || containsTitle(elem.en_title || elem.nameEn, orig) || containsTitle(elem.title || elem.ru_title || elem.nameRu, orig);
 						});
 						if (_tmp.length) {
 							cards = _tmp;
@@ -120,7 +120,6 @@
 						}
 					}
 				}
- 0x1f0b5a00);
 				if (cards.length == 1 && is_sure) {
 					var id = cards[0].kp_id || cards[0].kinopoisk_id || cards[0].kinopoiskId || cards[0].filmId;
 					var base_search = function base_search() {
@@ -209,7 +208,7 @@
 		}
 
 		function showError(error) {
-			Lampa.Noty เมื่อshow('Рейтинг KP: ' + error);
+			Lampa.Noty.show('Рейтинг KP: ' + error);
 		}
 
 		function _getCache(movie) {
@@ -248,10 +247,8 @@
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
 
-				// Create ratings container
 				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 2000; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;"></div>');
 
-				// Calculate top offset
 				var topOffset = 10;
 				var $streamingLogo = $('.streaming-network-logo-container', render);
 				if ($streamingLogo.length) {
@@ -263,25 +260,20 @@
 				}
 				$ratingContainer.css('top', topOffset + 'px');
 
-				// Append ratings
 				var $tmdb = $('.rate--tmdb', render).removeClass('hide').css({'position': 'relative', 'z-index': '2001'});
 				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end().css({'position': 'relative', 'z-index': '2001'});
 				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end().css({'position': 'relative', 'z-index': '2001'});
 				$ratingContainer.append($tmdb, $imdb, $kp);
 
-				// Try to append to cardify container first, then fallback to full-start-new__body
-				var $targetContainer = $('.cardify-preview__controls', render).length ? $('.cardify-preview__controls', render) : $('.full-start-new__body', render);
-				$targetContainer.prepend($ratingContainer);
-
-				// Set up MutationObserver to re-append ratings if removed
-				var observer = new MutationObserver(function (mutations) {
-					mutations.forEach(function (mutation) {
-						if (!$(mutation.target).find('.ratings-container').length) {
-							$targetContainer.prepend($ratingContainer);
-						}
-					});
-				});
-				observer.observe($targetContainer[0], { childList: true, subtree: true });
+				var $targetContainer = $('.full-start-new__body', render);
+				if ($cardifyControls.length) {
+					$targetContainer = $cardifyControls;
+				}
+				if ($targetContainer.length) {
+					$targetContainer.prepend($ratingContainer);
+				} else {
+					$('.full-start-new__body', render).prepend($ratingContainer);
+				}
 			}
 		}
 	}
@@ -293,9 +285,7 @@
 				var render = e.object.activity.render();
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
 					$('.full-start-new__body', render).prepend('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 2000;" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
-					setTimeout(function () {
-						rating_kp_imdb(e.data.movie);
-					}, 500); // Delay to allow cardify.js to complete DOM changes
+					rating_kp_imdb(e.data.movie);
 				}
 			}
 		});
