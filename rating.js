@@ -247,13 +247,35 @@
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
 
-				// Форматируем рейтинги без /10
+				// Форматируем рейтинги без /10, убираем .0 для целых чисел
 				kp_rating = kp_rating.endsWith('.0') ? kp_rating.slice(0, -2) : kp_rating;
 				imdb_rating = imdb_rating.endsWith('.0') ? imdb_rating.slice(0, -2) : imdb_rating;
 
-				// Создаём элементы рейтингов KP и IMDb
+				// Извлекаем рейтинг TMDB из DOM, добавленный cardify.js
+				var $rateLine = $('.full-start-new__rate-line', render);
+				var tmdb_rating = '0.0';
+				if ($rateLine.length) {
+					var $tmdbElement = $rateLine.find('.full-start__rating').first();
+					if ($tmdbElement.length) {
+						var tmdbText = $tmdbElement.text().replace('/10', '').trim();
+						tmdb_rating = tmdbText.endsWith('.0') ? tmdbText.slice(0, -2) : tmdbText;
+					}
+				}
+
+				// Создаём элементы рейтингов TMDB, KP и IMDb
+				var $tmdbRating = $('<div class="full-start__rating">TMDB ' + tmdb_rating + '</div>');
 				var $kpRating = $('<div class="full-start__rating">KP ' + kp_rating + '</div>');
 				var $imdbRating = $('<div class="full-start__rating">IMDb ' + imdb_rating + '</div>');
+
+				// Добавляем звёзды для TMDB
+				var tmdbStars = Math.round(parseFloat(tmdb_rating) / 2); // 5-балльная шкала
+				var tmdbStarsHtml = $('<div class="rating-stars"></div>');
+				for (var i = 0; i < 5; i++) {
+					var starSvg = i < tmdbStars ?
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
+					tmdbStarsHtml.append(starSvg);
+				}
 
 				// Добавляем звёзды для KP
 				var kpStars = Math.round(parseFloat(kp_rating) / 2); // 5-балльная шкала
@@ -276,18 +298,16 @@
 				}
 
 				// Создаём контейнеры для рейтингов
+				var $tmdbContainer = $('<div class="rating-container"></div>').append($tmdbRating).append(tmdbStarsHtml);
 				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(kpStarsHtml);
 				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
 
-				// Находим контейнер для рейтингов и добавляем новые рейтинги, не очищая существующий
-				var $rateLine = $('.full-start-new__rate-line', render);
+				// Сохраняем существующие элементы (.full-start__pg, .full-start__status)
 				if ($rateLine.length) {
-					// Проверяем, есть ли уже рейтинг TMDB, и добавляем наши рейтинги после него
-					if ($rateLine.find('.full-start__rating').length > 0) {
-						$rateLine.append($kpContainer).append($imdbContainer);
-					} else {
-						$rateLine.empty().append($kpContainer).append($imdbContainer);
-					}
+					// Удаляем только старые рейтинги, оставляя .full-start__pg и .full-start__status
+					$rateLine.find('.rating-container').remove();
+					// Добавляем рейтинги: TMDB, KP, IMDb
+					$rateLine.prepend($imdbContainer).prepend($kpContainer).prepend($tmdbContainer);
 					$rateLine.removeClass('hide');
 				} else {
 					// Если контейнер отсутствует, создаём его
@@ -295,8 +315,11 @@
 					if ($rightContainer.length) {
 						$rightContainer.append(
 							$('<div class="full-start-new__rate-line"></div>')
+								.append($tmdbContainer)
 								.append($kpContainer)
 								.append($imdbContainer)
+								.append('<div class="full-start__pg hide"></div>')
+								.append('<div class="full-start__status hide"></div>')
 								.removeClass('hide')
 						);
 					}
