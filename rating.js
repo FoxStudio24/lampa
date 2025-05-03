@@ -247,32 +247,51 @@
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
 
-				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 2000; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;"></div>');
+				// Создаём элементы рейтингов KP и IMDb в стиле cardify.js
+				var $kpRating = $('<div class="full-start__rating">KP: ' + kp_rating + '/10</div>');
+				var $imdbRating = $('<div class="full-start__rating">IMDb: ' + imdb_rating + '/10</div>');
 
-				var topOffset = 10;
-				var $streamingLogo = $('.streaming-network-logo-container', render);
-				if ($streamingLogo.length) {
-					topOffset += $streamingLogo.outerHeight() + 10;
+				// Добавляем звёзды для KP
+				var kpStars = Math.round(parseFloat(kp_rating) / 2); // 5-балльная шкала
+				var kpStarsHtml = $('<div class="rating-stars"></div>');
+				for (var i = 0; i < 5; i++) {
+					var starSvg = i < kpStars ?
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
+					kpStarsHtml.append(starSvg);
 				}
-				var $cardifyControls = $('.cardify-preview__controls', render);
-				if ($cardifyControls.length) {
-					topOffset += $cardifyControls.outerHeight() + 10;
-				}
-				$ratingContainer.css('top', topOffset + 'px');
 
-				var $tmdb = $('.rate--tmdb', render).removeClass('hide').css({'position': 'relative', 'z-index': '2001'});
-				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end().css({'position': 'relative', 'z-index': '2001'});
-				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end().css({'position': 'relative', 'z-index': '2001'});
-				$ratingContainer.append($tmdb, $imdb, $kp);
-
-				var $targetContainer = $('.full-start-new__body', render);
-				if ($cardifyControls.length) {
-					$targetContainer = $cardifyControls;
+				// Добавляем звёзды для IMDb
+				var imdbStars = Math.round(parseFloat(imdb_rating) / 2); // 5-балльная шкала
+				var imdbStarsHtml = $('<div class="rating-stars"></div>');
+				for (var i = 0; i < 5; i++) {
+					var starSvg = i < imdbStars ?
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
+						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
+					imdbStarsHtml.append(starSvg);
 				}
-				if ($targetContainer.length) {
-					$targetContainer.prepend($ratingContainer);
+
+				// Создаём контейнеры для рейтингов
+				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(kpStarsHtml);
+				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
+
+				// Находим контейнер для рейтингов
+				var $rateLine = $('.full-start-new__rate-line', render);
+				if ($rateLine.length) {
+					// Добавляем наши рейтинги после существующего рейтинга TMDB
+					$rateLine.append($kpContainer).append($imdbContainer);
+					$rateLine.removeClass('hide');
 				} else {
-					$('.full-start-new__body', render).prepend($ratingContainer);
+					// Если контейнер отсутствует, добавляем в .full-start-new__right
+					var $rightContainer = $('.full-start-new__right', render);
+					if ($rightContainer.length) {
+						$rightContainer.append(
+							$('<div class="full-start-new__rate-line"></div>')
+								.append($kpContainer)
+								.append($imdbContainer)
+								.removeClass('hide')
+						);
+					}
 				}
 			}
 		}
@@ -283,9 +302,14 @@
 		Lampa.Listener.follow('full', function (e) {
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
-				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
-					$('.full-start-new__body', render).prepend('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 2000;" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
-					rating_kp_imdb(e.data.movie);
+				if (!render.find('.wait_rating').length) {
+					$('.full-start-new__body', render).prepend(
+						'<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 2000;" class="wait_rating">' +
+						'<div class="broadcast__scan"><div></div></div><div>'
+					);
+					setTimeout(function () {
+						rating_kp_imdb(e.data.movie);
+					}, 1000); // Задержка для синхронизации с cardify.js
 				}
 			}
 		});
