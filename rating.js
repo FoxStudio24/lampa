@@ -251,23 +251,10 @@
 				kp_rating = kp_rating.endsWith('.0') ? kp_rating.slice(0, -2) : kp_rating;
 				imdb_rating = imdb_rating.endsWith('.0') ? imdb_rating.slice(0, -2) : imdb_rating;
 
-				// Извлекаем рейтинг TMDB из DOM с улучшенной обработкой
-				var $rateLine = $('.full-start-new__rate-line', render);
-				var tmdb_rating = '0.0';
-				if ($rateLine.length) {
-					var $tmdbElement = $rateLine.find('.full-start__rating').first();
-					if ($tmdbElement.length) {
-						var tmdbText = $tmdbElement.text().replace(/[^0-9.]/g, '').trim(); // Оставляем только числа и точку
-						tmdb_rating = tmdbText ? parseFloat(tmdbText).toFixed(1) : '0.0';
-						if (tmdb_rating === '1.0' && tmdbText.length > 1) {
-							// Если парсинг дал 1.0, но текст длиннее, попробуем взять первое число
-							var firstNumber = tmdbText.match(/[0-9]+(\.[0-9]+)?/);
-							tmdb_rating = firstNumber ? parseFloat(firstNumber[0]).toFixed(1) : '0.0';
-						}
-						tmdb_rating = tmdb_rating.endsWith('.0') ? tmdb_rating.slice(0, -2) : tmdb_rating;
-						console.log('TMDB raw text:', $tmdbElement.text(), 'Parsed TMDB:', tmdb_rating); // Отладочный лог
-					}
-				}
+				// Получаем рейтинг TMDB из объекта card (e.data.movie)
+				var tmdb_rating = !isNaN(card.vote_average) && card.vote_average !== null ? parseFloat(card.vote_average).toFixed(1) : '0.0';
+				tmdb_rating = tmdb_rating.endsWith('.0') ? tmdb_rating.slice(0, -2) : tmdb_rating;
+				console.log('TMDB vote_average:', card.vote_average, 'Parsed TMDB:', tmdb_rating); // Отладочный лог
 
 				// Создаём элементы рейтингов TMDB, KP и IMDb
 				var $tmdbRating = $('<div class="full-start__rating">TMDB ' + tmdb_rating + '</div>');
@@ -347,7 +334,7 @@
 					);
 					setTimeout(function () {
 						rating_kp_imdb(e.data.movie);
-					}, 1500); // Увеличенная задержка до 1500 мс
+					}, 1500); // Задержка 1500 мс
 				}
 			}
 		});
