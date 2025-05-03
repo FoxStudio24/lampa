@@ -15,7 +15,7 @@
 			headers: {
 				'X-API-KEY': '2a4a0808-81a3-40ae-b0d3-e11335ede616'
 			},
-			cache_time: 60 * 60 * 24 * 1000 //86400000 сек = 1день Время кэша в секундах
+			cache_time: 60 * 60 * 24 * 1000 // 1 день
 		};
 		getRating();
 
@@ -80,7 +80,7 @@
 				if (cards.length) {
 					if (orig) {
 						var _tmp = cards.filter(function (elem) {
-							return containsTitle(elem.orig_title || elem.nameOriginal, orig) || containsTitle(elem.en_title || elem.nameEn, orig) || containsTitle(elem.title || elem.ru_title || elem.nameRu, orig);
+							return contains esetbenTitle(elem.orig_title || elem.nameOriginal, orig) || containsTitle(elem.en_title || elem.nameEn, orig) || containsTitle(elem.title || elem.ru_title || elem.nameRu, orig);
 						});
 						if (_tmp.length) {
 							cards = _tmp;
@@ -120,6 +120,7 @@
 						}
 					}
 				}
+ 0x1f0b5a00);
 				if (cards.length == 1 && is_sure) {
 					var id = cards[0].kp_id || cards[0].kinopoisk_id || cards[0].kinopoiskId || cards[0].filmId;
 					var base_search = function base_search() {
@@ -130,7 +131,7 @@
 								kp: data.ratingKinopoisk,
 								imdb: data.ratingImdb,
 								timestamp: new Date().getTime()
-							}); // Кешируем данные
+							});
 							return _showRating(movieRating);
 						}, function (a, c) {
 							showError(network.errorDecode(a, c));
@@ -158,7 +159,7 @@
 									kp: ratingKinopoisk,
 									imdb: ratingImdb,
 									timestamp: new Date().getTime()
-								}); // Кешируем данные
+								});
 								return _showRating(movieRating);
 							} catch (ex) {
 							}
@@ -174,7 +175,7 @@
 						kp: 0,
 						imdb: 0,
 						timestamp: new Date().getTime()
-					}); // Кешируем данные
+					});
 					return _showRating(movieRating);
 				}
 			} else {
@@ -182,41 +183,40 @@
 					kp: 0,
 					imdb: 0,
 					timestamp: new Date().getTime()
-				}); // Кешируем данные
+				});
 				return _showRating(_movieRating);
 			}
 		}
 
-		function cleanTitle(str){
+		function cleanTitle(str) {
 			return str.replace(/[\s.,:;’'`!?]+/g, ' ').trim();
 		}
 
-		function kpCleanTitle(str){
+		function kpCleanTitle(str) {
 			return cleanTitle(str).replace(/^[ \/\\]+/, '').replace(/[ \/\\]+$/, '').replace(/\+( *[+\/\\])+/g, '+').replace(/([+\/\\] *)+\+/g, '+').replace(/( *[\/\\]+ *)+/g, '+');
 		}
 
-		function normalizeTitle(vstr){
+		function normalizeTitle(str) {
 			return cleanTitle(str.toLowerCase().replace(/[\-\u2010-\u2015\u2E3A\u2E3B\uFE58\uFE63\uFF0D]+/g, '-').replace(/ё/g, 'е'));
 		}
 
-		function equalTitle(t1, t2){
+		function equalTitle(t1, t2) {
 			return typeof t1 === 'string' && typeof t2 === 'string' && normalizeTitle(t1) === normalizeTitle(t2);
 		}
 
-		function containsTitle(str, title){
+		function containsTitle(str, title) {
 			return typeof str === 'string' && typeof title === 'string' && normalizeTitle(str).indexOf(normalizeTitle(title)) !== -1;
 		}
 
 		function showError(error) {
-			Lampa.Noty.show('Рейтинг KP: ' + error);
+			Lampa.Noty เมื่อshow('Рейтинг KP: ' + error);
 		}
 
 		function _getCache(movie) {
 			var timestamp = new Date().getTime();
-			var cache = Lampa.Storage.cache('kp_rating', 500, {}); //500 это лимит ключей
+			var cache = Lampa.Storage.cache('kp_rating', 500, {});
 			if (cache[movie]) {
 				if ((timestamp - cache[movie].timestamp) > params.cache_time) {
-					// Если кеш истёк, чистим его
 					delete cache[movie];
 					Lampa.Storage.set('kp_rating', cache);
 					return false;
@@ -227,7 +227,7 @@
 
 		function _setCache(movie, data) {
 			var timestamp = new Date().getTime();
-			var cache = Lampa.Storage.cache('kp_rating', 500, {}); //500 это лимит ключей
+			var cache = Lampa.Storage.cache('kp_rating', 500, {});
 			if (!cache[movie]) {
 				cache[movie] = data;
 				Lampa.Storage.set('kp_rating', cache);
@@ -247,27 +247,41 @@
 				var imdb_rating = !isNaN(data.imdb) && data.imdb !== null ? parseFloat(data.imdb).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
-				// Create a container for ratings with explicit styles for visibility
-				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 1000;"></div>');
-				// Adjust position based on streaming-network-logo-container
-				var $streamingLogo = $('.streaming-network-logo-container', render);
+
+				// Create ratings container
+				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 2000; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;"></div>');
+
+				// Calculate top offset
 				var topOffset = 10;
+				var $streamingLogo = $('.streaming-network-logo-container', render);
 				if ($streamingLogo.length) {
 					topOffset += $streamingLogo.outerHeight() + 10;
 				}
-				// Adjust position based on cardify-preview__controls
 				var $cardifyControls = $('.cardify-preview__controls', render);
 				if ($cardifyControls.length) {
 					topOffset += $cardifyControls.outerHeight() + 10;
 				}
 				$ratingContainer.css('top', topOffset + 'px');
-				// Append ratings in the specified order: tmdb, imdb, kp
-				var $tmdb = $('.rate--tmdb', render).removeClass('hide').css({'position': 'relative', 'z-index': '1001'});
-				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end().css({'position': 'relative', 'z-index': '1001'});
-				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end().css({'position': 'relative', 'z-index': '1001'});
+
+				// Append ratings
+				var $tmdb = $('.rate--tmdb', render).removeClass('hide').css({'position': 'relative', 'z-index': '2001'});
+				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end().css({'position': 'relative', 'z-index': '2001'});
+				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end().css({'position': 'relative', 'z-index': '2001'});
 				$ratingContainer.append($tmdb, $imdb, $kp);
-				// Prepend to full-start-new__body to ensure it appears above other elements
-				$('.full-start-new__body', render).prepend($ratingContainer);
+
+				// Try to append to cardify container first, then fallback to full-start-new__body
+				var $targetContainer = $('.cardify-preview__controls', render).length ? $('.cardify-preview__controls', render) : $('.full-start-new__body', render);
+				$targetContainer.prepend($ratingContainer);
+
+				// Set up MutationObserver to re-append ratings if removed
+				var observer = new MutationObserver(function (mutations) {
+					mutations.forEach(function (mutation) {
+						if (!$(mutation.target).find('.ratings-container').length) {
+							$targetContainer.prepend($ratingContainer);
+						}
+					});
+				});
+				observer.observe($targetContainer[0], { childList: true, subtree: true });
 			}
 		}
 	}
@@ -278,11 +292,14 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
-					$('.full-start-new__body', render).prepend('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 1000;" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
-					rating_kp_imdb(e.data.movie);
+					$('.full-start-new__body', render).prepend('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 2000;" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
+					setTimeout(function () {
+						rating_kp_imdb(e.data.movie);
+					}, 500); // Delay to allow cardify.js to complete DOM changes
 				}
 			}
 		});
 	}
+
 	if (!window.rating_plugin) startPlugin();
 })();
