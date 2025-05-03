@@ -251,14 +251,15 @@
 				kp_rating = kp_rating.endsWith('.0') ? kp_rating.slice(0, -2) : kp_rating;
 				imdb_rating = imdb_rating.endsWith('.0') ? imdb_rating.slice(0, -2) : imdb_rating;
 
-				// Извлекаем рейтинг TMDB из DOM, добавленный cardify.js
+				// Извлекаем рейтинг TMDB из DOM с улучшенной обработкой
 				var $rateLine = $('.full-start-new__rate-line', render);
 				var tmdb_rating = '0.0';
 				if ($rateLine.length) {
 					var $tmdbElement = $rateLine.find('.full-start__rating').first();
 					if ($tmdbElement.length) {
-						var tmdbText = $tmdbElement.text().replace('/10', '').trim();
-						tmdb_rating = tmdbText.endsWith('.0') ? tmdbText.slice(0, -2) : tmdbText;
+						var tmdbText = $tmdbElement.text().replace(/[^0-9.]/g, '').trim(); // Оставляем только числа и точку
+						tmdb_rating = tmdbText ? parseFloat(tmdbText).toFixed(1) : '0.0';
+						tmdb_rating = tmdb_rating.endsWith('.0') ? tmdb_rating.slice(0, -2) : tmdb_rating;
 					}
 				}
 
