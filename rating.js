@@ -166,7 +166,7 @@
 								}
 								var movieRating = _setCache(params.id, {
 									kp: ratingKinopoisk,
-									imdb: data.ratingImdb,
+									imdb: ratingImdb,
 									timestamp: new Date().getTime()
 								});
 								return _showRating(movieRating);
@@ -310,6 +310,11 @@
 				var $tmdbContainer = $('<div class="rating-container"></div>').append($tmdbRating).append(tmdbStarsHtml);
 				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(kpStarsHtml);
 				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
+
+				// Скрываем контейнеры с нулевыми рейтингами
+				if (tmdb_rating === '0') $tmdbContainer.addClass('hide');
+				if (kp_rating === '0') $kpContainer.addClass('hide');
+				if (imdb_rating === '0') $imdbContainer.addClass('hide');
 
 				// Сохраняем существующие элементы (.full-start__pg, .full-start__status)
 				var $rateLine = $('.full-start-new__rate-line', render);
