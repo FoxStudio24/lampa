@@ -195,7 +195,7 @@
 			return cleanTitle(str).replace(/^[ \/\\]+/, '').replace(/[ \/\\]+$/, '').replace(/\+( *[+\/\\])+/g, '+').replace(/([+\/\\] *)+\+/g, '+').replace(/( *[\/\\]+ *)+/g, '+');
 		}
 
-		function normalizeTitle(str){
+		function normalizeTitle(vstr){
 			return cleanTitle(str.toLowerCase().replace(/[\-\u2010-\u2015\u2E3A\u2E3B\uFE58\uFE63\uFF0D]+/g, '-').replace(/ё/g, 'е'));
 		}
 
@@ -247,20 +247,27 @@
 				var imdb_rating = !isNaN(data.imdb) && data.imdb !== null ? parseFloat(data.imdb).toFixed(1) : '0.0';
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
-				// Create a container for ratings
-				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 10;"></div>');
-				// Check for streaming-network-logo-container
+				// Create a container for ratings with explicit styles for visibility
+				var $ratingContainer = $('<div class="ratings-container" style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; z-index: 1000;"></div>');
+				// Adjust position based on streaming-network-logo-container
 				var $streamingLogo = $('.streaming-network-logo-container', render);
+				var topOffset = 10;
 				if ($streamingLogo.length) {
-					$ratingContainer.css('top', $streamingLogo.outerHeight() + 20 + 'px');
+					topOffset += $streamingLogo.outerHeight() + 10;
 				}
+				// Adjust position based on cardify-preview__controls
+				var $cardifyControls = $('.cardify-preview__controls', render);
+				if ($cardifyControls.length) {
+					topOffset += $cardifyControls.outerHeight() + 10;
+				}
+				$ratingContainer.css('top', topOffset + 'px');
 				// Append ratings in the specified order: tmdb, imdb, kp
-				// Assuming rate--tmdb exists in the DOM; if not, it will remain as is
-				var $tmdb = $('.rate--tmdb', render).removeClass('hide');
-				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end();
-				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end();
+				var $tmdb = $('.rate--tmdb', render).removeClass('hide').css({'position': 'relative', 'z-index': '1001'});
+				var $imdb = $('.rate--imdb', render).removeClass('hide').find('> div').eq(0).text(imdb_rating).end().css({'position': 'relative', 'z-index': '1001'});
+				var $kp = $('.rate--kp', render).removeClass('hide').find('> div').eq(0).text(kp_rating).end().css({'position': 'relative', 'z-index': '1001'});
 				$ratingContainer.append($tmdb, $imdb, $kp);
-				$('.full-start-new__body', render).append($ratingContainer);
+				// Prepend to full-start-new__body to ensure it appears above other elements
+				$('.full-start-new__body', render).prepend($ratingContainer);
 			}
 		}
 	}
@@ -271,7 +278,7 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
-					$('.full-start-new__body', render).append('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
+					$('.full-start-new__body', render).prepend('<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 1000;" class="wait_rating"><div class="broadcast__scan"><div></div></div><div>');
 					rating_kp_imdb(e.data.movie);
 				}
 			}
