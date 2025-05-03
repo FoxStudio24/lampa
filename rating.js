@@ -259,7 +259,13 @@
 					if ($tmdbElement.length) {
 						var tmdbText = $tmdbElement.text().replace(/[^0-9.]/g, '').trim(); // Оставляем только числа и точку
 						tmdb_rating = tmdbText ? parseFloat(tmdbText).toFixed(1) : '0.0';
+						if (tmdb_rating === '1.0' && tmdbText.length > 1) {
+							// Если парсинг дал 1.0, но текст длиннее, попробуем взять первое число
+							var firstNumber = tmdbText.match(/[0-9]+(\.[0-9]+)?/);
+							tmdb_rating = firstNumber ? parseFloat(firstNumber[0]).toFixed(1) : '0.0';
+						}
 						tmdb_rating = tmdb_rating.endsWith('.0') ? tmdb_rating.slice(0, -2) : tmdb_rating;
+						console.log('TMDB raw text:', $tmdbElement.text(), 'Parsed TMDB:', tmdb_rating); // Отладочный лог
 					}
 				}
 
@@ -341,7 +347,7 @@
 					);
 					setTimeout(function () {
 						rating_kp_imdb(e.data.movie);
-					}, 1000); // Задержка для синхронизации с cardify.js
+					}, 1500); // Увеличенная задержка до 1500 мс
 				}
 			}
 		});
