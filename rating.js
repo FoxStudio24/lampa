@@ -247,9 +247,13 @@
 				var render = Lampa.Activity.active().activity.render();
 				$('.wait_rating', render).remove();
 
-				// Создаём элементы рейтингов KP и IMDb в стиле cardify.js
-				var $kpRating = $('<div class="full-start__rating">KP: ' + kp_rating + '/10</div>');
-				var $imdbRating = $('<div class="full-start__rating">IMDb: ' + imdb_rating + '/10</div>');
+				// Форматируем рейтинги без /10
+				kp_rating = kp_rating.endsWith('.0') ? kp_rating.slice(0, -2) : kp_rating;
+				imdb_rating = imdb_rating.endsWith('.0') ? imdb_rating.slice(0, -2) : imdb_rating;
+
+				// Создаём элементы рейтингов KP и IMDb
+				var $kpRating = $('<div class="full-start__rating">KP ' + kp_rating + '</div>');
+				var $imdbRating = $('<div class="full-start__rating">IMDb ' + imdb_rating + '</div>');
 
 				// Добавляем звёзды для KP
 				var kpStars = Math.round(parseFloat(kp_rating) / 2); // 5-балльная шкала
@@ -275,14 +279,18 @@
 				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(kpStarsHtml);
 				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
 
-				// Находим контейнер для рейтингов
+				// Находим контейнер для рейтингов и добавляем новые рейтинги, не очищая существующий
 				var $rateLine = $('.full-start-new__rate-line', render);
 				if ($rateLine.length) {
-					// Добавляем наши рейтинги после существующего рейтинга TMDB
-					$rateLine.append($kpContainer).append($imdbContainer);
+					// Проверяем, есть ли уже рейтинг TMDB, и добавляем наши рейтинги после него
+					if ($rateLine.find('.full-start__rating').length > 0) {
+						$rateLine.append($kpContainer).append($imdbContainer);
+					} else {
+						$rateLine.empty().append($kpContainer).append($imdbContainer);
+					}
 					$rateLine.removeClass('hide');
 				} else {
-					// Если контейнер отсутствует, добавляем в .full-start-new__right
+					// Если контейнер отсутствует, создаём его
 					var $rightContainer = $('.full-start-new__right', render);
 					if ($rightContainer.length) {
 						$rightContainer.append(
