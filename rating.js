@@ -403,6 +403,32 @@
 
                 rateLine.removeClass('hide');
 
+                // Добавляем стили
+                var style = $('<style>').text(`
+                    .full-start__pg, .full-start__status {
+                        font-size: 1.2em;
+                        border: 0.5px solid rgb(255 255 255 / 5%);
+                        border-radius: 1em;
+                        padding: 0.3em 0.5em;
+                        background: rgba(255, 255, 255, 0.05);
+                        backdrop-filter: blur(4px);
+                        -webkit-backdrop-filter: blur(4px);
+                        color: white;
+                    }
+                    .full-start-new__rate-line > * {
+                        margin-left: 0 !important;
+                        margin-right: 0.5em !important;
+                    }
+                    .full-start__pg, .full-start__status, .full-start__button {
+                        font-size: 1.2em;
+                        border: 0.5px solid rgb(255 255 255 / 5%);
+                        background: rgba(255, 255, 255, 0.05);
+                        backdrop-filter: blur(4px);
+                        -webkit-backdrop-filter: blur(4px);
+                    }
+                `);
+                $('head').append(style);
+
                 // Повторная попытка рендеринга через 1000 мс, если контейнер был очищен
                 setTimeout(function () {
                     var rateLine = $('.full-start-new__rate-line', render);
