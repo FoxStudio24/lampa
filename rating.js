@@ -312,6 +312,10 @@
                     }
                 }
 
+                // Извлекаем существующие .full-start__pg и .full-start__status, чтобы переместить их в конец
+                var $pgElement = rateLine.find('.full-start__pg').detach();
+                var $statusElement = rateLine.find('.full-start__status').detach();
+
                 // Создаём элементы рейтингов
                 var $tmdbRating = $('<div class="full-start__rating tmdb">TMDB ' + tmdb_rating + '</div>');
                 var $kpRating = $('<div class="full-start__rating kp">KP ' + kp_rating + '</div>');
@@ -357,22 +361,43 @@
                 if (kp_rating === '0') $kpContainer.addClass('hide');
                 if (imdb_rating === '0') $imdbContainer.addClass('hide');
 
-                // Проверяем наличие существующих рейтингов
+                // Добавляем рейтинги в начало контейнера в нужном порядке
                 if (rateLine.find('.full-start__rating.tmdb').length === 0) {
                     rateLine.prepend($tmdbContainer);
                 }
                 if (rateLine.find('.full-start__rating.kp').length === 0) {
-                    rateLine.append($kpContainer);
+                    // Добавляем KP сразу после TMDB
+                    var $tmdb = rateLine.find('.full-start__rating.tmdb').parent('.rating-container');
+                    if ($tmdb.length) {
+                        $tmdb.after($kpContainer);
+                    } else {
+                        rateLine.prepend($kpContainer);
+                    }
                 }
                 if (rateLine.find('.full-start__rating.imdb').length === 0) {
-                    rateLine.append($imdbContainer);
+                    // Добавляем IMDb сразу после KP
+                    var $kp = rateLine.find('.full-start__rating.kp').parent('.rating-container');
+                    if ($kp.length) {
+                        $kp.after($imdbContainer);
+                    } else {
+                        var $tmdb = rateLine.find('.full-start__rating.tmdb').parent('.rating-container');
+                        if ($tmdb.length) {
+                            $tmdb.after($imdbContainer);
+                        } else {
+                            rateLine.prepend($imdbContainer);
+                        }
+                    }
                 }
 
-                // Сохраняем .full-start__pg и .full-start__status
-                if (!rateLine.find('.full-start__pg').length) {
+                // Перемещаем .full-start__pg и .full-start__status в конец
+                if ($pgElement.length) {
+                    rateLine.append($pgElement);
+                } else if (!rateLine.find('.full-start__pg').length) {
                     rateLine.append('<div class="full-start__pg hide"></div>');
                 }
-                if (!rateLine.find('.full-start__status').length) {
+                if ($statusElement.length) {
+                    rateLine.append($statusElement);
+                } else if (!rateLine.find('.full-start__status').length) {
                     rateLine.append('<div class="full-start__status hide"></div>');
                 }
 
@@ -381,14 +406,46 @@
                 // Повторная попытка рендеринга через 1000 мс, если контейнер был очищен
                 setTimeout(function () {
                     var rateLine = $('.full-start-new__rate-line', render);
+                    // Извлекаем .full-start__pg и .full-start__status
+                    var $pgElementRetry = rateLine.find('.full-start__pg').detach();
+                    var $statusElementRetry = rateLine.find('.full-start__status').detach();
+
                     if (rateLine.find('.full-start__rating.kp').length === 0) {
                         console.log('Rating.js: Контейнер рейтингов очищен, повторное добавление KP');
-                        rateLine.append($kpContainer);
+                        var $tmdb = rateLine.find('.full-start__rating.tmdb').parent('.rating-container');
+                        if ($tmdb.length) {
+                            $tmdb.after($kpContainer);
+                        } else {
+                            rateLine.prepend($kpContainer);
+                        }
                     }
                     if (rateLine.find('.full-start__rating.imdb').length === 0) {
                         console.log('Rating.js: Контейнер рейтингов очищен, повторное добавление IMDb');
-                        rateLine.append($imdbContainer);
+                        var $kp = rateLine.find('.full-start__rating.kp').parent('.rating-container');
+                        if ($kp.length) {
+                            $kp.after($imdbContainer);
+                        } else {
+                            var $tmdb = rateLine.find('.full-start__rating.tmdb').parent('.rating-container');
+                            if ($tmdb.length) {
+                                $tmdb.after($imdbContainer);
+                            } else {
+                                rateLine.prepend($imdbContainer);
+                            }
+                        }
                     }
+
+                    // Перемещаем .full-start__pg и .full-start__status в конец
+                    if ($pgElementRetry.length) {
+                        rateLine.append($pgElementRetry);
+                    } else if (!rateLine.find('.full-start__pg').length) {
+                        rateLine.append('<div class="full-start__pg hide"></div>');
+                    }
+                    if ($statusElementRetry.length) {
+                        rateLine.append($statusElementRetry);
+                    } else if (!rateLine.find('.full-start__status').length) {
+                        rateLine.append('<div class="full-start__status hide"></div>');
+                    }
+
                     rateLine.removeClass('hide');
                 }, 1000);
             }
