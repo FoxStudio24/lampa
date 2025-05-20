@@ -13,12 +13,14 @@
                 background: rgba(128, 128, 128, 0.3); /* Серый полупрозрачный фон */
                 border-radius: 4px; /* Закругленные углы */
                 padding: 2px 6px; /* Отступы внутри */
+                margin-left: 5px; /* Отступ от названия источника */
                 display: inline-block; /* Для корректного отображения */
             }
             .quality-label-4k, .quality-label-2k {
                 background: rgba(128, 128, 128, 0.3); /* Серый полупрозрачный фон */
                 border-radius: 4px; /* Закругленные углы */
                 padding: 2px 6px; /* Отступы внутри */
+                margin-left: 5px; /* Отступ от названия источника */
                 display: inline-block;
                 animation: glow 2s ease-in-out infinite; /* Анимация свечения */
             }
@@ -68,18 +70,60 @@
             });
         }
 
+        // Функция для наблюдения за изменениями в DOM
+        function observeSelectboxChanges() {
+            var target = document.querySelector('.selectbox__content');
+            if (!target) {
+                // Если selectbox__content ещё не существует, пробуем позже
+                setTimeout(observeSelectboxChanges, 500);
+                return;
+            }
+
+            // Создаем наблюдатель за изменениями в DOM
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.addedNodes.length || mutation.removedNodes.length) {
+                        modifyQualityLabels();
+                    }
+                });
+            });
+
+            // Настраиваем наблюдатель
+            observer.observe(target, {
+                childList: true,
+                subtree: true
+            });
+        }
+
         // Выполняем обработку при полной загрузке интерфейса
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
                 modifyQualityLabels();
+                observeSelectboxChanges();
             }
         });
 
-        // Выполняем обработку при изменении активности (на случай динамической загрузки)
+        // Выполняем обработку при изменении активности
         Lampa.Listener.follow('activity', function (e) {
             if (e.type === 'start') {
-                setTimeout(modifyQualityLabels, 500); // Даем время на рендеринг
+                setTimeout(function () {
+                    modifyQualityLabels();
+                    observeSelectboxChanges();
+                }, 500); // Даем время на рендеринг
             }
         });
+
+        // Выполняем обработку при готовности приложения
+        if (window.appready) {
+            modifyQualityLabels();
+            observeSelectboxChanges();
+        } else {
+            Lampa.Listener.follow('app', function (e) {
+                if (e.type === 'ready') {
+                    modifyQualityLabels();
+                    observeSelectboxChanges();
+                }
+            });
+        }
     }
 })();
