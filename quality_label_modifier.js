@@ -9,36 +9,37 @@
         var style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = `
+            .selectbox-item__title {
+                overflow: visible; /* Обязательно для корректного отображения */
+                position: relative; /* Для правильного позиционирования */
+                z-index: 1;
+            }
             .quality-label {
-                background: rgba(128, 128, 128, 0.3); /* Серый полупрозрачный фон */
-                border-radius: 4px; /* Закругленные углы */
-                padding: 2px 6px; /* Отступы внутри */
+                background: rgb(135 135 135 / 30%); /* Серый полупрозрачный фон */
+                border-radius: 25px; /* Закругленные углы */
+                padding: 4px 15px; /* Отступы внутри */
                 margin-left: 5px; /* Отступ от названия источника */
                 display: inline-block; /* Для корректного отображения */
             }
             .quality-label-4k, .quality-label-2k {
-                background: rgba(128, 128, 128, 0.3); /* Серый полупрозрачный фон */
-                border-radius: 4px; /* Закругленные углы */
-                padding: 2px 6px; /* Отступы внутри */
-                margin-left: 5px; /* Отступ от названия источника */
+                background: linear-gradient(135deg, #ff416c, #ff4b2b); /* Яркий градиент */
+                border-radius: 25px; /* Закругленные углы */
+                padding: 3px 20px; /* Отступы внутри */
+                margin-left: 6px; /* Отступ от названия источника */
                 display: inline-block;
-                animation: glow 2s ease-in-out infinite; /* Анимация свечения */
+                color: white;
+                font-weight: bold;
+                box-shadow: 0 0 10px rgba(255, 75, 43, 0.5);
+                animation: glow-shadow 1.5s ease-in-out infinite alternate; /* Анимация свечения */
             }
-            @keyframes glow {
+            @keyframes glow-shadow {
                 0% {
-                    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
-                                0 0 10px rgba(255, 255, 255, 0.3),
-                                0 0 15px rgba(255, 255, 255, 0.2);
-                }
-                50% {
-                    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                                0 0 20px rgba(255, 255, 255, 0.5),
-                                0 0 30px rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 0 10px rgba(255, 75, 43, 0.5),
+                                0 0 20px rgba(255, 75, 43, 0.3);
                 }
                 100% {
-                    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
-                                0 0 10px rgba(255, 255, 255, 0.3),
-                                0 0 15px rgba(255, 255, 255, 0.2);
+                    box-shadow: 0 0 20px rgba(255, 75, 43, 0.8),
+                                0 0 30px rgba(255, 75, 43, 0.6);
                 }
             }
         `;
@@ -89,14 +90,14 @@
         // Функция для периодической проверки и обработки
         function startPeriodicCheck() {
             let intervalId = setInterval(function () {
-                if (!modifyQualityLabels()) {
-                    console.log('QualityLabelPlugin: Проверка завершена, новых элементов не найдено');
-                    // Останавливаем интервал, если элементы больше не находятся
-                    // Можно убрать clearInterval, если требуется постоянная проверка
-                    // clearInterval(intervalId);
-                }
+                modifyQualityLabels();
             }, 500); // Проверяем каждые 500 мс
             return intervalId;
+        }
+
+        // Очищаем предыдущий интервал, если он существует
+        if (window.qualityLabelInterval) {
+            clearInterval(window.qualityLabelInterval);
         }
 
         // Выполняем обработку при полной загрузке интерфейса
@@ -104,7 +105,7 @@
             if (e.type === 'complite') {
                 console.log('QualityLabelPlugin: Событие full:complite сработало');
                 modifyQualityLabels();
-                startPeriodicCheck();
+                window.qualityLabelInterval = startPeriodicCheck();
             }
         });
 
@@ -113,7 +114,7 @@
             if (e.type === 'start') {
                 console.log('QualityLabelPlugin: Событие activity:start сработало');
                 modifyQualityLabels();
-                startPeriodicCheck();
+                window.qualityLabelInterval = startPeriodicCheck();
             }
         });
 
@@ -121,13 +122,13 @@
         if (window.appready) {
             console.log('QualityLabelPlugin: Приложение уже готово, запускаем обработку');
             modifyQualityLabels();
-            startPeriodicCheck();
+            window.qualityLabelInterval = startPeriodicCheck();
         } else {
             Lampa.Listener.follow('app', function (e) {
                 if (e.type === 'ready') {
                     console.log('QualityLabelPlugin: Событие app:ready сработало');
                     modifyQualityLabels();
-                    startPeriodicCheck();
+                    window.qualityLabelInterval = startPeriodicCheck();
                 }
             });
         }
