@@ -46,66 +46,92 @@
 
         // Функция для обработки качества
         function modifyQualityLabels() {
-            // Находим все элементы с классом selectbox-item__title
             var qualityElements = document.querySelectorAll('.selectbox-item__title');
             if (!qualityElements.length) {
-                console.log('QualityLabelPlugin: Элементы selectbox-item__title не найдены');
-                return;
+                console.log('QualityLabelPlugin: Элементы .selectbox-item__title не найдены');
+                return false;
             }
+
+            console.log('QualityLabelPlugin: Найдено элементов .selectbox-item__title: ' + qualityElements.length);
 
             qualityElements.forEach(function (element) {
                 var text = element.innerText;
-                var modifiedText = text;
-
                 // Проверяем, что текст не был обработан ранее
-                if (element.querySelector('.quality-label')) return;
+                if (element.querySelector('.quality-label')) {
+                    console.log('QualityLabelPlugin: Элемент уже обработан: ' + text);
+                    return;
+                }
+
+                console.log('QualityLabelPlugin: Обрабатываем элемент: ' + text);
 
                 // Заменяем 2160p на 4K
                 if (text.includes('2160p')) {
-                    modifiedText = text.replace('2160p', '4K');
+                    var modifiedText = text.replace('2160p', '4K');
                     element.innerHTML = modifiedText.replace('4K', '<span class="quality-label quality-label-4k">4K</span>');
+                    console.log('QualityLabelPlugin: Заменено 2160p на 4K для: ' + text);
                 }
                 // Заменяем 1440p на 2K
                 else if (text.includes('1440p')) {
-                    modifiedText = text.replace('1440p', '2K');
+                    var modifiedText = text.replace('1440p', '2K');
                     element.innerHTML = modifiedText.replace('2K', '<span class="quality-label quality-label-2k">2K</span>');
+                    console.log('QualityLabelPlugin: Заменено 1440p на 2K для: ' + text);
                 }
-                // Для других разрешений (720p, 1080p и т.д.) добавляем только серый фон
+                // Для других разрешений (720p, 1080p и т.д.) добавляем серый фон
                 else if (text.match(/\d+p/)) {
                     var resolution = text.match(/\d+p/)[0];
-                    element.innerHTML = text.replace(resolution, `<span class="query-label">${resolution}</span>`);
+                    element.innerHTML = text.replace(resolution, `<span class="quality-label">${resolution}</span>`);
+                    console.log('QualityLabelPlugin: Добавлен стиль для разрешения ' + resolution + ' в: ' + text);
+                } else {
+                    console.log('QualityLabelPlugin: Разрешение не найдено в: ' + text);
                 }
             });
+            return true;
         }
 
-        // Выполняем обработку с небольшой задержкой для гарантии загрузки DOM
-        function applyModifications() {
-            setTimeout(modifyQualityLabels, 100);
+        // Функция для повторной попытки обработки с ограничением
+        function tryModifyQualityLabels(attempts = 5, interval = 500) {
+            let attempt = 0;
+            function tryApply() {
+                if (modifyQualityLabels() || attempt >= attempts) {
+                    console.log('QualityLabelPlugin: Обработка завершена или достигнут лимит попыток');
+                    return;
+                }
+                attempt++;
+                console.log('QualityLabelPlugin: Попытка ' + attempt + ' из ' + attempts);
+                setTimeout(tryApply, interval);
+            }
+            tryApply();
         }
 
         // Выполняем обработку при полной загрузке интерфейса
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
-                applyModifications();
+                console.log('QualityLabelPlugin: Событие full:complite сработало');
+                tryModifyQualityLabels();
             }
         });
 
         // Выполняем обработку при изменении активности
         Lampa.Listener.follow('activity', function (e) {
             if (e.type === 'start') {
-                applyModifications();
+                console.log('QualityLabelPlugin: Событие activity:start сработало');
+                tryModifyQualityLabels();
             }
         });
 
         // Выполняем обработку при готовности приложения
         if (window.appready) {
-            applyModifications();
+            console.log('QualityLabelPlugin: Приложение уже готово, запускаем обработку');
+            tryModifyQualityLabels();
         } else {
             Lampa.Listener.follow('app', function (e) {
                 if (e.type === 'ready') {
-                    applyModifications();
+                    console.log('QualityLabelPlugin: Событие app:ready сработало');
+                    tryModifyQualityLabels();
                 }
             });
         }
+    } else {
+        console.log('QualityLabelPlugin: Плагин уже инициализирован');
     }
 })();
