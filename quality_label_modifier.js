@@ -48,9 +48,17 @@
         function modifyQualityLabels() {
             // Находим все элементы с классом selectbox-item__title
             var qualityElements = document.querySelectorAll('.selectbox-item__title');
+            if (!qualityElements.length) {
+                console.log('QualityLabelPlugin: Элементы selectbox-item__title не найдены');
+                return;
+            }
+
             qualityElements.forEach(function (element) {
                 var text = element.innerText;
                 var modifiedText = text;
+
+                // Проверяем, что текст не был обработан ранее
+                if (element.querySelector('.quality-label')) return;
 
                 // Заменяем 2160p на 4K
                 if (text.includes('2160p')) {
@@ -65,63 +73,37 @@
                 // Для других разрешений (720p, 1080p и т.д.) добавляем только серый фон
                 else if (text.match(/\d+p/)) {
                     var resolution = text.match(/\d+p/)[0];
-                    element.innerHTML = text.replace(resolution, `<span class="quality-label">${resolution}</span>`);
+                    element.innerHTML = text.replace(resolution, `<span class="query-label">${resolution}</span>`);
                 }
             });
         }
 
-        // Функция для наблюдения за изменениями в DOM
-        function observeSelectboxChanges() {
-            var target = document.querySelector('.selectbox__content');
-            if (!target) {
-                // Если selectbox__content ещё не существует, пробуем позже
-                setTimeout(observeSelectboxChanges, 500);
-                return;
-            }
-
-            // Создаем наблюдатель за изменениями в DOM
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    if (mutation.addedNodes.length || mutation.removedNodes.length) {
-                        modifyQualityLabels();
-                    }
-                });
-            });
-
-            // Настраиваем наблюдатель
-            observer.observe(target, {
-                childList: true,
-                subtree: true
-            });
+        // Выполняем обработку с небольшой задержкой для гарантии загрузки DOM
+        function applyModifications() {
+            setTimeout(modifyQualityLabels, 100);
         }
 
         // Выполняем обработку при полной загрузке интерфейса
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
-                modifyQualityLabels();
-                observeSelectboxChanges();
+                applyModifications();
             }
         });
 
         // Выполняем обработку при изменении активности
         Lampa.Listener.follow('activity', function (e) {
             if (e.type === 'start') {
-                setTimeout(function () {
-                    modifyQualityLabels();
-                    observeSelectboxChanges();
-                }, 500); // Даем время на рендеринг
+                applyModifications();
             }
         });
 
         // Выполняем обработку при готовности приложения
         if (window.appready) {
-            modifyQualityLabels();
-            observeSelectboxChanges();
+            applyModifications();
         } else {
             Lampa.Listener.follow('app', function (e) {
                 if (e.type === 'ready') {
-                    modifyQualityLabels();
-                    observeSelectboxChanges();
+                    applyModifications();
                 }
             });
         }
