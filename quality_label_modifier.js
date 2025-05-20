@@ -46,21 +46,16 @@
 
         // Функция для обработки качества
         function modifyQualityLabels() {
-            var qualityElements = document.querySelectorAll('.selectbox-item__title');
+            var qualityElements = document.querySelectorAll('.selectbox-item__title:not([data-processed])');
             if (!qualityElements.length) {
-                console.log('QualityLabelPlugin: Элементы .selectbox-item__title не найдены');
+                console.log('QualityLabelPlugin: Новые элементы .selectbox-item__title не найдены');
                 return false;
             }
 
-            console.log('QualityLabelPlugin: Найдено элементов .selectbox-item__title: ' + qualityElements.length);
+            console.log('QualityLabelPlugin: Найдено новых элементов .selectbox-item__title: ' + qualityElements.length);
 
             qualityElements.forEach(function (element) {
                 var text = element.innerText;
-                // Проверяем, что текст не был обработан ранее
-                if (element.querySelector('.quality-label')) {
-                    console.log('QualityLabelPlugin: Элемент уже обработан: ' + text);
-                    return;
-                }
 
                 console.log('QualityLabelPlugin: Обрабатываем элемент: ' + text);
 
@@ -84,30 +79,32 @@
                 } else {
                     console.log('QualityLabelPlugin: Разрешение не найдено в: ' + text);
                 }
+
+                // Помечаем элемент как обработанный
+                element.setAttribute('data-processed', 'true');
             });
             return true;
         }
 
-        // Функция для повторной попытки обработки с ограничением
-        function tryModifyQualityLabels(attempts = 5, interval = 500) {
-            let attempt = 0;
-            function tryApply() {
-                if (modifyQualityLabels() || attempt >= attempts) {
-                    console.log('QualityLabelPlugin: Обработка завершена или достигнут лимит попыток');
-                    return;
+        // Функция для периодической проверки и обработки
+        function startPeriodicCheck() {
+            let intervalId = setInterval(function () {
+                if (!modifyQualityLabels()) {
+                    console.log('QualityLabelPlugin: Проверка завершена, новых элементов не найдено');
+                    // Останавливаем интервал, если элементы больше не находятся
+                    // Можно убрать clearInterval, если требуется постоянная проверка
+                    // clearInterval(intervalId);
                 }
-                attempt++;
-                console.log('QualityLabelPlugin: Попытка ' + attempt + ' из ' + attempts);
-                setTimeout(tryApply, interval);
-            }
-            tryApply();
+            }, 500); // Проверяем каждые 500 мс
+            return intervalId;
         }
 
         // Выполняем обработку при полной загрузке интерфейса
         Lampa.Listener.follow('full', function (e) {
             if (e.type === 'complite') {
                 console.log('QualityLabelPlugin: Событие full:complite сработало');
-                tryModifyQualityLabels();
+                modifyQualityLabels();
+                startPeriodicCheck();
             }
         });
 
@@ -115,19 +112,22 @@
         Lampa.Listener.follow('activity', function (e) {
             if (e.type === 'start') {
                 console.log('QualityLabelPlugin: Событие activity:start сработало');
-                tryModifyQualityLabels();
+                modifyQualityLabels();
+                startPeriodicCheck();
             }
         });
 
         // Выполняем обработку при готовности приложения
         if (window.appready) {
             console.log('QualityLabelPlugin: Приложение уже готово, запускаем обработку');
-            tryModifyQualityLabels();
+            modifyQualityLabels();
+            startPeriodicCheck();
         } else {
             Lampa.Listener.follow('app', function (e) {
                 if (e.type === 'ready') {
                     console.log('QualityLabelPlugin: Событие app:ready сработало');
-                    tryModifyQualityLabels();
+                    modifyQualityLabels();
+                    startPeriodicCheck();
                 }
             });
         }
