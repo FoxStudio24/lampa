@@ -49,16 +49,10 @@
             padding: 10px !important;
             color: white !important;
         }
-        /* Центрирование содержимого блока player-info__values */
+        /* Скрыть player-info__values */
         .player-info__values {
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            text-align: center !important;
-            width: 100% !important;
-            margin-top: 8px !important;
-        }
+    display: none !important;
+}
         /* Убрать фон и блюр у .player-info */
         .player-info {
             background: none !important;
