@@ -42,7 +42,7 @@
                         var logoHtml = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
                             '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />';
 
-                        // Apply logo to full-start-new__title
+                        // Apply logo to full-start-new__title, player-info__body, and head-backward
                         if (!isRussianLogo) {
                             var titleApi = Lampa.TMDB.api(apiPath + "?api_key=" + Lampa.TMDB.key() + "&language=ru");
                             console.log("API URL для названия:", titleApi);
@@ -64,6 +64,16 @@
                                         );
                                     }
                                 });
+
+                                // Update head-backward (before head-backward__title)
+                                a.object.activity.render().find(".head-backward").each(function() {
+                                    var $this = $(this);
+                                    if ($this.find(".head-backward__logo").length === 0) { // Prevent duplicates
+                                        $this.find(".head-backward__title").before(
+                                            '<div class="head-backward__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
+                                        );
+                                    }
+                                });
                             }));
                         } else {
                             var titleHtml = logoHtml + '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
@@ -77,6 +87,16 @@
                                 if ($this.find(".player-info__logo").length === 0) { // Prevent duplicates
                                     $this.find(".player-info__line").before(
                                         '<div class="player-info__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
+                                    );
+                                }
+                            });
+
+                            // Update head-backward (before head-backward__title)
+                            a.object.activity.render().find(".head-backward").each(function() {
+                                var $this = $(this);
+                                if ($this.find(".head-backward__logo").length === 0) { // Prevent duplicates
+                                    $this.find(".head-backward__title").before(
+                                        '<div class="head-backward__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
                                     );
                                 }
                             });
