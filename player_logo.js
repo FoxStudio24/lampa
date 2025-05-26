@@ -40,21 +40,24 @@
         var movie = null;
         if (Lampa.Player && Lampa.Player.data && Lampa.Player.data.movie) {
             movie = Lampa.Player.data.movie;
-            console.log("[PlayerLogo] Фильм найден в Lampa.Player.data.movie:", movie);
+            console.log("[PlayerLogo] Фильм найден в Lampa.Player.data.movie:", JSON.stringify(movie));
         } else if (Lampa.Activity && Lampa.Activity.active && Lampa.Activity.active.movie) {
             movie = Lampa.Activity.active.movie;
-            console.log("[PlayerLogo] Фильм найден в Lampa.Activity.active.movie:", movie);
+            console.log("[PlayerLogo] Фильм найден в Lampa.Activity.active.movie:", JSON.stringify(movie));
         } else if (Lampa.Storage && Lampa.Storage.get("last_movie")) {
             movie = Lampa.Storage.get("last_movie");
-            console.log("[PlayerLogo] Фильм найден в Lampa.Storage.last_movie:", movie);
+            console.log("[PlayerLogo] Фильм найден в Lampa.Storage.last_movie:", JSON.stringify(movie));
+        } else if (window.lampa_settings && window.lampa_settings.movie) {
+            movie = window.lampa_settings.movie;
+            console.log("[PlayerLogo] Фильм найден в window.lampa_settings.movie:", JSON.stringify(movie));
         } else {
-            console.log("[PlayerLogo] Данные о фильме не найдены в Lampa.Player, Lampa.Activity или Lampa.Storage");
+            console.log("[PlayerLogo] Данные о фильме не найдены в Lampa.Player, Lampa.Activity, Lampa.Storage или window.lampa_settings");
             return;
         }
 
         // Проверяем наличие movie.id
         if (!movie.id) {
-            console.log("[PlayerLogo] ID фильма отсутствует в данных:", movie);
+            console.log("[PlayerLogo] ID фильма отсутствует в данных:", JSON.stringify(movie));
             return;
         }
 
@@ -67,7 +70,7 @@
 
         $.get(t, function(e) {
             if (e.logos && e.logos.length > 0) {
-                console.log("[PlayerLogo] Все логотипы:", e.logos);
+                console.log("[PlayerLogo] Все логотипы:", JSON.stringify(e.logos));
                 var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
                 if (!logo) {
                     logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
@@ -75,7 +78,7 @@
                 }
                 if (!logo) {
                     logo = e.logos[0];
-                    console.log("[PlayerLogo] Взят первый доступный логотип:", logo);
+                    console.log("[PlayerLogo] Взят первый доступный логотип:", JSON.stringify(logo));
                 }
                 if (logo && logo.file_path) {
                     var logoPath = "https://image.tmdb.org/t/p/w300" + logo.file_path.replace(".svg", ".png");
@@ -83,7 +86,7 @@
 
                     // HTML для логотипа с современным дизайном
                     var logoHtml = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                        '<img style="margin-bottom: 5px; max-height: 125px; border-radius: 4px;" src="' + logoPath + '" />' +
+                        '<img style="margin-bottom: 5px; max-height: 125px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" src="' + logoPath + '" />' +
                         '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
 
                     // Добавление логотипа перед player-footer-card__title
@@ -95,33 +98,21 @@
                         console.log("[PlayerLogo] Логотип добавлен перед .player-footer-card__title для:", movie.title || movie.name);
                     });
                 } else {
-                    console.log("[PlayerLogo] Логотип невалидный (нет file_path):", logo);
+                    console.log("[PlayerLogo] Логотип невалидный (нет file_path):", JSON.stringify(logo));
                 }
             } else {
                 console.log("[PlayerLogo] Логотипы отсутствуют для:", movie.title || movie.name);
             }
         }).fail(function(jqXHR, textStatus, errorThrown) {
-            console.log("[PlayerLogo] Ошибка TMDB API:", textStatus, errorThrown);
+            console.log("[PlayerLogo] Ошибка TMDB API:", textStatus, errorThrown, "Статус:", jqXHR.status);
         });
     }
 
-    // Периодическая проверка каждые 500 мс
-    var checkInterval = setInterval(function() {
-        if ($(".player-footer-card__title").length) {
-            console.log("[PlayerLogo] Обнаружен .player-footer-card__title, запускаем displayPlayerLogo");
-            displayPlayerLogo();
-        } else {
-            console.log("[PlayerLogo] Ожидание появления .player-footer-card__title...");
-        }
+    // Постоянная проверка каждые 500 мс
+    setInterval(function() {
+        console.log("[PlayerLogo] Проверка наличия .player-footer-card__title");
+        displayPlayerLogo();
     }, 500);
-
-    // Останавливаем интервал через 20 секунд, если элемент не найден
-    setTimeout(function() {
-        if (!$(".player-footer-card__title").length) {
-            clearInterval(checkInterval);
-            console.log("[PlayerLogo] Интервал проверки остановлен, .player-footer-card__title не найден");
-        }
-    }, 20000);
 
     // Проверка при загрузке DOM
     if (document.readyState === "complete" || document.readyState === "interactive") {
