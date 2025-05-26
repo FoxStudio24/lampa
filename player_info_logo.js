@@ -7,6 +7,75 @@
         return;
     }
 
+    // Добавляем CSS стили
+    var customStyles = `
+        <style>
+        /* Скрыть время */
+        .player-info__time {
+            display: none !important;
+        }
+        /* Вертикальное расположение logo + name */
+        .player-info__line {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+        /* Логотип по центру */
+        .player-info__logo {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin-bottom: 8px !important;
+            padding: 0 !important;
+            text-align: center !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            animation: none !important;
+            filter: none !important;
+            outline: none !important;
+            border: none !important;
+            background: none !important;
+            max-height: 100% !important;
+            max-width: 100% !important;
+        }
+        /* Название под логотипом + нормальный цвет */
+        .player-info__name {
+            display: block !important;
+            width: 100% !important;
+            text-align: center !important;
+            padding: 10px !important;
+            color: white !important;
+        }
+        /* Центрирование содержимого блока player-info__values */
+        .player-info__values {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            width: 100% !important;
+            margin-top: 8px !important;
+        }
+        /* Убрать фон и блюр у .player-info */
+        .player-info {
+            background: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        </style>
+    `;
+
+    // Добавляем стили в head
+    $('head').append(customStyles);
+
     // Добавляем настройку в интерфейс Lampa
     try {
         if (Lampa && Lampa.SettingsApi) {
@@ -89,10 +158,10 @@
                             if (logo && logo.file_path) {
                                 var logoPath = "https://image.tmdb.org/t/p/w300" + logo.file_path.replace(".svg", ".png");
 
-                                // HTML для логотипа
-                                var logoHtml = '<div class="player-info__logo" style="display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 5px;">' +
-                                    '<img style="max-height: 125px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); animation: fadeIn 0.5s ease-in;" src="' + logoPath + '" />' +
-                                    '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
+                                // HTML для логотипа (упрощенный, так как стили теперь в CSS)
+                                var logoHtml = '<div class="player-info__logo">' +
+                                    '<img src="' + logoPath + '" />' +
+                                    '</div>';
 
                                 // Добавление логотипа
                                 $playerInfoName.before(logoHtml);
