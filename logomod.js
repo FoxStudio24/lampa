@@ -38,11 +38,11 @@
                         var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
                         console.log("Отображаем логотип:", logoPath);
 
-                        // Common HTML for logo display
+                        // Общий HTML для логотипа
                         var logoHtml = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
                             '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />';
 
-                        // Apply logo to full-start-new__title, player-info__body, and head-backward
+                        // Обработка для всех трех секций
                         if (!isRussianLogo) {
                             var titleApi = Lampa.TMDB.api(apiPath + "?api_key=" + Lampa.TMDB.key() + "&language=ru");
                             console.log("API URL для названия:", titleApi);
@@ -52,52 +52,62 @@
                                 var titleHtml = russianTitle ? logoHtml + '<span style="margin-top: 5px; font-size: 32px; color: #fff;">' + russianTitle + '</span></div>' : logoHtml + '</div>';
                                 titleHtml += '<style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
 
-                                // Update full-start-new__title
+                                // Обновление full-start-new__title
                                 a.object.activity.render().find(".full-start-new__title").html(titleHtml);
+                                console.log("Логотип добавлен в full-start-new__title");
 
-                                // Update player-info__body (before player-info__line)
+                                // Обновление player-info__body (перед player-info__line)
                                 a.object.activity.render().find(".player-info__body").each(function() {
                                     var $this = $(this);
-                                    if ($this.find(".player-info__logo").length === 0) { // Prevent duplicates
+                                    if ($this.find(".player-info__logo").length === 0) {
                                         $this.find(".player-info__line").before(
                                             '<div class="player-info__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
                                         );
+                                        console.log("Логотип добавлен перед player-info__line");
                                     }
                                 });
 
-                                // Update head-backward (before head-backward__title)
+                                // Обновление head-backward (перед head-backward__title)
                                 a.object.activity.render().find(".head-backward").each(function() {
                                     var $this = $(this);
-                                    if ($this.find(".head-backward__logo").length === 0) { // Prevent duplicates
+                                    if ($this.find(".head-backward__logo").length === 0) {
                                         $this.find(".head-backward__title").before(
                                             '<div class="head-backward__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
                                         );
+                                        console.log("Логотип добавлен перед head-backward__title");
+                                    } else {
+                                        console.log("Логотип уже существует в head-backward");
                                     }
                                 });
                             }));
                         } else {
                             var titleHtml = logoHtml + '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
 
-                            // Update full-start-new__title
+                            // Обновление full-start-new__title
                             a.object.activity.render().find(".full-start-new__title").html(titleHtml);
+                            console.log("Логотип добавлен в full-start-new__title");
 
-                            // Update player-info__body (before player-info__line)
+                            // Обновление player-info__body (перед player-info__line)
                             a.object.activity.render().find(".player-info__body").each(function() {
                                 var $this = $(this);
-                                if ($this.find(".player-info__logo").length === 0) { // Prevent duplicates
+                                if ($this.find(".player-info__logo").length === 0) {
                                     $this.find(".player-info__line").before(
                                         '<div class="player-info__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
                                     );
+                                    console.log("Логотип добавлен перед player-info__line");
                                 }
                             });
 
-                            // Update head-backward (before head-backward__title)
+                            // Обновление head-backward (перед head-backward__title)
                             a.object.activity.render().find(".head-backward").each(function() {
                                 var $this = $(this);
-                                if ($this.find(".head-backward__logo").length === 0) { // Prevent duplicates
+                                if ($this.find(".head-backward__logo").length === 0) {
                                     $this.find(".head-backward__title").before(
                                         '<div class="head-backward__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
                                     );
+                                    console.log("Логотип добавлен перед head-backward__title");
+                                } else {
+                                    console.log("Логотип уже существует в head-backward");
                                 }
                             });
                         }
