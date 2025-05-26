@@ -60,6 +60,52 @@
             -webkit-backdrop-filter: none !important;
             box-shadow: none !important;
         }
+        @import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap&subset=cyrillic');
+
+.player-info__name {
+    font-family: 'Poiret One', cursive !important;
+    font-weight: 400 !important;
+    font-size: 32px !important; /* Меньше шрифт */
+}
+.player-info__body {
+    padding: 0em !important;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0)) !important;
+}
+.player-info {
+    top: 0em;
+    left: 0em;
+    right: 0em;
+}
+.player-info__logo {
+    margin-top: 15px!important; /* можно изменить на любое значение */
+}
+.player-panel__body {
+    padding: 1em;
+background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)) !important;
+}
+.player-panel {
+    left: 0em;
+    bottom: 0em;
+    right: 0em;
+
+}
+.player-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: none !important;
+    background-image: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+.player-panel__center > div {
+    display: none !important;
+}
+
+.player-panel__center > .player-panel__playpause {
+    display: flex !important; /* или block, если flex не нужен */
+}
+
+
         @keyframes fadeIn { 
             from { opacity: 0; } 
             to { opacity: 1; } 
