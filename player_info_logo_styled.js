@@ -51,8 +51,8 @@
         }
         /* Скрыть player-info__values */
         .player-info__values {
-    display: none !important;
-}
+            display: none !important;
+        }
         /* Убрать фон и блюр у .player-info */
         .player-info {
             background: none !important;
@@ -92,12 +92,19 @@
         console.error("[PlayerInfoLogo] Ошибка настройки:", e.message);
     }
 
-    // Переменная для хранения текущего названия
+    // Переменная для хранения текущего названия и состояния
     var currentTitle = "";
+    var isLoading = false;
 
     // Функция для получения и отображения логотипа
     function displayPlayerInfoLogo() {
         try {
+            // Предотвращаем множественные одновременные запросы
+            if (isLoading) {
+                console.log("[PlayerInfoLogo] Уже загружается, пропускаем");
+                return;
+            }
+
             if (Lampa && Lampa.Storage && Lampa.Storage.get("player_info_logo") === "1") {
                 console.log("[PlayerInfoLogo] Логотипы отключены");
                 $(".player-info__logo").remove();
@@ -122,24 +129,33 @@
 
             // Получаем название
             var title = $playerTitle.length ? $playerTitle.text().trim() : "";
+            
+            // Очищаем название от лишней информации
+            if (title) {
+                title = title.replace(/\s*\(\d{4}\).*$/, '').replace(/\s*S\d+.*$/i, '').replace(/\s*Сезон.*$/i, '').trim();
+            }
+            
             console.log("[PlayerInfoLogo] Название:", title || "не найдено");
             if (!title) {
                 console.log("[PlayerInfoLogo] Название пустое");
                 return;
             }
 
-            // Проверяем, изменилось ли название (но не блокируем загрузку)
+            // Проверяем, изменилось ли название
             if (currentTitle === title && $(".player-info__logo").length > 0) {
                 console.log("[PlayerInfoLogo] Название не изменилось и логотип уже есть");
                 return;
             }
 
-            // Обновляем текущее название
+            // Всегда удаляем старый логотип перед загрузкой нового
+            $(".player-info__logo").remove();
+            console.log("[PlayerInfoLogo] Старый логотип удален");
+
+            // Устанавливаем флаг загрузки
+            isLoading = true;
             currentTitle = title;
 
-            // Удаляем старый логотип
-            $(".player-info__logo").remove();
-            console.log("[PlayerInfoLogo] Старый логотип удален, загружаем новый для:", title);
+            console.log("[PlayerInfoLogo] Начинаем загрузку логотипа для:", title);
 
             // Запрашиваем ID через TMDB Search API
             var apiKey = "06936145fe8e20be28b02e26b55d3ce6";
