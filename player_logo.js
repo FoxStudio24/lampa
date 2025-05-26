@@ -27,9 +27,6 @@
         console.error("[PlayerInfoLogo] Ошибка при добавлении настройки:", e.message);
     }
 
-    // Переменная для хранения текущего названия
-    let currentTitle = null;
-
     // Функция для получения и отображения логотипа
     function displayPlayerInfoLogo() {
         try {
@@ -41,12 +38,9 @@
             // Проверяем наличие элементов
             var $playerTitle = $(".player-footer-card__title");
             var $playerInfoName = $(".player-info__name");
-            if (!$playerTitle.length) {
-                console.log("[PlayerInfoLogo] Элемент .player-footer-card__title не найден в DOM");
-                return;
-            }
-            if (!$playerInfoName.length) {
-                console.log("[PlayerInfoLogo] Элемент .player-info__name не найден в DOM");
+            console.log("[PlayerInfoLogo] Поиск элементов: .player-footer-card__title =", !!$playerTitle.length, ", .player-info__name =", !!$playerInfoName.length);
+            if (!$playerTitle.length || !$playerInfoName.length) {
+                console.log("[PlayerInfoLogo] Один из элементов не найден в DOM");
                 return;
             }
 
@@ -58,19 +52,11 @@
                 return;
             }
 
-            // Проверяем, изменилось ли название
-            if (title === currentTitle) {
-                console.log("[PlayerInfoLogo] Название не изменилось, пропускаем");
+            // Проверяем наличие логотипа
+            if ($playerInfoName.parent().find(".player-info__logo").length) {
+                console.log("[PlayerInfoLogo] Логотип уже существует, пропускаем");
                 return;
             }
-
-            // Обновляем текущее название
-            currentTitle = title;
-            console.log("[PlayerInfoLogo] Обновлено текущее название:", currentTitle);
-
-            // Удаляем старый логотип
-            $(".player-info__logo").remove();
-            console.log("[PlayerInfoLogo] Старый логотип удален");
 
             // Запрашиваем ID через TMDB Search API
             var apiKey = "06936145fe8e20be28b02e26b55d3ce6";
@@ -78,6 +64,7 @@
             console.log("[PlayerInfoLogo] API URL для поиска:", searchUrl);
 
             $.get(searchUrl, function(data) {
+                console.log("[PlayerInfoLogo] Ответ TMDB (поиск):", data);
                 if (data.results && data.results.length > 0) {
                     var result = data.results[0];
                     var isSerial = result.media_type === "tv";
@@ -90,8 +77,8 @@
                     console.log("[PlayerInfoLogo] API URL для логотипов:", logoUrl);
 
                     $.get(logoUrl, function(e) {
+                        console.log("[PlayerInfoLogo] Ответ TMDB (логотипы):", e);
                         if (e.logos && e.logos.length > 0) {
-                            console.log("[PlayerInfoLogo] Все логотипы:", JSON.stringify(e.logos));
                             var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; }) ||
                                        e.logos.find(function(l) { return l.iso_639_1 === "en"; }) ||
                                        e.logos[0];
@@ -135,22 +122,28 @@
     // Наблюдение за изменениями
     function observePlayerFooter() {
         try {
-            var target = document.querySelector(".player-footer-card__title");
+            var target = document.querySelector(".player-footer__body");
             if (!target) {
-                console.log("[PlayerInfoLogo] Элемент .player-footer-card__title не найден для наблюдения");
+                console.log("[PlayerInfoLogo] Элемент .player-footer__body не найден для наблюдения");
                 return;
             }
 
             var observer = new MutationObserver(function(mutations) {
-                console.log("[PlayerInfoLogo] Обнаружены изменения в .player-footer-card__title");
+                console.log("[PlayerInfoLogo] Обнаружены изменения в .player-footer__body");
                 displayPlayerInfoLogo();
             });
-            observer.observe(target, { childList: true, subtree: true, characterData: true });
-            console.log("[PlayerInfoLogo] MutationObserver запущен");
+            observer.observe(target, { childList: true, subtree: true });
+            console.log("[PlayerInfoLogo] MutationObserver запущен для .player-footer__body");
         } catch (e) {
             console.error("[PlayerInfoLogo] Ошибка в observePlayerFooter:", e.message);
         }
     }
+
+    // Периодическая проверка каждые 2 секунды
+    setInterval(function() {
+        console.log("[PlayerInfoLogo] Периодическая проверка DOM");
+        displayPlayerInfoLogo();
+    }, 2000);
 
     // Запуск
     try {
