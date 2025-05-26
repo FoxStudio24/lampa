@@ -23,8 +23,6 @@
                     description: "Отображает логотип сериала над названием эпизода в плеере"
                 }
             });
-        } else {
-            console.error("[PlayerInfoLogo] Lampa или Lampa.SettingsApi не найдены");
         }
     } catch (e) {
         console.error("[PlayerInfoLogo] Ошибка при добавлении настройки:", e.message);
@@ -82,55 +80,38 @@
 
                                 // Добавление логотипа
                                 $playerInfoName.each(function() {
-                                    var $this = $(this);
-                                    $this.before('<div class="player-info__logo" style="margin-bottom: 5px;">' + logoHtml + '</div>');
+                                    $(this).before('<div class="player-info__logo" style="margin-bottom: 5px;">' + logoHtml + '</div>');
                                 });
                             }
                         }
-                    }).fail(function(jqXHR) {
-                        console.error("[PlayerInfoLogo] Ошибка TMDB API (логотипы), Статус:", jqXHR.status);
                     });
                 }
-            }).fail(function(jqXHR) {
-                console.error("[PlayerInfoLogo] Ошибка TMDB API (поиск), Статус:", jqXHR.status);
             });
         } catch (e) {
             console.error("[PlayerInfoLogo] Ошибка в displayPlayerInfoLogo:", e.message);
         }
     }
 
-    // Наблюдение за изменениями
-    function observePlayerFooter() {
-        try {
-            var target = document.querySelector(".player-footer__body") || document.body;
-            if (!target) {
-                console.error("[PlayerInfoLogo] Элемент для наблюдения не найден");
-                return;
-            }
-
-            var observer = new MutationObserver(function(mutations) {
-                var titleChanged = mutations.some(function(mutation) {
-                    return mutation.type === "childList" || mutation.type === "characterData";
-                });
-                if (titleChanged) {
-                    displayPlayerInfoLogo();
+    // Подписка на события Lampa
+    try {
+        if (Lampa && Lampa.Listener) {
+            Lampa.Listener.follow('player', function(e) {
+                if (e.type === 'create' || e.type === 'update') {
+                    setTimeout(displayPlayerInfoLogo, 100);
                 }
             });
-            observer.observe(target, { childList: true, subtree: true, characterData: true });
-        } catch (e) {
-            console.error("[PlayerInfoLogo] Ошибка в observePlayerFooter:", e.message);
         }
+    } catch (e) {
+        console.error("[PlayerInfoLogo] Ошибка при подписке на события Lampa:", e.message);
     }
 
     // Запуск
     try {
         if (document.readyState === "complete" || document.readyState === "interactive") {
-            displayPlayerInfoLogo();
-            observePlayerFooter();
+            setTimeout(displayPlayerInfoLogo, 100);
         } else {
             document.addEventListener("DOMContentLoaded", function() {
-                displayPlayerInfoLogo();
-                observePlayerFooter();
+                setTimeout(displayPlayerInfoLogo, 100);
             });
         }
     } catch (e) {
