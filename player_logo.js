@@ -35,12 +35,6 @@
             return;
         }
 
-        // Проверяем, не добавлен ли уже логотип
-        if ($playerInfoName.parent().find(".player-info__logo").length) {
-            console.log("[PlayerInfoLogo] Логотип уже существует над .player-info__name");
-            return;
-        }
-
         // Получаем название из .player-footer-card__title
         var title = $playerTitle.text().trim();
         console.log("[PlayerInfoLogo] Название из .player-footer-card__title:", title);
@@ -48,6 +42,10 @@
             console.log("[PlayerInfoLogo] Название пустое, пропускаем");
             return;
         }
+
+        // Удаляем старый логотип
+        $(".player-info__logo").remove();
+        console.log("[PlayerInfoLogo] Старый логотип удален");
 
         // Запрашиваем ID фильма/сериала через TMDB Search API
         var apiKey = "06936145fe8e20be28b02e26b55d3ce6";
@@ -118,14 +116,32 @@
         displayPlayerInfoLogo();
     }, 500);
 
+    // Наблюдение за изменениями в .player-footer__body
+    function observePlayerFooter() {
+        var target = document.querySelector(".player-footer__body");
+        if (!target) {
+            console.log("[PlayerInfoLogo] Элемент .player-footer__body не найден для наблюдения");
+            return;
+        }
+
+        var observer = new MutationObserver(function(mutations) {
+            console.log("[PlayerInfoLogo] Обнаружены изменения в .player-footer__body");
+            displayPlayerInfoLogo();
+        });
+        observer.observe(target, { childList: true, subtree: true });
+        console.log("[PlayerInfoLogo] MutationObserver запущен для .player-footer__body");
+    }
+
     // Проверка при загрузке DOM
     if (document.readyState === "complete" || document.readyState === "interactive") {
-        console.log("[PlayerInfoLogo] DOM загружен, запускаем проверку");
+        console.log("[PlayerInfoLogo] DOM загружен, запускаем проверку и наблюдение");
         displayPlayerInfoLogo();
+        observePlayerFooter();
     } else {
         document.addEventListener("DOMContentLoaded", function() {
-            console.log("[PlayerInfoLogo] DOM загружен, запускаем проверку");
+            console.log("[PlayerInfoLogo] DOM загружен, запускаем проверку и наблюдение");
             displayPlayerInfoLogo();
+            observePlayerFooter();
         });
     }
 }();
