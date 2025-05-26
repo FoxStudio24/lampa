@@ -16,6 +16,9 @@
         }
     });
 
+    // Переменная для хранения текущего названия
+    let currentTitle = null;
+
     // Функция для получения и отображения логотипа
     function displayPlayerInfoLogo() {
         if ("1" == Lampa.Storage.get("player_info_logo")) {
@@ -38,10 +41,20 @@
         // Получаем название из .player-footer-card__title
         var title = $playerTitle.text().trim();
         console.log("[PlayerInfoLogo] Название из .player-footer-card__title:", title);
+
+        // Проверяем, изменилось ли название
+        if (title === currentTitle) {
+            console.log("[PlayerInfoLogo] Название не изменилось, пропускаем");
+            return;
+        }
         if (!title) {
             console.log("[PlayerInfoLogo] Название пустое, пропускаем");
             return;
         }
+
+        // Обновляем текущее название
+        currentTitle = title;
+        console.log("[PlayerInfoLogo] Обновлено текущее название:", currentTitle);
 
         // Удаляем старый логотип
         $(".player-info__logo").remove();
@@ -81,15 +94,16 @@
                             console.log("[PlayerInfoLogo] Отображаем логотип:", logoPath);
 
                             // HTML для логотипа
-                            var logoHtml = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
+                            var logoHtml = '<div style=\"display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 1s ease-in-out;\">' +
                                 '<img style="margin-bottom: 5px; max-height: 125px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" src="' + logoPath + '" />' +
-                                '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
+                                '</div>' +
+                                '<style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
 
                             // Добавление логотипа перед .player-info__name
                             $playerInfoName.each(function() {
                                 var $this = $(this);
                                 $this.before(
-                                    '<div class="player-info__logo" style="margin-bottom: 5px;">' + logoHtml + '</div>'
+                                    '<div class=\"player-info__logo\">' + logoHtml + '</div>'
                                 );
                                 console.log("[PlayerInfoLogo] Логотип добавлен перед .player-info__name для:", title);
                             });
@@ -110,26 +124,24 @@
         });
     }
 
-    // Постоянная проверка каждые 500 мс
-    setInterval(function() {
-        console.log("[PlayerInfoLogo] Проверка наличия .player-footer-card__title и .player-info__name");
-        displayPlayerInfoLogo();
-    }, 500);
-
-    // Наблюдение за изменениями в .player-footer__body
+    // Наблюдение за изменениями в .player-footer-card__title
     function observePlayerFooter() {
-        var target = document.querySelector(".player-footer__body");
+        var target = document.querySelector(".player-footer-card__title");
         if (!target) {
-            console.log("[PlayerInfoLogo] Элемент .player-footer__body не найден для наблюдения");
+            console.log("[PlayerInfoLogo] Элемент .player-footer-card__title не найден для наблюдения");
             return;
         }
 
         var observer = new MutationObserver(function(mutations) {
-            console.log("[PlayerInfoLogo] Обнаружены изменения в .player-footer__body");
-            displayPlayerInfoLogo();
-        });
-        observer.observe(target, { childList: true, subtree: true });
-        console.log("[PlayerInfoLogo] MutationObserver запущен для .player-footer__body");
+            mutations.forEach(function(mutation) {
+                if (mutation.type === "childList" || mutation.type === "characterData") {
+                    console.log("[PlayerInfoLogo] Обнаружены изменения в .player-footer-card__title");
+                    displayPlayerInfoLogo();
+                }
+            });
+        };
+        observer.observe(target, { childList: true, subtree: true, characterData: true });
+        console.log("[PlayerInfoLogo] MutationObserver запущен для .player-footer-card__title");
     }
 
     // Проверка при загрузке DOM
@@ -139,7 +151,7 @@
         observePlayerFooter();
     } else {
         document.addEventListener("DOMContentLoaded", function() {
-            console.log("[PlayerInfoLogo] DOM загружен, запускаем проверку и наблюдение");
+            console.log("[PlayerInfo]Logo] DOM загружен, запускаем проверку и наблюдение");
             displayPlayerInfoLogo();
             observePlayerFooter();
         });
