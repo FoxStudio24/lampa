@@ -40,7 +40,7 @@
 
                         // Общий HTML для логотипа
                         var logoHtml = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                            '<img style="margin-top: 5px; max-height: 125px;" src="' + logoPath + '" />';
+                            '<img style="margin-bottom: 5px; max-height: 125px;" src="' + logoPath + '" />';
 
                         // Обработка для всех трех секций
                         if (!isRussianLogo) {
@@ -56,17 +56,6 @@
                                 a.object.activity.render().find(".full-start-new__title").html(titleHtml);
                                 console.log("Логотип добавлен в full-start-new__title");
 
-                                // Обновление player-info__body (перед player-info__line)
-                                a.object.activity.render().find(".player-info__body").each(function() {
-                                    var $this = $(this);
-                                    if ($this.find(".player-info__logo").length === 0) {
-                                        $this.find(".player-info__line").before(
-                                            '<div class="player-info__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
-                                        );
-                                        console.log("Логотип добавлен перед player-info__line");
-                                    }
-                                });
-
                                 // Обновление head-backward (перед head-backward__title)
                                 a.object.activity.render().find(".head-backward").each(function() {
                                     var $this = $(this);
@@ -79,6 +68,19 @@
                                         console.log("Логотип уже существует в head-backward");
                                     }
                                 });
+
+                                // Обновление player-info__line (перед player-info__name)
+                                a.object.activity.render().find(".player-info__line").each(function() {
+                                    var $this = $(this);
+                                    if ($this.find(".player-info__logo").length === 0) {
+                                        $this.find(".player-info__name").before(
+                                            '<div class="player-info__logo" style="margin-bottom: 5px;">' + titleHtml + '</div>'
+                                        );
+                                        console.log("Логотип добавлен перед player-info__name");
+                                    } else {
+                                        console.log("Логотип уже существует в player-info__line");
+                                    }
+                                });
                             }));
                         } else {
                             var titleHtml = logoHtml + '</div><style>@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }</style>';
@@ -87,27 +89,29 @@
                             a.object.activity.render().find(".full-start-new__title").html(titleHtml);
                             console.log("Логотип добавлен в full-start-new__title");
 
-                            // Обновление player-info__body (перед player-info__line)
-                            a.object.activity.render().find(".player-info__body").each(function() {
-                                var $this = $(this);
-                                if ($this.find(".player-info__logo").length === 0) {
-                                    $this.find(".player-info__line").before(
-                                        '<div class="player-info__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
-                                    );
-                                    console.log("Логотип добавлен перед player-info__line");
-                                }
-                            });
-
                             // Обновление head-backward (перед head-backward__title)
                             a.object.activity.render().find(".head-backward").each(function() {
                                 var $this = $(this);
                                 if ($this.find(".head-backward__logo").length === 0) {
                                     $this.find(".head-backward__title").before(
                                         '<div class="head-backward__logo" style="margin-bottom: 10px;">' + titleHtml + '</div>'
+                                        );
+                                        console.log("Логотип добавлен перед head-backward__title");
+                                    } else {
+                                        console.log("Логотип уже существует в head-backward");
+                                    }
+                                });
+
+                            // Обновление player-info__line (перед player-info__name)
+                            a.object.activity.render().find(".player-info__line").each(function() {
+                                var $this = $(this);
+                                if ($this.find(".player-info__logo").length === 0) {
+                                    $this.find(".player-info__name").before(
+                                        '<div class="player-info__logo" style="margin-bottom: 5px;">' + titleHtml + '</div>'
                                     );
-                                    console.log("Логотип добавлен перед head-backward__title");
+                                    console.log("Логотип добавлен перед player-info__name");
                                 } else {
-                                    console.log("Логотип уже существует в head-backward");
+                                    console.log("Логотип уже существует в player-info__line");
                                 }
                             });
                         }
