@@ -99,6 +99,11 @@
     // Функция для получения и отображения логотипа
     function displayPlayerInfoLogo() {
         try {
+            console.log("[PlayerInfoLogo] Запуск displayPlayerInfoLogo");
+            
+            // Сбрасываем флаг загрузки в начале функции
+            isLoading = false;
+            
             // Предотвращаем множественные одновременные запросы
             if (isLoading) {
                 console.log("[PlayerInfoLogo] Уже загружается, пропускаем");
@@ -119,7 +124,7 @@
                 return;
             }
 
-            // Ищем заголовок
+            // Ищем заголовок в разных местах
             var $playerTitle = $(".player-footer-card__title");
             if (!$playerTitle.length) {
                 console.log("[PlayerInfoLogo] .player-footer-card__title не найден, ищем запасные");
@@ -135,21 +140,24 @@
                 title = title.replace(/\s*\(\d{4}\).*$/, '').replace(/\s*S\d+.*$/i, '').replace(/\s*Сезон.*$/i, '').trim();
             }
             
-            console.log("[PlayerInfoLogo] Название:", title || "не найдено");
+            console.log("[PlayerInfoLogo] Текущее название:", title || "не найдено");
+            console.log("[PlayerInfoLogo] Предыдущее название:", currentTitle);
+            
             if (!title) {
                 console.log("[PlayerInfoLogo] Название пустое");
                 return;
             }
 
-            // Проверяем, изменилось ли название
-            if (currentTitle === title && $(".player-info__logo").length > 0) {
-                console.log("[PlayerInfoLogo] Название не изменилось и логотип уже есть");
-                return;
-            }
-
-            // Всегда удаляем старый логотип перед загрузкой нового
+            // ВСЕГДА удаляем старый логотип при смене контента
             $(".player-info__logo").remove();
             console.log("[PlayerInfoLogo] Старый логотип удален");
+
+            // Проверяем, изменилось ли название
+            if (currentTitle === title) {
+                console.log("[PlayerInfoLogo] Название не изменилось, но загружаем логотип заново");
+            } else {
+                console.log("[PlayerInfoLogo] Название изменилось с '" + currentTitle + "' на '" + title + "'");
+            }
 
             // Устанавливаем флаг загрузки
             isLoading = true;
@@ -193,25 +201,38 @@
                         } else {
                             console.log("[PlayerInfoLogo] Логотипы не найдены для:", title);
                         }
+                        isLoading = false;
                     }).fail(function(jqXHR) {
                         console.error("[PlayerInfoLogo] Ошибка TMDB API (логотипы):", jqXHR.status);
+                        isLoading = false;
                     });
                 } else {
                     console.log("[PlayerInfoLogo] Результаты поиска не найдены для:", title);
+                    isLoading = false;
                 }
             }).fail(function(jqXHR) {
                 console.error("[PlayerInfoLogo] Ошибка TMDB API (поиск):", jqXHR.status);
+                isLoading = false;
             });
         } catch (e) {
             console.error("[PlayerInfoLogo] Ошибка:", e.message);
+            isLoading = false;
         }
     }
 
-    // Функция для очистки логотипа
+    // Функция для полной очистки логотипа и сброса состояния
     function clearLogo() {
         $(".player-info__logo").remove();
         currentTitle = "";
-        console.log("[PlayerInfoLogo] Логотип очищен");
+        isLoading = false;
+        console.log("[PlayerInfoLogo] Логотип и состояние очищены");
+    }
+
+    // Функция для принудительного обновления логотипа
+    function forceUpdateLogo() {
+        console.log("[PlayerInfoLogo] Принудительное обновление логотипа");
+        clearLogo();
+        setTimeout(displayPlayerInfoLogo, 1000);
     }
 
     // Подписка на события Lampa
@@ -221,23 +242,35 @@
                 console.log("[PlayerInfoLogo] Событие плеера:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
+                    setTimeout(displayPlayerInfoLogo, 2000);
+                } else if (e.type === 'end' || e.type === 'stop') {
+                    clearLogo();
                 }
-                setTimeout(displayPlayerInfoLogo, 2000);
             });
             
             Lampa.Listener.follow('card', function(e) {
                 console.log("[PlayerInfoLogo] Событие карточки:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
+                    setTimeout(displayPlayerInfoLogo, 2000);
                 }
-                setTimeout(displayPlayerInfoLogo, 2000);
             });
 
             Lampa.Listener.follow('activity', function(e) {
+                console.log("[PlayerInfoLogo] Событие активности:", e.type);
                 if (e.type === 'start') {
-                    console.log("[PlayerInfoLogo] Активность изменилась, очищаем логотип");
+                    console.log("[PlayerInfoLogo] Активность изменилась, принудительно обновляем логотип");
+                    forceUpdateLogo();
+                } else if (e.type === 'destroy') {
                     clearLogo();
-                    setTimeout(displayPlayerInfoLogo, 2500);
+                }
+            });
+
+            // Дополнительное событие для отслеживания смены контента
+            Lampa.Listener.follow('torrent', function(e) {
+                if (e.type === 'start') {
+                    console.log("[PlayerInfoLogo] Новый торрент, обновляем логотип");
+                    forceUpdateLogo();
                 }
             });
 
@@ -245,6 +278,43 @@
         }
     } catch (e) {
         console.error("[PlayerInfoLogo] Ошибка подписки:", e.message);
+    }
+
+    // Отслеживание изменений в DOM
+    var observer = new MutationObserver(function(mutations) {
+        var shouldUpdate = false;
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                // Проверяем, появились ли новые элементы с информацией о плеере
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.classList && (
+                            node.classList.contains('player-info__name') ||
+                            node.classList.contains('player-footer-card__title') ||
+                            $(node).find('.player-info__name, .player-footer-card__title').length
+                        )) {
+                            shouldUpdate = true;
+                        }
+                    }
+                });
+            }
+        });
+        
+        if (shouldUpdate) {
+            console.log("[PlayerInfoLogo] DOM изменился, обновляем логотип");
+            setTimeout(forceUpdateLogo, 500);
+        }
+    });
+
+    // Запускаем observer для отслеживания изменений
+    try {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        console.log("[PlayerInfoLogo] MutationObserver запущен");
+    } catch (e) {
+        console.error("[PlayerInfoLogo] Ошибка MutationObserver:", e.message);
     }
 
     // Запуск с задержкой
@@ -259,4 +329,12 @@
     } catch (e) {
         console.error("[PlayerInfoLogo] Ошибка инициализации:", e.message);
     }
+
+    // Дополнительная проверка каждые 5 секунд для надежности
+    setInterval(function() {
+        if ($(".player-info__name").length && !$(".player-info__logo").length) {
+            console.log("[PlayerInfoLogo] Периодическая проверка: логотип отсутствует, обновляем");
+            displayPlayerInfoLogo();
+        }
+    }, 5000);
 }();
