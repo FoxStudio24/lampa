@@ -10,6 +10,7 @@
     // Добавляем CSS стили
     var customStyles = `
         <style>
+         @import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap&subset=cyrillic');
         /* Скрыть время */
         .player-info__time {
             display: none !important;
@@ -60,8 +61,6 @@
             -webkit-backdrop-filter: none !important;
             box-shadow: none !important;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap&subset=cyrillic');
-
 .player-info__name {
     font-family: 'Poiret One', cursive !important;
     font-weight: 400 !important;
