@@ -100,14 +100,21 @@
 
     // Переменная для хранения текущего названия
     var currentTitle = "";
+    var logoLoadTimeout = null;
 
     // Функция для получения и отображения логотипа
-    function displayPlayerInfoLogo() {
+    function displayPlayerInfoLogo(forceReload) {
         try {
+            // Очищаем предыдущий таймаут
+            if (logoLoadTimeout) {
+                clearTimeout(logoLoadTimeout);
+            }
+
             if (Lampa && Lampa.Storage && Lampa.Storage.get("player_info_logo") === "1") {
                 console.log("[PlayerInfoLogo] Логотипы отключены");
                 // Удаляем логотип если отключен
                 $(".player-info__logo").remove();
+                currentTitle = "";
                 return;
             }
 
@@ -119,16 +126,22 @@
                 return;
             }
 
-            // Ищем заголовок
+            // Ищем заголовок в разных местах
             var $playerTitle = $(".player-footer-card__title");
             if (!$playerTitle.length) {
                 console.log("[PlayerInfoLogo] .player-footer-card__title не найден, ищем запасные");
-                $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title]");
+                $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title], .player-info__name");
                 console.log("[PlayerInfoLogo] Запасной заголовок найден:", !!$playerTitle.length);
             }
 
             // Получаем название
-            var title = $playerTitle.length ? $playerTitle.text().trim() : "";
+            var title = "";
+            if ($playerTitle.length) {
+                title = $playerTitle.first().text().trim();
+                // Очищаем название от лишних символов и информации
+                title = title.replace(/\s*\(\d{4}\).*$/, '').replace(/\s*S\d+.*$/i, '').replace(/\s*Сезон.*$/i, '').trim();
+            }
+            
             console.log("[PlayerInfoLogo] Название:", title || "не найдено");
             if (!title) {
                 console.log("[PlayerInfoLogo] Название пустое");
@@ -139,9 +152,14 @@
             }
 
             // Проверяем, изменилось ли название
-            if (currentTitle === title) {
+            if (currentTitle === title && !forceReload) {
                 console.log("[PlayerInfoLogo] Название не изменилось, логотип уже актуальный");
-                return;
+                // Но все равно проверим, есть ли логотип на странице
+                if (!$(".player-info__logo").length) {
+                    console.log("[PlayerInfoLogo] Логотип отсутствует, загружаем заново");
+                } else {
+                    return;
+                }
             }
 
             // Обновляем текущее название
@@ -149,7 +167,7 @@
 
             // Всегда удаляем старый логотип при смене контента
             $(".player-info__logo").remove();
-            console.log("[PlayerInfoLogo] Старый логотип удален");
+            console.log("[PlayerInfoLogo] Старый логотип удален, загружаем новый для:", title);
 
             // Запрашиваем ID через TMDB Search API
             var apiKey = "06936145fe8e20be28b02e26b55d3ce6";
@@ -197,11 +215,25 @@
         }
     }
 
-    // Функция для очистки логотипа
+    // Функция для принудительной очистки логотипа
     function clearLogo() {
         $(".player-info__logo").remove();
         currentTitle = "";
-        console.log("[PlayerInfoLogo] Логотип очищен");
+        if (logoLoadTimeout) {
+            clearTimeout(logoLoadTimeout);
+            logoLoadTimeout = null;
+        }
+        console.log("[PlayerInfoLogo] Логотип принудительно очищен");
+    }
+
+    // Функция отложенной загрузки логотипа
+    function delayedLogoLoad(delay, forceReload) {
+        if (logoLoadTimeout) {
+            clearTimeout(logoLoadTimeout);
+        }
+        logoLoadTimeout = setTimeout(function() {
+            displayPlayerInfoLogo(forceReload);
+        }, delay || 1500);
     }
 
     // Подписка на события Lampa
@@ -210,27 +242,64 @@
             // Очищаем логотип при начале загрузки нового контента
             Lampa.Listener.follow('player', function(e) {
                 console.log("[PlayerInfoLogo] Событие плеера:", e.type);
-                if (e.type === 'start' || e.type === 'loading') {
+                if (e.type === 'start' || e.type === 'loading' || e.type === 'play') {
                     clearLogo();
                 }
-                setTimeout(displayPlayerInfoLogo, 1500);
+                delayedLogoLoad(2000, true);
             });
             
             Lampa.Listener.follow('card', function(e) {
                 console.log("[PlayerInfoLogo] Событие карточки:", e.type);
-                if (e.type === 'start' || e.type === 'loading') {
+                if (e.type === 'start' || e.type === 'loading' || e.type === 'open') {
                     clearLogo();
                 }
-                setTimeout(displayPlayerInfoLogo, 1500);
+                delayedLogoLoad(2000, true);
             });
 
             // Дополнительные события для надежности
             Lampa.Listener.follow('activity', function(e) {
-                if (e.type === 'start') {
+                if (e.type === 'start' || e.type === 'change') {
                     console.log("[PlayerInfoLogo] Активность изменилась, очищаем логотип");
                     clearLogo();
+                    delayedLogoLoad(2500, true);
                 }
             });
+
+            // Отслеживаем изменения в DOM
+            var observer = new MutationObserver(function(mutations) {
+                var shouldUpdate = false;
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        // Проверяем изменения в элементах с названиями
+                        var relevantChange = $(mutation.target).find('.player-info__name, .player-footer-card__title, .card__title').length > 0 ||
+                                           $(mutation.target).is('.player-info__name, .player-footer-card__title, .card__title');
+                        if (relevantChange) {
+                            shouldUpdate = true;
+                        }
+                    }
+                    if (mutation.type === 'characterData') {
+                        var parent = $(mutation.target).parent();
+                        if (parent.is('.player-info__name, .player-footer-card__title, .card__title')) {
+                            shouldUpdate = true;
+                        }
+                    }
+                });
+                
+                if (shouldUpdate) {
+                    console.log("[PlayerInfoLogo] DOM изменился, обновляем логотип");
+                    clearLogo();
+                    delayedLogoLoad(1000, true);
+                }
+            });
+
+            // Наблюдаем за изменениями в body
+            if (document.body) {
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
 
             console.log("[PlayerInfoLogo] Подписка на события установлена");
         }
@@ -242,11 +311,20 @@
     try {
         setTimeout(function checkDOM() {
             console.log("[PlayerInfoLogo] Проверка DOM");
-            displayPlayerInfoLogo();
+            displayPlayerInfoLogo(true);
             if (!$(".player-info__name").length) {
                 setTimeout(checkDOM, 2000);
             }
         }, 1500);
+
+        // Дополнительная проверка через больший интервал
+        setInterval(function() {
+            var $playerInfoName = $(".player-info__name");
+            if ($playerInfoName.length && !$(".player-info__logo").length) {
+                console.log("[PlayerInfoLogo] Периодическая проверка - логотип отсутствует, загружаем");
+                displayPlayerInfoLogo(true);
+            }
+        }, 5000);
     } catch (e) {
         console.error("[PlayerInfoLogo] Ошибка инициализации:", e.message);
     }
