@@ -134,6 +134,10 @@
             font-size: 1em;
             margin: 0 0em;
        }
+       .player-panel__pip,.player-panel__volume {
+            display: none !important;
+       }
+
 
         
         @keyframes fadeIn { 
