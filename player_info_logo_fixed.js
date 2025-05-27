@@ -146,13 +146,22 @@
         // Ищем кнопку play/pause в первой линии
         var $playPauseBtn = $('.player-panel__line:first .player-panel__playpause');
         if ($playPauseBtn.length) {
-            // Перемещаем её в начало левой секции второй линии
+            // Перемещаем её в левую секцию второй линии
             var $leftSection = $('.player-panel__line-two .player-panel__left');
             if ($leftSection.length) {
-                // Добавляем в начало левой секции
-                $leftSection.prepend($playPauseBtn.clone());
-                $playPauseBtn.remove();
-                console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в начало левой секции");
+                // Проверяем, что кнопки еще нет в левой секции
+                if (!$leftSection.find('.player-panel__playpause').length) {
+                    // Находим кнопку next (вторую кнопку) и вставляем play/pause перед ней
+                    var $nextBtn = $leftSection.find('.player-panel__next');
+                    if ($nextBtn.length) {
+                        $nextBtn.before($playPauseBtn.detach());
+                        console.log("[PlayerInfoLogo] Кнопка play/pause перемещена между prev и next");
+                    } else {
+                        // Если нет кнопки next, добавляем в конец
+                        $leftSection.append($playPauseBtn.detach());
+                        console.log("[PlayerInfoLogo] Кнопка play/pause добавлена в конец левой секции");
+                    }
+                }
             }
         }
     }
