@@ -50,7 +50,7 @@
         .player-info__logo-text {
             font-family: 'Comfortaa', 'Montserrat', sans-serif !important;
             font-weight: 700 !important;
-            font-size: 42px !important;
+            font-size: 52px !important;
             color: white !important;
             text-align: center !important;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8) !important;
@@ -189,7 +189,7 @@
     function createImageLogo(logoPath) {
         var logoId = ++uniqueLogoId;
         var logoHtml = '<div class="player-info__logo" data-logo-id="' + logoId + '">' +
-            '<img src="' + logoPath + '" alt="Logo" style="max-height: 80px; max-width: 300px;" />' +
+            '<img src="' + logoPath + '" alt="Logo" style="max-height: 120px; max-width: 400px;" />' +
             '</div>';
         return logoHtml;
     }
@@ -248,10 +248,59 @@
         return scored[0] && scored[0].score > 50 ? scored[0].item : null;
     }
 
+    // Функция проверки, является ли контент трейлером
+    function isTrailerContent() {
+        // Проверяем URL
+        var currentUrl = window.location.href || "";
+        if (currentUrl.indexOf("trailer") !== -1 || currentUrl.indexOf("трейлер") !== -1) {
+            return true;
+        }
+        
+        // Проверяем заголовки страницы
+        var pageTitle = document.title || "";
+        if (pageTitle.toLowerCase().indexOf("trailer") !== -1 || 
+            pageTitle.toLowerCase().indexOf("трейлер") !== -1) {
+            return true;
+        }
+        
+        // Проверяем текст на странице
+        var playerInfoText = $(".player-info__name, .player-footer-card__title, .card__title").text().toLowerCase();
+        if (playerInfoText.indexOf("trailer") !== -1 || 
+            playerInfoText.indexOf("трейлер") !== -1 ||
+            playerInfoText.indexOf("official trailer") !== -1 ||
+            playerInfoText.indexOf("teaser") !== -1 ||
+            playerInfoText.indexOf("тизер") !== -1) {
+            return true;
+        }
+        
+        // Проверяем наличие элементов, характерных для трейлеров
+        if ($(".trailers, .trailer-list, [class*='trailer']").length > 0) {
+            return true;
+        }
+        
+        // Проверяем, есть ли в тексте характерные слова для трейлеров
+        var bodyText = $("body").text().toLowerCase();
+        var trailerKeywords = ["opening credits", "featurette", "behind the scenes", "making of"];
+        for (var i = 0; i < trailerKeywords.length; i++) {
+            if (playerInfoText.indexOf(trailerKeywords[i]) !== -1) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     // Основная функция отображения логотипа
     function displayPlayerInfoLogo() {
         try {
             console.log("[PlayerInfoLogo] Запуск displayPlayerInfoLogo");
+            
+            // Проверяем, является ли контент трейлером
+            if (isTrailerContent()) {
+                console.log("[PlayerInfoLogo] Обнаружен трейлер, логотип не показываем");
+                clearAllLogos();
+                return;
+            }
             
             // Предотвращаем множественные запросы
             if (isLoading) {
@@ -285,8 +334,16 @@
                 return;
             }
 
-            // Очищаем название
-            var cleanTitle = title.replace(/\s*\(\d{4}\).*$/, '').replace(/\s*S\d+.*$/i, '').replace(/\s*Сезон.*$/i, '').trim();
+            // Очищаем название от информации о трейлерах и лишнего текста
+            var cleanTitle = title
+                .replace(/\s*\(\d{4}\).*$/, '')
+                .replace(/\s*S\d+.*$/i, '')
+                .replace(/\s*Сезон.*$/i, '')
+                .replace(/\s*(trailer|трейлер|teaser|тизер|official|featurette).*$/i, '')
+                .replace(/\s*-.*$/, '') // Убираем все после тире
+                .replace(/[^\w\s\u0400-\u04FF]/g, ' ') // Оставляем только буквы, цифры и пробелы (включая кириллицу)
+                .replace(/\s+/g, ' ') // Заменяем множественные пробелы на одинарные
+                .trim();
             
             console.log("[PlayerInfoLogo] Название:", cleanTitle);
             
