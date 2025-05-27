@@ -100,16 +100,12 @@
             box-shadow: none !important;
         }
         
-        /* Скрыть все элементы в центре, кроме кнопки play/pause */
+        /* Скрыть все элементы в центре */
         .player-panel__center > div {
             display: none !important;
         }
         
-        .player-panel__center > .player-panel__playpause {
-            display: flex !important;
-        }
-        
-        /* Переместить play/pause в центр */
+        /* Переместить play/pause в начало левой части */
         .player-panel__line-two {
             display: flex !important;
             align-items: center !important;
@@ -150,12 +146,13 @@
         // Ищем кнопку play/pause в первой линии
         var $playPauseBtn = $('.player-panel__line:first .player-panel__playpause');
         if ($playPauseBtn.length) {
-            // Перемещаем её в центр второй линии
-            var $centerSection = $('.player-panel__line-two .player-panel__center');
-            if ($centerSection.length) {
-                $centerSection.append($playPauseBtn.clone());
+            // Перемещаем её в начало левой секции второй линии
+            var $leftSection = $('.player-panel__line-two .player-panel__left');
+            if ($leftSection.length) {
+                // Добавляем в начало левой секции
+                $leftSection.prepend($playPauseBtn.clone());
                 $playPauseBtn.remove();
-                console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в центр");
+                console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в начало левой секции");
             }
         }
     }
