@@ -52,10 +52,10 @@
             width: 100% !important;
             text-align: center !important;
             padding: 10px !important;
-            color: white !important;
+            color: #bbbbbb !important;
             font-family: 'Montserrat', sans-serif !important;
             font-weight: 400 !important;
-            font-size: 28px !important;
+            font-size: 20px !important;
         }
         
         /* Скрыть player-info__values */
@@ -100,12 +100,39 @@
             box-shadow: none !important;
         }
         
+        /* Скрыть все элементы в центре, кроме кнопки play/pause */
         .player-panel__center > div {
             display: none !important;
         }
         
         .player-panel__center > .player-panel__playpause {
             display: flex !important;
+        }
+        
+        /* Переместить play/pause в центр */
+        .player-panel__line-two {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+        
+        .player-panel__center {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex: 1 !important;
+        }
+        
+        .player-panel__left {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+        
+        .player-panel__right {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
         }
         
         @keyframes fadeIn { 
@@ -118,7 +145,20 @@
     // Добавляем стили в head
     $('head').append(customStyles);
 
-
+    // Функция для реструктуризации панели плеера
+    function restructurePlayerPanel() {
+        // Ищем кнопку play/pause в первой линии
+        var $playPauseBtn = $('.player-panel__line:first .player-panel__playpause');
+        if ($playPauseBtn.length) {
+            // Перемещаем её в центр второй линии
+            var $centerSection = $('.player-panel__line-two .player-panel__center');
+            if ($centerSection.length) {
+                $centerSection.append($playPauseBtn.clone());
+                $playPauseBtn.remove();
+                console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в центр");
+            }
+        }
+    }
 
     // Переменные для контроля состояния
     var currentTitle = "";
@@ -187,8 +227,6 @@
                 console.log("[PlayerInfoLogo] Уже загружается, пропускаем");
                 return;
             }
-
-
 
             // Проверяем наличие элементов
             var $playerInfoName = $(".player-info__name");
@@ -339,7 +377,10 @@
     function forceUpdateLogo() {
         console.log("[PlayerInfoLogo] Принудительное обновление");
         clearLogo();
-        setTimeout(displayPlayerInfoLogo, 1000);
+        setTimeout(function() {
+            displayPlayerInfoLogo();
+            restructurePlayerPanel();
+        }, 1000);
     }
 
     // Подписка на события Lampa
@@ -349,7 +390,10 @@
                 console.log("[PlayerInfoLogo] Событие плеера:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
-                    setTimeout(displayPlayerInfoLogo, 2000);
+                    setTimeout(function() {
+                        displayPlayerInfoLogo();
+                        restructurePlayerPanel();
+                    }, 2000);
                 } else if (e.type === 'end' || e.type === 'stop') {
                     clearLogo();
                 }
@@ -359,7 +403,10 @@
                 console.log("[PlayerInfoLogo] Событие карточки:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
-                    setTimeout(displayPlayerInfoLogo, 2000);
+                    setTimeout(function() {
+                        displayPlayerInfoLogo();
+                        restructurePlayerPanel();
+                    }, 2000);
                 }
             });
 
@@ -388,6 +435,8 @@
     // DOM Observer с улучшенной логикой
     var observer = new MutationObserver(function(mutations) {
         var shouldUpdate = false;
+        var shouldRestructure = false;
+        
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(function(node) {
@@ -399,12 +448,20 @@
                         )) {
                             shouldUpdate = true;
                         }
+                        
+                        if (node.classList && (
+                            node.classList.contains('player-panel') ||
+                            node.classList.contains('player-panel__line-two') ||
+                            $(node).find('.player-panel, .player-panel__line-two').length
+                        )) {
+                            shouldRestructure = true;
+                        }
                     }
                 });
             }
         });
         
-        if (shouldUpdate) {
+        if (shouldUpdate || shouldRestructure) {
             console.log("[PlayerInfoLogo] DOM изменился");
             setTimeout(forceUpdateLogo, 500);
         }
@@ -426,6 +483,7 @@
         setTimeout(function checkDOM() {
             console.log("[PlayerInfoLogo] Проверка DOM");
             displayPlayerInfoLogo();
+            restructurePlayerPanel();
             if (!$(".player-info__name").length) {
                 setTimeout(checkDOM, 2000);
             }
@@ -440,5 +498,8 @@
             console.log("[PlayerInfoLogo] Периодическая проверка: логотип отсутствует");
             displayPlayerInfoLogo();
         }
+        
+        // Проверяем структуру панели
+        restructurePlayerPanel();
     }, 10000);
 }();
