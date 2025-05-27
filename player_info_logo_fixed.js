@@ -46,30 +46,6 @@
             max-width: 100% !important;
         }
         
-        /* Стиль для текстового логотипа */
-        .player-info__logo-text {
-            font-family: 'Comfortaa', 'Montserrat', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 52px !important;
-            color: white !important;
-            text-align: center !important;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8) !important;
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FF6B6B, #4ECDC4) !important;
-            background-size: 400% 400% !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-            animation: gradientShift 3s ease-in-out infinite !important;
-            letter-spacing: 2px !important;
-            line-height: 1.1 !important;
-        }
-        
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
         /* Название под логотипом */
         .player-info__name {
             display: block !important;
@@ -176,15 +152,6 @@
         console.log("[PlayerInfoLogo] Все логотипы удалены");
     }
 
-    // Функция создания текстового логотипа
-    function createTextLogo(title) {
-        var logoId = ++uniqueLogoId;
-        var logoHtml = '<div class="player-info__logo" data-logo-id="' + logoId + '">' +
-            '<div class="player-info__logo-text">' + title + '</div>' +
-            '</div>';
-        return logoHtml;
-    }
-
     // Функция создания обычного логотипа
     function createImageLogo(logoPath) {
         var logoId = ++uniqueLogoId;
@@ -248,56 +215,10 @@
         return scored[0] && scored[0].score > 50 ? scored[0].item : null;
     }
 
-    // Функция проверки валидности названия для поиска логотипа
-    function isValidTitleForLogo(title) {
-        if (!title || title.length < 2) {
-            return false;
-        }
-        
-        // Проверяем, не является ли название странным набором слов
-        var words = title.split(/\s+/);
-        
-        // Если слишком много слов (больше 6) - скорее всего мусор
-        if (words.length > 6) {
-            console.log("[PlayerInfoLogo] Слишком много слов в названии:", words.length);
-            return false;
-        }
-        
-        // Если название содержит только цифры или спец. символы
-        if (/^[\d\s\W]+$/.test(title)) {
-            console.log("[PlayerInfoLogo] Название содержит только цифры/символы");
-            return false;
-        }
-        
-        // Если название содержит характерные элементы UI
-        var uiKeywords = [
-            'смотрю', 'фильмы', 'сериалы', 'закладки', 'нравится', 
-            'просмотрено', 'продолжение следует', 'настройки', 'ошибка',
-            'подробно', 'keyframes', 'fadein', 'opacity'
-        ];
-        
-        var lowerTitle = title.toLowerCase();
-        for (var i = 0; i < uiKeywords.length; i++) {
-            if (lowerTitle.indexOf(uiKeywords[i]) !== -1) {
-                console.log("[PlayerInfoLogo] Обнаружено UI слово:", uiKeywords[i]);
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
     // Основная функция отображения логотипа
     function displayPlayerInfoLogo() {
         try {
             console.log("[PlayerInfoLogo] Запуск displayPlayerInfoLogo");
-            
-            // Проверяем, является ли контент трейлером
-            if (isTrailerContent()) {
-                console.log("[PlayerInfoLogo] Обнаружен трейлер, логотип не показываем");
-                clearAllLogos();
-                return;
-            }
             
             // Предотвращаем множественные запросы
             if (isLoading) {
@@ -369,17 +290,10 @@
 
             logoTimeout = setTimeout(function() {
                 if (isLoading) {
-                    console.log("[PlayerInfoLogo] Таймаут загрузки, показываем текстовый логотип");
+                    console.log("[PlayerInfoLogo] Таймаут загрузки - логотип не найден");
                     isLoading = false;
-                    
-                    // Проверяем, что логотипа еще нет
-                    if (!$(".player-info__logo").length) {
-                        var textLogoHtml = createTextLogo(cleanTitle);
-                        $playerInfoName.before(textLogoHtml);
-                        console.log("[PlayerInfoLogo] Текстовый логотип добавлен");
-                    }
                 }
-            }, 3000); // Таймаут 3 секунды
+            }, 5000); // Таймаут 5 секунд
 
             $.get(searchUrl).done(function(data) {
                 if (!isLoading) return; // Если уже отработал таймаут
@@ -389,15 +303,9 @@
                 var bestMatch = findBestMatch(data.results, cleanTitle);
                 
                 if (!bestMatch) {
-                    console.log("[PlayerInfoLogo] Подходящий результат не найден, показываем текстовый логотип");
+                    console.log("[PlayerInfoLogo] Подходящий результат не найден");
                     clearTimeout(logoTimeout);
                     isLoading = false;
-                    
-                    if (!$(".player-info__logo").length) {
-                        var textLogoHtml = createTextLogo(cleanTitle);
-                        $playerInfoName.before(textLogoHtml);
-                        console.log("[PlayerInfoLogo] Текстовый логотип добавлен (нет результатов)");
-                    }
                     return;
                 }
 
@@ -433,24 +341,13 @@
                         }
                     }
                     
-                    // Если логотип не найден, показываем текстовый
-                    if (!$(".player-info__logo").length) {
-                        var textLogoHtml = createTextLogo(cleanTitle);
-                        $playerInfoName.before(textLogoHtml);
-                        console.log("[PlayerInfoLogo] Текстовый логотип добавлен (нет логотипов)");
-                    }
+                    console.log("[PlayerInfoLogo] Логотип не найден в базе");
                 }).fail(function() {
                     if (!isLoading) return;
                     
                     clearTimeout(logoTimeout);
                     isLoading = false;
                     console.error("[PlayerInfoLogo] Ошибка загрузки логотипов");
-                    
-                    if (!$(".player-info__logo").length) {
-                        var textLogoHtml = createTextLogo(cleanTitle);
-                        $playerInfoName.before(textLogoHtml);
-                        console.log("[PlayerInfoLogo] Текстовый логотип добавлен (ошибка API)");
-                    }
                 });
             }).fail(function() {
                 if (!isLoading) return;
@@ -458,12 +355,6 @@
                 clearTimeout(logoTimeout);
                 isLoading = false;
                 console.error("[PlayerInfoLogo] Ошибка поиска TMDB");
-                
-                if (!$(".player-info__logo").length) {
-                    var textLogoHtml = createTextLogo(cleanTitle);
-                    $playerInfoName.before(textLogoHtml);
-                    console.log("[PlayerInfoLogo] Текстовый логотип добавлен (ошибка поиска)");
-                }
             });
         } catch (e) {
             console.error("[PlayerInfoLogo] Ошибка:", e.message);
