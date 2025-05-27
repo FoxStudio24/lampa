@@ -164,23 +164,9 @@
                 if (!$leftSection.find('.player-panel__playpause, [class*="playpause"]').length) {
                     console.log("[PlayerInfoLogo] Кнопка еще не в левой секции");
                     
-                    // Находим кнопку next и вставляем play/pause перед ней
-                    var $nextBtn = $leftSection.find('.player-panel__next');
-                    if ($nextBtn.length) {
-                        $nextBtn.before($playPauseBtn.detach());
-                        console.log("[PlayerInfoLogo] Кнопка play/pause перемещена между prev и next");
-                    } else {
-                        // Если нет кнопки next, добавляем после prev
-                        var $prevBtn = $leftSection.find('.player-panel__prev');
-                        if ($prevBtn.length) {
-                            $prevBtn.after($playPauseBtn.detach());
-                            console.log("[PlayerInfoLogo] Кнопка play/pause добавлена после prev");
-                        } else {
-                            // В крайнем случае добавляем в начало
-                            $leftSection.prepend($playPauseBtn.detach());
-                            console.log("[PlayerInfoLogo] Кнопка play/pause добавлена в начало левой секции");
-                        }
-                    }
+                    // Добавляем play/pause в самое начало левой секции (перед prev)
+                    $leftSection.prepend($playPauseBtn.detach());
+                    console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в начало левой секции (перед prev)");
                 } else {
                     console.log("[PlayerInfoLogo] Кнопка уже в левой секции");
                 }
