@@ -130,6 +130,11 @@
             align-items: center !important;
             gap: 10px !important;
         }
+        .player-panel__playpause {
+            font-size: 1em;
+            margin: 0 0em;
+       }
+
         
         @keyframes fadeIn { 
             from { opacity: 0; } 
