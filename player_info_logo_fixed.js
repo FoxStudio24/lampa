@@ -248,46 +248,43 @@
         return scored[0] && scored[0].score > 50 ? scored[0].item : null;
     }
 
-    // Функция проверки, является ли контент трейлером
-    function isTrailerContent() {
-        // Проверяем URL
-        var currentUrl = window.location.href || "";
-        if (currentUrl.indexOf("trailer") !== -1 || currentUrl.indexOf("трейлер") !== -1) {
-            return true;
+    // Функция проверки валидности названия для поиска логотипа
+    function isValidTitleForLogo(title) {
+        if (!title || title.length < 2) {
+            return false;
         }
         
-        // Проверяем заголовки страницы
-        var pageTitle = document.title || "";
-        if (pageTitle.toLowerCase().indexOf("trailer") !== -1 || 
-            pageTitle.toLowerCase().indexOf("трейлер") !== -1) {
-            return true;
+        // Проверяем, не является ли название странным набором слов
+        var words = title.split(/\s+/);
+        
+        // Если слишком много слов (больше 6) - скорее всего мусор
+        if (words.length > 6) {
+            console.log("[PlayerInfoLogo] Слишком много слов в названии:", words.length);
+            return false;
         }
         
-        // Проверяем текст на странице
-        var playerInfoText = $(".player-info__name, .player-footer-card__title, .card__title").text().toLowerCase();
-        if (playerInfoText.indexOf("trailer") !== -1 || 
-            playerInfoText.indexOf("трейлер") !== -1 ||
-            playerInfoText.indexOf("official trailer") !== -1 ||
-            playerInfoText.indexOf("teaser") !== -1 ||
-            playerInfoText.indexOf("тизер") !== -1) {
-            return true;
+        // Если название содержит только цифры или спец. символы
+        if (/^[\d\s\W]+$/.test(title)) {
+            console.log("[PlayerInfoLogo] Название содержит только цифры/символы");
+            return false;
         }
         
-        // Проверяем наличие элементов, характерных для трейлеров
-        if ($(".trailers, .trailer-list, [class*='trailer']").length > 0) {
-            return true;
-        }
+        // Если название содержит характерные элементы UI
+        var uiKeywords = [
+            'смотрю', 'фильмы', 'сериалы', 'закладки', 'нравится', 
+            'просмотрено', 'продолжение следует', 'настройки', 'ошибка',
+            'подробно', 'keyframes', 'fadein', 'opacity'
+        ];
         
-        // Проверяем, есть ли в тексте характерные слова для трейлеров
-        var bodyText = $("body").text().toLowerCase();
-        var trailerKeywords = ["opening credits", "featurette", "behind the scenes", "making of"];
-        for (var i = 0; i < trailerKeywords.length; i++) {
-            if (playerInfoText.indexOf(trailerKeywords[i]) !== -1) {
-                return true;
+        var lowerTitle = title.toLowerCase();
+        for (var i = 0; i < uiKeywords.length; i++) {
+            if (lowerTitle.indexOf(uiKeywords[i]) !== -1) {
+                console.log("[PlayerInfoLogo] Обнаружено UI слово:", uiKeywords[i]);
+                return false;
             }
         }
         
-        return false;
+        return true;
     }
 
     // Основная функция отображения логотипа
