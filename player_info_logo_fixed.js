@@ -118,27 +118,7 @@
     // Добавляем стили в head
     $('head').append(customStyles);
 
-    // Добавляем настройку в интерфейс Lampa
-    try {
-        if (Lampa && Lampa.SettingsApi) {
-            Lampa.SettingsApi.addParam({
-                component: "interface",
-                param: {
-                    name: "player_info_logo",
-                    type: "select",
-                    values: { 0: "Отображать", 1: "Скрыть" },
-                    default: "0"
-                },
-                field: {
-                    name: "Логотип над названием эпизода",
-                    description: "Отображает логотип сериала над названием эпизода в плеере"
-                }
-            });
-            console.log("[PlayerInfoLogo] Настройка добавлена");
-        }
-    } catch (e) {
-        console.error("[PlayerInfoLogo] Ошибка настройки:", e.message);
-    }
+
 
     // Переменные для контроля состояния
     var currentTitle = "";
@@ -161,7 +141,7 @@
         return logoHtml;
     }
 
-    // Улучшенная функция поиска с более точными критериями
+    // Улучшенная функция поиска с очень строгими критериями
     function findBestMatch(results, originalTitle) {
         if (!results || results.length === 0) return null;
         
@@ -172,7 +152,11 @@
             .replace(/[^\w\s]/g, '')
             .trim();
         
-        var scored = results.map(function(item) {
+        console.log("[PlayerInfoLogo] Ищем для:", cleanOriginal);
+        
+        // Ищем только точные совпадения
+        for (var i = 0; i < results.length; i++) {
+            var item = results[i];
             var title = (item.title || item.name || "").toLowerCase()
                 .replace(/[^\w\s]/g, '')
                 .trim();
@@ -180,39 +164,17 @@
                 .replace(/[^\w\s]/g, '')
                 .trim();
             
-            var score = 0;
+            console.log("[PlayerInfoLogo] Проверяем:", title, "vs", cleanOriginal);
             
-            // Точное совпадение
+            // Только ТОЧНОЕ совпадение
             if (title === cleanOriginal || originalTitle === cleanOriginal) {
-                score += 100;
+                console.log("[PlayerInfoLogo] Найдено точное совпадение:", item.title || item.name);
+                return item;
             }
-            // Начинается с искомого названия
-            else if (title.indexOf(cleanOriginal) === 0 || originalTitle.indexOf(cleanOriginal) === 0) {
-                score += 80;
-            }
-            // Содержит искомое название
-            else if (title.indexOf(cleanOriginal) !== -1 || originalTitle.indexOf(cleanOriginal) !== -1) {
-                score += 60;
-            }
-            
-            // Бонус за популярность
-            if (item.popularity) {
-                score += Math.min(item.popularity / 100, 20);
-            }
-            
-            // Бонус за рейтинг
-            if (item.vote_average) {
-                score += item.vote_average;
-            }
-            
-            return { item: item, score: score };
-        });
+        }
         
-        // Сортируем по убыванию очков
-        scored.sort(function(a, b) { return b.score - a.score; });
-        
-        // Возвращаем лучший результат только если его очки > 50
-        return scored[0] && scored[0].score > 50 ? scored[0].item : null;
+        console.log("[PlayerInfoLogo] Точные совпадения не найдены");
+        return null;
     }
 
     // Основная функция отображения логотипа
@@ -226,11 +188,7 @@
                 return;
             }
 
-            if (Lampa && Lampa.Storage && Lampa.Storage.get("player_info_logo") === "1") {
-                console.log("[PlayerInfoLogo] Логотипы отключены");
-                clearAllLogos();
-                return;
-            }
+
 
             // Проверяем наличие элементов
             var $playerInfoName = $(".player-info__name");
