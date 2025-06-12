@@ -55,6 +55,31 @@
         `;
         document.getElementsByTagName('head')[0].appendChild(style);
 
+        // Функция для восстановления исходного порядка элементов
+        function restoreOriginalOrder(container) {
+            var selectboxItems = container.querySelectorAll('.selectbox-item');
+            if (selectboxItems.length <= 1) return;
+
+            // Получаем исходные данные элементов для сортировки по DOM порядку
+            var itemsArray = Array.from(selectboxItems);
+            
+            // Сортируем элементы по их исходному порядку в DOM (восстанавливаем)
+            // Для этого удалим атрибут data-processed и пересоздадим порядок
+            itemsArray.forEach(function(item, index) {
+                var titleElement = item.querySelector('.selectbox-item__title');
+                if (titleElement) {
+                    // Убираем атрибут обработки
+                    titleElement.removeAttribute('data-processed');
+                    
+                    // Восстанавливаем оригинальный текст без HTML-тегов
+                    var originalText = titleElement.innerText;
+                    titleElement.innerHTML = originalText;
+                }
+            });
+
+            console.log('QualityLabelPlugin: Исходный порядок восстановлен');
+        }
+
         // Функция для обработки качества только в блоке "Сортировать", исключая "Качество"
         function modifyQualityLabels() {
             // Ищем все блоки selectbox__content
@@ -79,6 +104,9 @@
                 // Обрабатываем только блок "Сортировать", исключая "Качество"
                 if (title === 'Сортировать') {
                     console.log('QualityLabelPlugin: Обрабатываем блок "Сортировать"');
+                    
+                    // Сначала восстанавливаем исходный порядок
+                    restoreOriginalOrder(container);
                     
                     // Ищем элементы только внутри этого контейнера
                     var qualityElements = container.querySelectorAll('.selectbox-item__title:not([data-processed])');
