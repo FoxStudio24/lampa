@@ -55,6 +55,49 @@
         `;
         document.getElementsByTagName('head')[0].appendChild(style);
 
+        // Функция для определения приоритета качества
+        function getQualityPriority(text) {
+            if (text.includes('2160p')) return 1; // 4K - высший приоритет
+            if (text.includes('1440p')) return 2; // 2K
+            if (text.includes('1080p')) return 3; // Full HD
+            if (text.includes('720p')) return 4;  // HD
+            if (text.includes('480p')) return 5;  // SD
+            if (text.includes('360p')) return 6;  // Low
+            return 7; // Неизвестное качество - низший приоритет
+        }
+
+        // Функция для сортировки элементов по качеству
+        function sortElementsByQuality(container) {
+            var selectboxItems = container.querySelectorAll('.selectbox-item');
+            if (selectboxItems.length <= 1) return; // Нет смысла сортировать один элемент
+
+            // Преобразуем в массив для удобства работы
+            var itemsArray = Array.from(selectboxItems);
+            
+            // Сортируем по приоритету качества
+            itemsArray.sort(function(a, b) {
+                var titleA = a.querySelector('.selectbox-item__title');
+                var titleB = b.querySelector('.selectbox-item__title');
+                
+                if (!titleA || !titleB) return 0;
+                
+                var priorityA = getQualityPriority(titleA.innerText);
+                var priorityB = getQualityPriority(titleB.innerText);
+                
+                return priorityA - priorityB; // Сортировка по возрастанию (меньше число = выше приоритет)
+            });
+
+            // Получаем родительский контейнер для вставки
+            var parentContainer = selectboxItems[0].parentNode;
+            
+            // Перемещаем элементы в новом порядке
+            itemsArray.forEach(function(item) {
+                parentContainer.appendChild(item);
+            });
+
+            console.log('QualityLabelPlugin: Элементы отсортированы по качеству');
+        }
+
         // Функция для обработки качества только в блоке "Сортировать", исключая "Качество"
         function modifyQualityLabels() {
             // Ищем все блоки selectbox__content
@@ -120,6 +163,9 @@
                             // Помечаем элемент как обработанный
                             element.setAttribute('data-processed', 'true');
                         });
+
+                        // Сортируем элементы после обработки
+                        sortElementsByQuality(container);
                     }
                 } else {
                     console.log('QualityLabelPlugin: Пропускаем блок "' + title + '"');
