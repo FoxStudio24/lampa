@@ -32,6 +32,16 @@
                 box-shadow: 0 0 10px rgba(255, 75, 43, 0.5);
                 animation: glow-shadow 1.5s ease-in-out infinite alternate; /* Анимация свечения */
             }
+            .quality-label-fullhd {
+                background: linear-gradient(135deg, #4CAF50, #45a049); /* Зеленый градиент */
+                border-radius: 25px; /* Закругленные углы */
+                padding: 3px 20px; /* Отступы внутри */
+                margin-left: 6px; /* Отступ от названия источника */
+                display: inline-block;
+                color: white;
+                font-weight: bold;
+                box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            }
             @keyframes glow-shadow {
                 0% {
                     box-shadow: 0 0 10px rgba(255, 75, 43, 0.5),
@@ -45,54 +55,82 @@
         `;
         document.getElementsByTagName('head')[0].appendChild(style);
 
-        // Функция для обработки качества только в selectbox__content
+        // Функция для обработки качества только в блоке "Сортировать", исключая "Качество"
         function modifyQualityLabels() {
-            // Ищем только элементы внутри блока selectbox__content
-            var selectboxContainer = document.querySelector('.selectbox__content');
-            if (!selectboxContainer) {
-                console.log('QualityLabelPlugin: Контейнер .selectbox__content не найден');
+            // Ищем все блоки selectbox__content
+            var selectboxContainers = document.querySelectorAll('.selectbox__content');
+            if (!selectboxContainers.length) {
+                console.log('QualityLabelPlugin: Контейнеры .selectbox__content не найдены');
                 return false;
             }
 
-            // Ищем элементы только внутри найденного контейнера
-            var qualityElements = selectboxContainer.querySelectorAll('.selectbox-item__title:not([data-processed])');
-            if (!qualityElements.length) {
-                console.log('QualityLabelPlugin: Новые элементы .selectbox-item__title не найдены в .selectbox__content');
-                return false;
-            }
+            var foundElements = false;
 
-            console.log('QualityLabelPlugin: Найдено новых элементов .selectbox-item__title в .selectbox__content: ' + qualityElements.length);
-
-            qualityElements.forEach(function (element) {
-                var text = element.innerText;
-
-                console.log('QualityLabelPlugin: Обрабатываем элемент в selectbox__content: ' + text);
-
-                // Заменяем 2160p на 4K
-                if (text.includes('2160p')) {
-                    var modifiedText = text.replace('2160p', '4K');
-                    element.innerHTML = modifiedText.replace('4K', '<span class="quality-label quality-label-4k">4K</span>');
-                    console.log('QualityLabelPlugin: Заменено 2160p на 4K для: ' + text);
+            selectboxContainers.forEach(function(container) {
+                // Проверяем заголовок блока
+                var titleElement = container.querySelector('.selectbox__title');
+                if (!titleElement) {
+                    return; // Пропускаем, если нет заголовка
                 }
-                // Заменяем 1440p на 2K
-                else if (text.includes('1440p')) {
-                    var modifiedText = text.replace('1440p', '2K');
-                    element.innerHTML = modifiedText.replace('2K', '<span class="quality-label quality-label-2k">2K</span>');
-                    console.log('QualityLabelPlugin: Заменено 1440p на 2K для: ' + text);
-                }
-                // Для других разрешений (720p, 1080p и т.д.) добавляем серый фон
-                else if (text.match(/\d+p/)) {
-                    var resolution = text.match(/\d+p/)[0];
-                    element.innerHTML = text.replace(resolution, `<span class="quality-label">${resolution}</span>`);
-                    console.log('QualityLabelPlugin: Добавлен стиль для разрешения ' + resolution + ' в: ' + text);
+
+                var title = titleElement.innerText.trim();
+                console.log('QualityLabelPlugin: Найден блок с заголовком: "' + title + '"');
+
+                // Обрабатываем только блок "Сортировать", исключая "Качество"
+                if (title === 'Сортировать') {
+                    console.log('QualityLabelPlugin: Обрабатываем блок "Сортировать"');
+                    
+                    // Ищем элементы только внутри этого контейнера
+                    var qualityElements = container.querySelectorAll('.selectbox-item__title:not([data-processed])');
+                    if (qualityElements.length > 0) {
+                        foundElements = true;
+                        console.log('QualityLabelPlugin: Найдено новых элементов в блоке "Сортировать": ' + qualityElements.length);
+
+                        qualityElements.forEach(function (element) {
+                            var text = element.innerText;
+                            console.log('QualityLabelPlugin: Обрабатываем элемент: ' + text);
+
+                            // Заменяем 2160p на 4K
+                            if (text.includes('2160p')) {
+                                var modifiedText = text.replace('2160p', '4K');
+                                element.innerHTML = modifiedText.replace('4K', '<span class="quality-label quality-label-4k">4K</span>');
+                                console.log('QualityLabelPlugin: Заменено 2160p на 4K для: ' + text);
+                            }
+                            // Заменяем 1440p на 2K
+                            else if (text.includes('1440p')) {
+                                var modifiedText = text.replace('1440p', '2K');
+                                element.innerHTML = modifiedText.replace('2K', '<span class="quality-label quality-label-2k">2K</span>');
+                                console.log('QualityLabelPlugin: Заменено 1440p на 2K для: ' + text);
+                            }
+                            // Заменяем 1080p на Full HD с зеленым фоном
+                            else if (text.includes('1080p')) {
+                                var modifiedText = text.replace('1080p', 'Full HD');
+                                element.innerHTML = modifiedText.replace('Full HD', '<span class="quality-label quality-label-fullhd">Full HD</span>');
+                                console.log('QualityLabelPlugin: Заменено 1080p на Full HD для: ' + text);
+                            }
+                            // Для других разрешений (720p и т.д.) добавляем серый фон
+                            else if (text.match(/\d+p/)) {
+                                var resolution = text.match(/\d+p/)[0];
+                                element.innerHTML = text.replace(resolution, `<span class="quality-label">${resolution}</span>`);
+                                console.log('QualityLabelPlugin: Добавлен стиль для разрешения ' + resolution + ' в: ' + text);
+                            } else {
+                                console.log('QualityLabelPlugin: Разрешение не найдено в: ' + text);
+                            }
+
+                            // Помечаем элемент как обработанный
+                            element.setAttribute('data-processed', 'true');
+                        });
+                    }
                 } else {
-                    console.log('QualityLabelPlugin: Разрешение не найдено в: ' + text);
+                    console.log('QualityLabelPlugin: Пропускаем блок "' + title + '"');
                 }
-
-                // Помечаем элемент как обработанный
-                element.setAttribute('data-processed', 'true');
             });
-            return true;
+
+            if (!foundElements) {
+                console.log('QualityLabelPlugin: Новые элементы для обработки не найдены');
+            }
+
+            return foundElements;
         }
 
         // Функция для периодической проверки и обработки
