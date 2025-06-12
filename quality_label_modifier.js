@@ -45,20 +45,28 @@
         `;
         document.getElementsByTagName('head')[0].appendChild(style);
 
-        // Функция для обработки качества
+        // Функция для обработки качества только в selectbox__content
         function modifyQualityLabels() {
-            var qualityElements = document.querySelectorAll('.selectbox-item__title:not([data-processed])');
-            if (!qualityElements.length) {
-                console.log('QualityLabelPlugin: Новые элементы .selectbox-item__title не найдены');
+            // Ищем только элементы внутри блока selectbox__content
+            var selectboxContainer = document.querySelector('.selectbox__content');
+            if (!selectboxContainer) {
+                console.log('QualityLabelPlugin: Контейнер .selectbox__content не найден');
                 return false;
             }
 
-            console.log('QualityLabelPlugin: Найдено новых элементов .selectbox-item__title: ' + qualityElements.length);
+            // Ищем элементы только внутри найденного контейнера
+            var qualityElements = selectboxContainer.querySelectorAll('.selectbox-item__title:not([data-processed])');
+            if (!qualityElements.length) {
+                console.log('QualityLabelPlugin: Новые элементы .selectbox-item__title не найдены в .selectbox__content');
+                return false;
+            }
+
+            console.log('QualityLabelPlugin: Найдено новых элементов .selectbox-item__title в .selectbox__content: ' + qualityElements.length);
 
             qualityElements.forEach(function (element) {
                 var text = element.innerText;
 
-                console.log('QualityLabelPlugin: Обрабатываем элемент: ' + text);
+                console.log('QualityLabelPlugin: Обрабатываем элемент в selectbox__content: ' + text);
 
                 // Заменяем 2160p на 4K
                 if (text.includes('2160p')) {
