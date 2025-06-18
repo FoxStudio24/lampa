@@ -3,22 +3,17 @@
 
     // Функция для замены логотипа
     function replaceLogo() {
-        var logoIcon = document.querySelector('.head__logo-icon');
-        if (logoIcon) {
-            var existingImg = logoIcon.querySelector('img');
+        var langLogo = document.querySelector('.lang__logo');
+        if (langLogo) {
+            var existingImg = langLogo.querySelector('img');
             if (existingImg) {
                 existingImg.src = 'https://raw.githubusercontent.com/FoxStudio24/deny/refs/heads/main/ico/logo.png';
             } else {
                 var newImg = document.createElement('img');
                 newImg.src = 'https://raw.githubusercontent.com/FoxStudio24/deny/refs/heads/main/ico/logo.png';
-                newImg.className = 'head__logo-icon-img';
-                logoIcon.innerHTML = '';
-                logoIcon.appendChild(newImg);
-            }
-
-            var logoCap = logoIcon.querySelector('.head__logo-cap');
-            if (logoCap) {
-                logoCap.remove();
+                newImg.className = 'lang__logo-img';
+                langLogo.innerHTML = '';
+                langLogo.appendChild(newImg);
             }
         }
     }
