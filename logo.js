@@ -1,5 +1,16 @@
 !function() {
     "use strict";
+    // Добавляем CSS-правила для переопределения стилей логотипа
+    $('<style>')
+        .text(`
+            .full-start-new__title img {
+                max-height: 200px !important;
+                width: auto !important;
+                height: auto !important;
+            }
+        `)
+        .appendTo('head');
+
     Lampa.SettingsApi.addParam({
         component: "interface",
         param: {
@@ -63,7 +74,7 @@
                                 var localizedTitle = isSerial ? data.name : data.title;
                                 console.log("Название на языке Lampa (" + currentLampaLang + "):", localizedTitle);
                                 var htmlContent = '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.9s ease-in;">' +
-                                                    '<img style="margin-top: 5px; max-height: 200px;" src="' + logoPath + '" />';
+                                                    '<img style="margin-top: 5px;" src="' + logoPath + '" />';
                                 if (localizedTitle) {
                                     htmlContent += '<span style="margin-top: 5px; font-size: 32px; color: #fff;">' + localizedTitle + '</span>';
                                 }
@@ -79,7 +90,7 @@
                         } else {
                             a.object.activity.render().find(".full-start-new__title").html(
                                 '<div style="display: flex; flex-direction: column; align-items: flex-start; animation: fadeIn 0.5s ease-in;">' +
-                                    '<img style="margin-top: 5px; max-height: 200px;" src="' + logoPath + '" />' +
+                                    '<img style="margin-top: 5px;" src="' + logoPath + '" />' +
                                 '</div>' +
                                 '<style>' +
                                     '@keyframes fadeIn {' +
