@@ -6,7 +6,21 @@
     var ratingCache = new Map();
     var cardifyObserver = null;
 
-    // Унифицированная проверка активности cardify
+    // Ожидание загрузки класса Trailer
+    function waitForTrailerClass(callback, maxWait = 10000) {
+        var startTime = Date.now();
+        function check() {
+            if (window.Trailer || Date.now() - startTime > maxWait) {
+                console.log('Класс Trailer', window.Trailer ? 'найден' : 'не найден, истекло время ожидания');
+                callback();
+            } else {
+                requestAnimationFrame(check); // Более эффективно, чем setTimeout
+            }
+        }
+        requestAnimationFrame(check);
+    }
+
+    // Проверка активности cardify
     function isCardifyActive() {
         try {
             return (
@@ -23,23 +37,66 @@
         }
     }
 
-    // Динамическое ожидание завершения рендеринга cardify
-    function waitForCardify(callback, maxWait = 5000) {
+    // Динамическое ожидание рендеринга cardify
+    function waitForCardify(callback, maxWait = 2000) {
         var startTime = Date.now();
         function check() {
             if (isCardifyActive() || Date.now() - startTime > maxWait) {
-                console.log('Cardify check complete, active:', isCardifyActive());
+                console.log('Cardify проверка завершена, активен:', isCardifyActive());
                 callback();
             } else {
-                requestAnimationFrame(check); // Более эффективно, чем setInterval
+                requestAnimationFrame(check);
             }
         }
         requestAnimationFrame(check);
     }
 
-    // Наблюдатель за изменениями от cardify
+    // Интеграция с cardify через перехват Trailer
+    function setupCardifyIntegration() {
+        waitForTrailerClass(function () {
+            if (window.Trailer && typeof window.Trailer === 'function' && !window.Trailer.hooked) {
+                var originalTrailer = window.Trailer;
+                window.Trailer = function (object, video, rating) {
+                    try {
+                        var instance = new originalTrailer(object, video, rating);
+
+                        // Перехватываем renderRating
+                        if (instance.renderRating && !instance.renderRating.hooked) {
+                            var originalRenderRating = instance.renderRating;
+                            instance.renderRating = function () {
+                                originalRenderRating.call(this);
+                                console.log('Cardify renderRating вызван, добавляем наши рейтинги...');
+                                waitForCardify(function () {
+                                    var movieData = getMovieData();
+                                    if (movieData && !document.querySelector('.rating-container.kp-imdb-rating')) {
+                                        var movieKey = movieData.id + '_' + (movieData.media_type || 'movie');
+                                        processedMovies.delete(movieKey);
+                                        rating_kp_imdb(movieData);
+                                    }
+                                }, 1000); // Уменьшенное время ожидания
+                            };
+                            instance.renderRating.hooked = true; // Предотвращаем повторный перехват
+                        }
+
+                        return instance;
+                    } catch (e) {
+                        console.log('Ошибка при создании экземпляра Trailer:', e);
+                        return new originalTrailer(object, video, rating);
+                    }
+                };
+
+                window.Trailer.prototype = originalTrailer.prototype;
+                window.Trailer.hooked = true; // Флаг для предотвращения повторного перехвата
+                console.log('Интеграция с Trailer установлена');
+            } else {
+                console.log('Класс Trailer не найден или уже перехвачен');
+            }
+        });
+    }
+
+    // Наблюдатель за изменениями DOM от cardify
     function setupCardifyObserver() {
-        if (cardifyObserver) cardifyObserver.disconnect(); // Очищаем предыдущий наблюдатель
+        if (cardifyObserver) cardifyObserver.disconnect();
 
         cardifyObserver = new MutationObserver(function (mutations) {
             var shouldProcess = false;
@@ -57,16 +114,16 @@
             });
 
             if (shouldProcess) {
-                console.log('Cardify mutation detected');
+                console.log('Обнаружена мутация cardify');
                 waitForCardify(function () {
                     var movieData = getMovieData();
                     if (movieData && !document.querySelector('.rating-container.kp-imdb-rating')) {
-                        console.log('Processing ratings after cardify mutation...');
+                        console.log('Обработка рейтингов после мутации cardify...');
                         var movieKey = movieData.id + '_' + (movieData.media_type || 'movie');
-                        processedMovies.delete(movieKey); // Сбрасываем для повторной обработки
+                        processedMovies.delete(movieKey);
                         rating_kp_imdb(movieData);
                     }
-                }, 2000); // Уменьшенный maxWait для мутаций
+                });
             }
         });
 
@@ -78,27 +135,6 @@
         });
 
         return cardifyObserver;
-    }
-
-    // Перехват метода renderRating
-    function setupRenderRatingHook() {
-        if (typeof window.renderRating === 'function' && !window.renderRating.hooked) {
-            var originalRenderRating = window.renderRating;
-            window.renderRating = function () {
-                var result = originalRenderRating.apply(this, arguments);
-                waitForCardify(function () {
-                    var movieData = getMovieData();
-                    if (movieData && !document.querySelector('.rating-container.kp-imdb-rating')) {
-                        console.log('renderRating hooked, adding ratings...');
-                        var movieKey = movieData.id + '_' + (movieData.media_type || 'movie');
-                        processedMovies.delete(movieKey);
-                        rating_kp_imdb(movieData);
-                    }
-                }, 2000);
-                return result;
-            };
-            window.renderRating.hooked = true; // Предотвращаем повторный перехват
-        }
     }
 
     function rating_kp_imdb(card) {
@@ -128,7 +164,7 @@
             headers: {
                 'X-API-KEY': '2a4a0808-81a3-40ae-b0d3-e11335ede616'
             },
-            cache_time: 24 * 60 * 60 * 1000 // 1 день
+            cache_time: 24 * 60 * 60 * 1000
         };
 
         console.log('Обработка карточки:', card);
@@ -385,16 +421,11 @@
 
     function insertRatings(render, $tmdbContainer, $kpContainer, $imdbContainer) {
         var $rateLine = $('.full-start-new__rate-line', render);
-        $('.rating-container.kp-imdb-rating', $rateLine).remove(); // Удаляем только наши рейтинги
+        $('.rating-container.kp-imdb-rating', $rateLine).remove();
 
         if ($rateLine.length) {
-            var hasCardifyRating = $rateLine.find('.full-start__rating').length > 0;
-            if (hasCardifyRating) {
-                console.log('Обнаружены рейтинги cardify, добавляем наши...');
-                $rateLine.append($tmdbContainer, $kpContainer, $imdbContainer);
-            } else {
-                $rateLine.prepend($tmdbContainer, $kpContainer, $imdbContainer);
-            }
+            console.log('Рейтинги добавлены после cardify');
+            $rateLine.append($tmdbContainer, $kpContainer, $imdbContainer);
             $rateLine.removeClass('hide');
         } else {
             var $rightContainer = $('.full-start-new__right', render);
@@ -459,7 +490,7 @@
     }
 
     function getCachedMovieData(cardId) {
-        return null; // Реализовать при необходимости
+        return null;
     }
 
     function setupDOMObserver() {
@@ -532,8 +563,8 @@
             }
         }, 1000);
 
+        setupCardifyIntegration();
         setupCardifyObserver();
-        setupRenderRatingHook();
 
         if (Lampa.Activity?.listener) {
             Lampa.Activity.listener.follow('activity', function (e) {
