@@ -14,7 +14,7 @@
                 console.log('Класс Trailer', window.Trailer ? 'найден' : 'не найден, истекло время ожидания');
                 callback();
             } else {
-                requestAnimationFrame(check); // Более эффективно, чем setTimeout
+                requestAnimationFrame(check);
             }
         }
         requestAnimationFrame(check);
@@ -24,7 +24,10 @@
     function isCardifyActive() {
         try {
             return (
+                // Приоритетные индикаторы cardify
+                document.querySelector('.cardify__right') !== null ||
                 document.querySelector('.cardify-preview, .cardify-trailer') !== null ||
+                // Запасные проверки
                 window.cardify_active === true ||
                 (window.cardify && window.cardify.active) ||
                 (window.Lampa && window.Lampa.Activity && window.Lampa.Activity.active() &&
@@ -60,7 +63,6 @@
                     try {
                         var instance = new originalTrailer(object, video, rating);
 
-                        // Перехватываем renderRating
                         if (instance.renderRating && !instance.renderRating.hooked) {
                             var originalRenderRating = instance.renderRating;
                             instance.renderRating = function () {
@@ -73,9 +75,9 @@
                                         processedMovies.delete(movieKey);
                                         rating_kp_imdb(movieData);
                                     }
-                                }, 1000); // Уменьшенное время ожидания
+                                }, 1000);
                             };
-                            instance.renderRating.hooked = true; // Предотвращаем повторный перехват
+                            instance.renderRating.hooked = true;
                         }
 
                         return instance;
@@ -86,7 +88,7 @@
                 };
 
                 window.Trailer.prototype = originalTrailer.prototype;
-                window.Trailer.hooked = true; // Флаг для предотвращения повторного перехвата
+                window.Trailer.hooked = true;
                 console.log('Интеграция с Trailer установлена');
             } else {
                 console.log('Класс Trailer не найден или уже перехвачен');
@@ -104,6 +106,7 @@
                 if (mutation.target.classList?.contains('full-start-new__rate-line') ||
                     Array.from(mutation.addedNodes).some(node =>
                         node.nodeType === 1 && (
+                            node.classList?.contains('cardify__right') ||
                             node.classList?.contains('cardify-preview') ||
                             node.classList?.contains('cardify-trailer') ||
                             node.classList?.contains('full-start-new__rate-line')
@@ -398,13 +401,19 @@
         try {
             var activity = Lampa.Activity.active();
             if (activity?.activity?.render) {
-                return activity.activity.render();
+                var render = activity.activity.render();
+                if (render.find('.cardify__right').length) {
+                    console.log('Найден cardify контейнер в активности');
+                    return render;
+                }
+                return render;
             }
         } catch (e) {
             console.log('Ошибка получения рендера активности:', e);
         }
 
         var containers = [
+            '.cardify__right',
             '.full-start-new__body',
             '.full-start__body',
             '.activity__body',
@@ -413,23 +422,43 @@
 
         for (var selector of containers) {
             var container = $(selector).first();
-            if (container.length) return container;
+            if (container.length) {
+                console.log('Найден контейнер:', selector);
+                return container; // Возвращаем сам контейнер, а не closest
+            }
         }
 
         return null;
     }
 
     function insertRatings(render, $tmdbContainer, $kpContainer, $imdbContainer) {
-        var $rateLine = $('.full-start-new__rate-line', render);
+        var $cardifyRight = $('.cardify__right', render);
+        var $rateLine;
+
+        if ($cardifyRight.length) {
+            $rateLine = $cardifyRight.find('.full-start-new__rate-line');
+            console.log('Найден контейнер cardify, работаем с .cardify__right');
+        } else {
+            $rateLine = $('.full-start-new__rate-line', render);
+            console.log('Cardify не найден, используем стандартный .full-start-new__rate-line');
+        }
+
         $('.rating-container.kp-imdb-rating', $rateLine).remove();
 
         if ($rateLine.length) {
-            console.log('Рейтинги добавлены после cardify');
-            $rateLine.append($tmdbContainer, $kpContainer, $imdbContainer);
+            // Проверяем наличие элементов "16+" и "Онгоинг"
+            var hasPg = $rateLine.find('.full-start__pg').length;
+            var hasStatus = $rateLine.find('.full-start__status').length;
+            console.log('Состояние rate-line:', { hasPg, hasStatus });
+
+            // Вставляем рейтинги в начало, чтобы они были перед "16+" и "Онгоинг"
+            $rateLine.prepend($tmdbContainer, $kpContainer, $imdbContainer);
             $rateLine.removeClass('hide');
+            console.log('Рейтинги добавлены в', $cardifyRight.length ? 'cardify' : 'обычный', 'контейнер');
         } else {
-            var $rightContainer = $('.full-start-new__right', render);
+            var $rightContainer = $cardifyRight.length ? $cardifyRight : $('.full-start-new__right', render);
             if ($rightContainer.length) {
+                console.log('Создаем новый .full-start-new__rate-line в', $cardifyRight.length ? 'cardify' : 'обычном', 'контейнере');
                 $rightContainer.append(
                     $('<div class="full-start-new__rate-line"></div>')
                         .append($tmdbContainer, $kpContainer, $imdbContainer)
@@ -438,6 +467,7 @@
             } else {
                 var $body = $('.full-start-new__body, .full-start__body', render);
                 if ($body.length) {
+                    console.log('Fallback: добавляем рейтинги в .full-start-new__body');
                     $body.prepend(
                         $('<div class="rating-line-fallback" style="margin-bottom: 15px;"></div>')
                             .append($tmdbContainer, $kpContainer, $imdbContainer)
@@ -500,9 +530,10 @@
                 if (mutation.addedNodes.length) {
                     for (var node of mutation.addedNodes) {
                         if (node.nodeType === 1 && (
+                            node.classList?.contains('cardify__right') ||
                             node.classList?.contains('full-start-new__right') ||
                             node.classList?.contains('full-start__body') ||
-                            node.querySelector?.('.full-start-new__right')
+                            node.querySelector?.('.full-start-new__right, .cardify__right')
                         )) {
                             shouldProcess = true;
                             break;
