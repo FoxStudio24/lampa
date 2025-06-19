@@ -83,64 +83,6 @@
             margin-top: 15px !important;
         }
         
-        .player-panel__body {
-            padding: 1em;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)) !important;
-        }
-        
-        .player-panel {
-            left: 0em;
-            bottom: 0em;
-            right: 0em;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            background: none !important;
-            background-image: none !important;
-            background-color: transparent !important;
-            box-shadow: none !important;
-        }
-        
-        /* Hide center elements */
-        .player-panel__center > div {
-            display: none !important;
-        }
-        
-        /* Rearrange play/pause in left section */
-        .player-panel__line-two {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-        }
-        
-        .player-panel__center {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            flex: 1 !important;
-        }
-        
-        .player-panel__left {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-        }
-        
-        .player-panel__right {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-        }
-        
-        .player-panel__playpause {
-            font-size: 1em;
-            margin: 0 0em;
-            order: -1 !important;
-        }
-        
-        .player-panel__pip, .player-panel__volume {
-            display: none !important;
-        }
-        
         @keyframes fadeIn { 
             from { opacity: 0; } 
             to { opacity: 1; } 
@@ -182,7 +124,7 @@
     function createImageLogo(logoPath) {
         var logoId = ++uniqueLogoId;
         var logoHtml = '<div class="player-info__logo" data-logo-id="' + logoId + '">' +
-            '<img src="' + logoPath + '" alt="image logo" style="max-height: 200px; max-width: 600px;" />' +
+            '<img src="' + logoPath + '" alt="Logo" style="max-height: 200px; max-width: 600px;" />' +
             '</div>';
         return logoHtml;
     }
@@ -191,12 +133,15 @@
     function getMovieData() {
         var movieData = null;
 
-        // Method 1: From active Lampa activity
         try {
             var activity = Lampa.Activity.active();
             if (activity?.activity) {
                 movieData = activity.activity.data?.movie || activity.activity.movie;
                 if (movieData?.id) {
+                    // Ensure media_type is set
+                    if (!movieData.media_type) {
+                        movieData.media_type = (movieData.name || movieData.first_air_date) ? "tv" : "movie";
+                    }
                     console.log("[PlayerInfoLogo] Movie data retrieved from active activity:", movieData);
                     return movieData;
                 }
@@ -205,11 +150,14 @@
             console.error("[PlayerInfoLogo] Error retrieving data from activity:", e.message);
         }
 
-        // Method 2: From Lampa.Storage (last_movie_data)
+        // Fallback to Lampa.Storage
         if (!movieData && window.Lampa?.Storage) {
             try {
                 var lastMovie = Lampa.Storage.get('last_movie_data');
                 if (lastMovie?.id) {
+                    if (!lastMovie.media_type) {
+                        lastMovie.media_type = (lastMovie.name || lastMovie.first_air_date) ? "tv" : "movie";
+                    }
                     movieData = lastMovie;
                     console.log("[PlayerInfoLogo] Movie data retrieved from Lampa.Storage (last_movie_data):", movieData);
                 }
@@ -218,27 +166,35 @@
             }
         }
 
-        // Method 3: Fallback to DOM title (less reliable)
-        if (!movieData) {
-            try {
-                var $playerTitle = $(".player-footer-card__title");
-                if (!$playerTitle.length) {
-                    $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title]");
-                }
-                var title = $playerTitle.length ? $playerTitle.text().trim() : "";
-                if (title) {
-                    movieData = { title: title };
-                    console.log("[PlayerInfoLogo] Fallback to DOM title:", title);
-                }
-            } catch (e) {
-                console.error("[PlayerInfoLogo] Error parsing DOM title:", e.message);
-            }
-        }
-
         return movieData;
     }
 
-    // Main function to display logo
+    // Get current episode title from DOM
+    function getEpisodeTitle() {
+        var currentEpisodeTitle = "";
+        try {
+            var $playerInfoName = $(".player-info__name");
+            if ($playerInfoName.length && $playerInfoName.text().trim()) {
+                currentEpisodeTitle = $playerInfoName.text().trim();
+                console.log("[PlayerInfoLogo] Episode title from .player-info__name:", currentEpisodeTitle);
+                return currentEpisodeTitle;
+            }
+
+            var $playerTitleFallback = $(".player-footer-card__title");
+            if (!$playerTitleFallback.length) {
+                $playerTitleFallback = $(".card__title, .player-title, .media-title, .title, [class*=title]");
+            }
+            if ($playerTitleFallback.length) {
+                currentEpisodeTitle = $playerTitleFallback.text().trim();
+                console.log("[PlayerInfoLogo] Episode title from fallback:", currentEpisodeTitle);
+            }
+        } catch (e) {
+            console.error("[PlayerInfoLogo] Error retrieving episode title from DOM:", e.message);
+        }
+        return currentEpisodeTitle;
+    }
+
+    // Main function to display logo and episode title
     function displayPlayerInfoLogo() {
         try {
             console.log("[PlayerInfoLogo] Starting displayPlayerInfoLogo");
@@ -260,23 +216,23 @@
                 return;
             }
 
+            // Get episode title from DOM
+            var currentEpisodeTitle = getEpisodeTitle();
+            if (!currentEpisodeTitle) {
+                console.log("[PlayerInfoLogo] No episode title found");
+                $playerInfoName.text("").show();
+                return;
+            }
+
+            // Get movie/series data for logo
             var movieData = getMovieData();
-            if (!movieData || (!movieData.id && !movieData.title)) {
-                console.log("[PlayerInfoLogo] No movie data or title found");
-                if (movieData?.title) {
-                    $playerInfoName.text(movieData.title).show();
-                }
+            if (!movieData || !movieData.id) {
+                console.log("[PlayerInfoLogo] No movie data or ID found, showing episode title only");
+                $playerInfoName.text(currentEpisodeTitle).show();
                 return;
             }
 
-            // Fallback to title if no ID
-            if (!movieData.id) {
-                console.log("[PlayerInfoLogo] No movie ID, displaying title only");
-                $playerInfoName.text(movieData.title).show();
-                return;
-            }
-
-            var isSerial = movieData.name || movieData.first_air_date || movieData.media_type === "tv";
+            var isSerial = movieData.media_type === "tv" || movieData.name || movieData.first_air_date;
             var id = movieData.id;
             var apiPath = isSerial ? `tv/${id}` : `movie/${id}`;
             var currentLampaLang = Lampa.Storage.get('language') || 'en';
@@ -306,7 +262,7 @@
                 if (isLoading) {
                     console.log("[PlayerInfoLogo] Logo fetch timeout");
                     isLoading = false;
-                    $playerInfoName.text(movieData.title || movieData.name || "").show();
+                    $playerInfoName.text(currentEpisodeTitle).show();
                 }
             }, 5000);
 
@@ -321,6 +277,7 @@
                 var logo = null;
                 var logoLang = null;
 
+                // Prioritize logo based on language
                 logo = e_images.logos.find(function(l) { return l.iso_639_1 === currentLampaLang; });
                 if (logo) logoLang = currentLampaLang;
 
@@ -346,34 +303,20 @@
                         var imageLogoHtml = createImageLogo(logoPath);
                         $playerInfoName.before(imageLogoHtml);
                         console.log("[PlayerInfoLogo] Logo image added");
-
-                        if (logoLang !== currentLampaLang) {
-                            var titleApi = `https://api.themoviedb.org/3/${apiPath}?api_key=${apiKey}&language=${currentLampaLang}`;
-                            $.get(titleApi).done(function(data) {
-                                var localizedTitle = isSerial ? data.name : data.title;
-                                if (localizedTitle) {
-                                    $playerInfoName.text(localizedTitle).show();
-                                }
-                            }).fail(function() {
-                                console.error("[PlayerInfoLogo] Error fetching localized title");
-                                $playerInfoName.text(movieData.title || movieData.name || "").show();
-                            });
-                        } else {
-                            $playerInfoName.hide();
-                        }
+                        $playerInfoName.text(currentEpisodeTitle).show();
                         return;
                     }
                 }
 
-                console.log("[PlayerInfoLogo] No logo found, showing title");
-                $playerInfoName.text(movieData.title || movieData.name || "").show();
+                console.log("[PlayerInfoLogo] No logo found, showing episode title");
+                $playerInfoName.text(currentEpisodeTitle).show();
             }).fail(function() {
                 if (!isLoading) return;
 
                 clearTimeout(logoTimeout);
                 isLoading = false;
                 console.error("[PlayerInfoLogo] Error fetching logos");
-                $playerInfoName.text(movieData.title || movieData.name || "").show();
+                $playerInfoName.text(currentEpisodeTitle).show();
             });
         } catch (e) {
             console.error("[PlayerInfoLogo] Error:", e.message);
@@ -381,8 +324,9 @@
             if (logoTimeout) {
                 clearTimeout(logoTimeout);
             }
-            if ($playerInfoName.length && movieData) {
-                $playerInfoName.text(movieData.title || movieData.name || "").show();
+            var $playerInfoName = $(".player-info__name");
+            if ($playerInfoName.length) {
+                $playerInfoName.text(currentEpisodeTitle || "").show();
             }
         }
     }
