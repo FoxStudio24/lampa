@@ -1,7 +1,25 @@
 (function () {
 	'use strict';
 
+	// Кеш обработанных фильмов для предотвращения дублирования
+	var processedMovies = new Set();
+	var ratingCache = new Map();
+
 	function rating_kp_imdb(card) {
+		if (!card || !card.id) {
+			console.log('No valid card data, skipping rating fetch.');
+			return;
+		}
+
+		// Проверяем, не обрабатывали ли уже этот фильм
+		var movieKey = card.id + '_' + (card.media_type || 'movie');
+		if (processedMovies.has(movieKey)) {
+			console.log('Movie already processed:', movieKey);
+			return;
+		}
+
+		processedMovies.add(movieKey);
+
 		var network = new Lampa.Reguest();
 		var clean_title = card && card.title ? kpCleanTitle(card.title) : '';
 		var search_date = card && (card.release_date || card.first_air_date || card.last_air_date) || '0000';
@@ -9,7 +27,7 @@
 		var orig = card && (card.original_title || card.original_name) || '';
 		var kp_prox = '';
 		var params = {
-			id: card && card.id ? card.id : 0,
+			id: card.id,
 			url: kp_prox + 'https://kinopoiskapiunofficial.tech/',
 			rating_url: kp_prox + 'https://rating.kinopoisk.ru/',
 			headers: {
@@ -18,15 +36,7 @@
 			cache_time: 60 * 60 * 24 * 1000 // 1 day
 		};
 
-		// Debug log for card data
-		console.log('Card data:', card);
-
-		// Check for valid card data
-		if (!card || !params.id) {
-			console.log('No valid card data, skipping rating fetch.');
-			return;
-		}
-
+		console.log('Processing card:', card);
 		getRating();
 
 		function getRating() {
@@ -198,7 +208,7 @@
 		}
 
 		function cleanTitle(str) {
-			return str ? str.replace(/[\s.,:;’'`!?]+/g, ' ').trim() : '';
+			return str ? str.replace(/[\s.,:;''`!?]+/g, ' ').trim() : '';
 		}
 
 		function kpCleanTitle(str) {
@@ -254,7 +264,14 @@
 			if (data) {
 				var kp_rating = !isNaN(data.kp) && data.kp !== null ? parseFloat(data.kp).toFixed(1) : '0.0';
 				var imdb_rating = !isNaN(data.imdb) && data.imdb !== null ? parseFloat(data.imdb).toFixed(1) : '0.0';
-				var render = Lampa.Activity.active().activity.render();
+				
+				// Ищем контейнер более гибко
+				var render = findRenderContainer();
+				if (!render) {
+					console.log('Render container not found');
+					return;
+				}
+
 				$('.wait_rating', render).remove();
 
 				// Format ratings without /10, remove .0 for whole numbers
@@ -276,65 +293,98 @@
 				var $kpRating = $('<div class="full-start__rating">KP ' + kp_rating + '</div>');
 				var $imdbRating = $('<div class="full-start__rating">IMDb ' + imdb_rating + '</div>');
 
-				// Add stars for TMDB
-				var tmdbStars = Math.round(parseFloat(tmdb_rating) / 2); // 5-point scale
-				var tmdbStarsHtml = $('<div class="rating-stars"></div>');
-				for (var i = 0; i < 5; i++) {
-					var starSvg = i < tmdbStars ?
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
-					tmdbStarsHtml.append(starSvg);
-				}
-
-				// Add stars for KP
-				var kpStars = Math.round(parseFloat(kp_rating) / 2); // 5-point scale
-				var kpStarsHtml = $('<div class="rating-stars"></div>');
-				for (var i = 0; i < 5; i++) {
-					var starSvg = i < kpStars ?
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
-					kpStarsHtml.append(starSvg);
-				}
-
-				// Add stars for IMDb
-				var imdbStars = Math.round(parseFloat(imdb_rating) / 2); // 5-point scale
-				var imdbStarsHtml = $('<div class="rating-stars"></div>');
-				for (var i = 0; i < 5; i++) {
-					var starSvg = i < imdbStars ?
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
-						'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
-					imdbStarsHtml.append(starSvg);
+				// Create rating stars function
+				function createStars(rating) {
+					var stars = Math.round(parseFloat(rating) / 2); // 5-point scale
+					var starsHtml = $('<div class="rating-stars"></div>');
+					for (var i = 0; i < 5; i++) {
+						var starSvg = i < stars ?
+							'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
+							'<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="gray" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>';
+						starsHtml.append(starSvg);
+					}
+					return starsHtml;
 				}
 
 				// Create containers for ratings
-				var $tmdbContainer = $('<div class="rating-container"></div>').append($tmdbRating).append(tmdbStarsHtml);
-				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(kpStarsHtml);
-				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(imdbStarsHtml);
+				var $tmdbContainer = $('<div class="rating-container"></div>').append($tmdbRating).append(createStars(tmdb_rating));
+				var $kpContainer = $('<div class="rating-container"></div>').append($kpRating).append(createStars(kp_rating));
+				var $imdbContainer = $('<div class="rating-container"></div>').append($imdbRating).append(createStars(imdb_rating));
 
 				// Hide containers with zero ratings
 				if (tmdb_rating === '0') $tmdbContainer.addClass('hide');
 				if (kp_rating === '0') $kpContainer.addClass('hide');
 				if (imdb_rating === '0') $imdbContainer.addClass('hide');
 
-				// Preserve existing elements (.full-start__pg, .full-start__status)
-				var $rateLine = $('.full-start-new__rate-line', render);
-				if ($rateLine.length) {
-					$rateLine.find('.rating-container').remove();
-					$rateLine.prepend($imdbContainer).prepend($kpContainer).prepend($tmdbContainer);
-					$rateLine.removeClass('hide');
-				} else {
-					var $rightContainer = $('.full-start-new__right', render);
-					if ($rightContainer.length) {
-						$rightContainer.append(
-							$('<div class="full-start-new__rate-line"></div>')
-								.append($tmdbContainer)
-								.append($kpContainer)
-								.append($imdbContainer)
-								.append('<div class="full-start__pg hide"></div>')
-								.append('<div class="full-start__status hide"></div>')
-								.removeClass('hide')
-						);
-					}
+				// Insert ratings into page
+				insertRatings(render, $tmdbContainer, $kpContainer, $imdbContainer);
+			}
+		}
+	}
+
+	// Улучшенная функция поиска контейнера
+	function findRenderContainer() {
+		// Пробуем несколько вариантов получения активного контейнера
+		try {
+			var activity = Lampa.Activity.active();
+			if (activity && activity.activity && activity.activity.render) {
+				return activity.activity.render();
+			}
+		} catch (e) {
+			console.log('Error getting activity render:', e);
+		}
+
+		// Fallback - ищем в DOM
+		var containers = [
+			'.full-start-new__body',
+			'.full-start__body',
+			'.activity__body',
+			'body'
+		];
+
+		for (var i = 0; i < containers.length; i++) {
+			var container = $(containers[i]).first();
+			if (container.length) {
+				return container;
+			}
+		}
+
+		return null;
+	}
+
+	// Универсальная функция вставки рейтингов
+	function insertRatings(render, $tmdbContainer, $kpContainer, $imdbContainer) {
+		// Убираем старые рейтинги
+		$('.rating-container', render).remove();
+
+		// Ищем существующую линию рейтинга
+		var $rateLine = $('.full-start-new__rate-line', render);
+		if ($rateLine.length) {
+			$rateLine.prepend($imdbContainer).prepend($kpContainer).prepend($tmdbContainer);
+			$rateLine.removeClass('hide');
+		} else {
+			// Ищем правый контейнер
+			var $rightContainer = $('.full-start-new__right', render);
+			if ($rightContainer.length) {
+				$rightContainer.append(
+					$('<div class="full-start-new__rate-line"></div>')
+						.append($tmdbContainer)
+						.append($kpContainer)
+						.append($imdbContainer)
+						.append('<div class="full-start__pg hide"></div>')
+						.append('<div class="full-start__status hide"></div>')
+						.removeClass('hide')
+				);
+			} else {
+				// Fallback - добавляем в основной контейнер
+				var $body = $('.full-start-new__body, .full-start__body', render);
+				if ($body.length) {
+					$body.prepend(
+						$('<div class="rating-line-fallback" style="margin-bottom: 15px;"></div>')
+							.append($tmdbContainer)
+							.append($kpContainer)
+							.append($imdbContainer)
+					);
 				}
 			}
 		}
@@ -352,26 +402,99 @@
 		};
 	}
 
-	// Extract movie data from URL or activity
+	// Улучшенная функция получения данных фильма
 	function getMovieData() {
 		var movieData = null;
-		var activity = Lampa.Activity.active();
-		if (activity && activity.activity && activity.activity.data && activity.activity.data.movie) {
-			movieData = activity.activity.data.movie;
-		} else {
-			// Parse URL parameters
-			var urlParams = new URLSearchParams(window.location.search);
-			var cardId = urlParams.get('card');
-			var mediaType = urlParams.get('media');
-			var source = urlParams.get('source');
-			if (cardId && mediaType && source) {
-				// Fetch movie data from TMDB or other source if needed
-				// This requires integration with Lampa's data fetching mechanism
-				// For now, assume movie data is unavailable
-				console.log('URL params detected but movie data fetching not implemented.');
+
+		// Способ 1: Из активной активности
+		try {
+			var activity = Lampa.Activity.active();
+			if (activity && activity.activity) {
+				if (activity.activity.data && activity.activity.data.movie) {
+					movieData = activity.activity.data.movie;
+				} else if (activity.activity.movie) {
+					movieData = activity.activity.movie;
+				}
+			}
+		} catch (e) {
+			console.log('Error getting movie data from activity:', e);
+		}
+
+		// Способ 2: Из URL параметров
+		if (!movieData) {
+			try {
+				var urlParams = new URLSearchParams(window.location.search);
+				var cardId = urlParams.get('card');
+				if (cardId) {
+					movieData = getCachedMovieData(cardId);
+				}
+			} catch (e) {
+				console.log('Error parsing URL params:', e);
 			}
 		}
+
+		// Способ 3: Из глобального состояния Lampa
+		if (!movieData && window.Lampa && Lampa.Storage) {
+			try {
+				var lastMovie = Lampa.Storage.get('last_movie_data');
+				if (lastMovie && lastMovie.id) {
+					movieData = lastMovie;
+				}
+			} catch (e) {
+				console.log('Error getting cached movie data:', e);
+			}
+		}
+
 		return movieData;
+	}
+
+	// Функция получения кешированных данных фильма
+	function getCachedMovieData(cardId) {
+		// Здесь можно реализовать логику получения данных из кеша Lampa
+		// Пока возвращаем null
+		return null;
+	}
+
+	// Наблюдатель за изменениями в DOM
+	function setupDOMObserver() {
+		var observer = new MutationObserver(function(mutations) {
+			var shouldProcess = false;
+			
+			mutations.forEach(function(mutation) {
+				if (mutation.addedNodes.length) {
+					for (var i = 0; i < mutation.addedNodes.length; i++) {
+						var node = mutation.addedNodes[i];
+						if (node.nodeType === 1) { // Element node
+							if (node.classList && (
+								node.classList.contains('full-start-new__right') ||
+								node.classList.contains('full-start__body') ||
+								node.querySelector && node.querySelector('.full-start-new__right')
+							)) {
+								shouldProcess = true;
+								break;
+							}
+						}
+					}
+				}
+			});
+
+			if (shouldProcess) {
+				setTimeout(function() {
+					var movieData = getMovieData();
+					if (movieData && !document.querySelector('.rating-container')) {
+						console.log('DOM change detected, processing ratings...');
+						rating_kp_imdb(movieData);
+					}
+				}, 100);
+			}
+		});
+
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true
+		});
+
+		return observer;
 	}
 
 	// Retry mechanism for fetching movie data
@@ -380,6 +503,7 @@
 		function tryFetchRating() {
 			var movieData = getMovieData();
 			if (movieData) {
+				console.log('Movie data found, fetching ratings...');
 				rating_kp_imdb(movieData);
 			} else if (retries < maxRetries) {
 				retries++;
@@ -396,35 +520,77 @@
 		if (window.rating_plugin) return;
 		window.rating_plugin = true;
 
+		console.log('Rating plugin starting...');
+
 		// Debounced rating function
 		var debouncedRating = debounce(function (movieData) {
-			if (movieData) {
-				var render = Lampa.Activity.active().activity.render();
-				if (!render.find('.wait_rating').length) {
-					$('.full-start-new__body', render).prepend(
+			if (movieData && movieData.id) {
+				var render = findRenderContainer();
+				if (render && !render.find('.wait_rating').length) {
+					render.find('.full-start-new__body, .full-start__body').first().prepend(
 						'<div style="position: absolute; top: 10px; right: 10px; width:2em; margin-top:1em; margin-right:1em; z-index: 2000;" class="wait_rating">' +
-						'<div class="broadcast__scan"><div></div></div><div>'
+						'<div class="broadcast__scan"><div></div></div></div>'
 					);
 				}
 				rating_kp_imdb(movieData);
 			}
-		}, 1500);
+		}, 1000);
+
+		// Обработка событий активности
+		if (Lampa.Activity && Lampa.Activity.listener) {
+			Lampa.Activity.listener.follow('activity', function(e) {
+				console.log('Activity event:', e.type, e.object ? e.object.component : 'no component');
+				
+				if (e.type === 'start' && e.object && e.object.component === 'full') {
+					setTimeout(function() {
+						var movieData = getMovieData();
+						if (movieData) {
+							console.log('Activity start - movie data found');
+							debouncedRating(movieData);
+						}
+					}, 500);
+				}
+			});
+		}
 
 		// Listen to 'full' event for movie pages
-		Lampa.Listener.follow('full', function (e) {
-			if (e.type === 'complite' && e.data && e.data.movie) {
-				debouncedRating(e.data.movie);
-			}
-		});
+		if (Lampa.Listener) {
+			Lampa.Listener.follow('full', function (e) {
+				console.log('Full event:', e.type, e.data ? 'has data' : 'no data');
+				if (e.type === 'complite' && e.data && e.data.movie) {
+					debouncedRating(e.data.movie);
+				}
+			});
 
-		// Listen to 'app' event for main page and other scenarios
-		Lampa.Listener.follow('app', function (e) {
-			if (e.type === 'ready') {
-				// Start with retry mechanism
-				startRatingWithRetry(5, 2000); // Retry 5 times, every 2 seconds
+			// Listen to 'app' event for main page and other scenarios
+			Lampa.Listener.follow('app', function (e) {
+				console.log('App event:', e.type);
+				if (e.type === 'ready') {
+					// Start with retry mechanism
+					startRatingWithRetry(5, 2000); // Retry 5 times, every 2 seconds
+				}
+			});
+		}
+
+		// Настройка наблюдателя DOM
+		setupDOMObserver();
+
+		// Попытка обработать текущую страницу
+		setTimeout(function() {
+			var movieData = getMovieData();
+			if (movieData) {
+				console.log('Initial movie data found');
+				debouncedRating(movieData);
 			}
-		});
+		}, 1000);
+
+		console.log('Rating plugin initialized');
 	}
 
-	startPlugin();
+	// Запуск плагина
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', startPlugin);
+	} else {
+		startPlugin();
+	}
 })();
