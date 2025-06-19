@@ -1,23 +1,23 @@
 !function() {
     "use strict";
 
-    // Проверяем наличие jQuery
+    // Check for jQuery
     if (typeof $ === "undefined") {
-        console.error("[PlayerInfoLogo] Ошибка: jQuery не найден");
+        console.error("[PlayerInfoLogo] Error: jQuery not found");
         return;
     }
 
-    // Добавляем CSS стили
+    // Add CSS styles
     var customStyles = `
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Montserrat:wght@300;400;600;700&display=swap&subset=cyrillic');
         
-        /* Скрыть время */
+        /* Hide time */
         .player-info__time {
             display: none !important;
         }
         
-        /* Вертикальное расположение logo + name */
+        /* Vertical logo + name layout */
         .player-info__line {
             display: flex !important;
             flex-direction: column !important;
@@ -26,7 +26,7 @@
             width: 100% !important;
         }
         
-        /* Логотип по центру */
+        /* Center logo */
         .player-info__logo {
             display: flex !important;
             justify-content: center !important;
@@ -46,7 +46,7 @@
             max-width: 100% !important;
         }
         
-        /* Название под логотипом */
+        /* Name below logo */
         .player-info__name {
             display: block !important;
             width: 100% !important;
@@ -58,12 +58,12 @@
             font-size: 20px !important;
         }
         
-        /* Скрыть player-info__values */
+        /* Hide player-info__values */
         .player-info__values {
             display: none !important;
         }
         
-        /* Убрать фон и блюр у .player-info */
+        /* Remove background and blur from .player-info */
         .player-info {
             background: none !important;
             backdrop-filter: none !important;
@@ -100,12 +100,12 @@
             box-shadow: none !important;
         }
         
-        /* Скрыть все элементы в центре */
+        /* Hide center elements */
         .player-panel__center > div {
             display: none !important;
         }
         
-        /* Переместить play/pause в начало левой части */
+        /* Rearrange play/pause in left section */
         .player-panel__line-two {
             display: flex !important;
             align-items: center !important;
@@ -130,15 +130,16 @@
             align-items: center !important;
             gap: 10px !important;
         }
+        
         .player-panel__playpause {
             font-size: 1em;
             margin: 0 0em;
-       }
-       .player-panel__pip,.player-panel__volume {
+            order: -1 !important; /* Move play/pause to the start of left section */
+        }
+        
+        .player-panel__pip, .player-panel__volume {
             display: none !important;
-       }
-
-
+        }
         
         @keyframes fadeIn { 
             from { opacity: 0; } 
@@ -147,81 +148,46 @@
         </style>
     `;
 
-    // Добавляем стили в head
+    // Append styles to head
     $('head').append(customStyles);
 
-    // Функция для реструктуризации панели плеера
-    function restructurePlayerPanel() {
-        console.log("[PlayerInfoLogo] Запуск restructurePlayerPanel");
-        
-        // Ищем кнопку play/pause в разных местах
-        var $playPauseBtn = $('.player-panel__playpause').first();
-        
-        if (!$playPauseBtn.length) {
-            // Альтернативные селекторы для поиска кнопки play/pause
-            $playPauseBtn = $('[class*="playpause"], [class*="play-pause"], .play-btn, .pause-btn, .player-play, .player-pause').first();
-        }
-        
-        if ($playPauseBtn.length) {
-            console.log("[PlayerInfoLogo] Найдена кнопка play/pause:", $playPauseBtn.attr('class'));
-            
-            var $leftSection = $('.player-panel__left');
-            if ($leftSection.length) {
-                console.log("[PlayerInfoLogo] Найдена левая секция");
-                
-                // Проверяем, что кнопки еще нет в левой секции
-                if (!$leftSection.find('.player-panel__playpause, [class*="playpause"]').length) {
-                    console.log("[PlayerInfoLogo] Кнопка еще не в левой секции");
-                    
-                    // Добавляем play/pause в самое начало левой секции (перед prev)
-                    $leftSection.prepend($playPauseBtn.detach());
-                    console.log("[PlayerInfoLogo] Кнопка play/pause перемещена в начало левой секции (перед prev)");
-                } else {
-                    console.log("[PlayerInfoLogo] Кнопка уже в левой секции");
-                }
-            } else {
-                console.log("[PlayerInfoLogo] Левая секция не найдена");
-            }
-        } else {
-            console.log("[PlayerInfoLogo] Кнопка play/pause не найдена");
-        }
-    }
-
-    // Переменные для контроля состояния
+    // State variables
     var currentTitle = "";
     var isLoading = false;
     var logoTimeout = null;
     var uniqueLogoId = 0;
 
-    // Функция очистки старых логотипов
+    // Clear all logos
     function clearAllLogos() {
         $(".player-info__logo").remove();
-        console.log("[PlayerInfoLogo] Все логотипы удалены");
+        console.log("[PlayerInfoLogo] All logos removed");
     }
 
-    // Функция создания обычного логотипа
+    // Create logo HTML
     function createImageLogo(logoPath) {
         var logoId = ++uniqueLogoId;
         var logoHtml = '<div class="player-info__logo" data-logo-id="' + logoId + '">' +
-            '<img src="' + logoPath + '" alt="Logo" style="max-height: 120px; max-width: 400px;" />' +
+            '<img src="' + logoPath + '" alt="Logo" style="max-height: 200px; max-width: 600px;" />' +
             '</div>';
         return logoHtml;
     }
 
-    // Улучшенная функция поиска с очень строгими критериями
+    // Fuzzy matching for title comparison
     function findBestMatch(results, originalTitle) {
         if (!results || results.length === 0) return null;
-        
+
         var cleanOriginal = originalTitle.toLowerCase()
             .replace(/\s*\(\d{4}\).*$/, '')
             .replace(/\s*s\d+.*$/i, '')
             .replace(/\s*сезон.*$/i, '')
             .replace(/[^\w\s]/g, '')
             .trim();
-        
-        console.log("[PlayerInfoLogo] Ищем для:", cleanOriginal);
-        
-        // Ищем только точные совпадения
+
+        console.log("[PlayerInfoLogo] Searching for:", cleanOriginal);
+
+        var bestMatch = null;
+        var highestScore = 0;
+
         for (var i = 0; i < results.length; i++) {
             var item = results[i];
             var title = (item.title || item.name || "").toLowerCase()
@@ -230,165 +196,207 @@
             var originalTitle = (item.original_title || item.original_name || "").toLowerCase()
                 .replace(/[^\w\s]/g, '')
                 .trim();
-            
-            console.log("[PlayerInfoLogo] Проверяем:", title, "vs", cleanOriginal);
-            
-            // Только ТОЧНОЕ совпадение
+
+            // Simple fuzzy matching (Levenshtein distance could be used for more precision)
+            var score = 0;
             if (title === cleanOriginal || originalTitle === cleanOriginal) {
-                console.log("[PlayerInfoLogo] Найдено точное совпадение:", item.title || item.name);
-                return item;
+                score = 100; // Exact match
+            } else if (title.includes(cleanOriginal) || originalTitle.includes(cleanOriginal)) {
+                score = 80; // Substring match
+            } else if (cleanOriginal.includes(title) || cleanOriginal.includes(originalTitle)) {
+                score = 60; // Partial match
+            }
+
+            if (score > highestScore) {
+                highestScore = score;
+                bestMatch = item;
             }
         }
-        
-        console.log("[PlayerInfoLogo] Точные совпадения не найдены");
+
+        if (bestMatch && highestScore >= 60) {
+            console.log("[PlayerInfoLogo] Best match found:", bestMatch.title || bestMatch.name, "Score:", highestScore);
+            return bestMatch;
+        }
+
+        console.log("[PlayerInfoLogo] No suitable match found");
         return null;
     }
 
-    // Основная функция отображения логотипа
+    // Main function to display logo
     function displayPlayerInfoLogo() {
         try {
-            console.log("[PlayerInfoLogo] Запуск displayPlayerInfoLogo");
-            
-            // Предотвращаем множественные запросы
+            console.log("[PlayerInfoLogo] Starting displayPlayerInfoLogo");
+
             if (isLoading) {
-                console.log("[PlayerInfoLogo] Уже загружается, пропускаем");
+                console.log("[PlayerInfoLogo] Already loading, skipping");
                 return;
             }
 
-            // Проверяем наличие элементов
             var $playerInfoName = $(".player-info__name");
             if (!$playerInfoName.length) {
-                console.log("[PlayerInfoLogo] .player-info__name не найден");
+                console.log("[PlayerInfoLogo] .player-info__name not found");
                 return;
             }
 
-            // Ищем заголовок в разных местах
             var $playerTitle = $(".player-footer-card__title");
             if (!$playerTitle.length) {
                 $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title]");
             }
 
             var title = $playerTitle.length ? $playerTitle.text().trim() : "";
-            
+
             if (!title) {
-                console.log("[PlayerInfoLogo] Название пустое");
+                console.log("[PlayerInfoLogo] Title is empty");
                 return;
             }
 
-            // Очищаем название от информации о трейлерах и лишнего текста
             var cleanTitle = title
                 .replace(/\s*\(\d{4}\).*$/, '')
                 .replace(/\s*S\d+.*$/i, '')
                 .replace(/\s*Сезон.*$/i, '')
                 .replace(/\s*(trailer|трейлер|teaser|тизер|official|featurette).*$/i, '')
-                .replace(/\s*-.*$/, '') // Убираем все после тире
-                .replace(/[^\w\s\u0400-\u04FF]/g, ' ') // Оставляем только буквы, цифры и пробелы (включая кириллицу)
-                .replace(/\s+/g, ' ') // Заменяем множественные пробелы на одинарные
+                .replace(/\s*-.*$/, '')
+                .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
+                .replace(/\s+/g, ' ')
                 .trim();
-            
-            console.log("[PlayerInfoLogo] Название:", cleanTitle);
-            
-            // Проверяем изменение названия
+
+            console.log("[PlayerInfoLogo] Title:", cleanTitle);
+
             if (currentTitle === cleanTitle) {
-                console.log("[PlayerInfoLogo] Название не изменилось");
+                console.log("[PlayerInfoLogo] Title unchanged");
                 return;
             }
 
-            // Очищаем предыдущий таймаут
             if (logoTimeout) {
                 clearTimeout(logoTimeout);
             }
 
-            // ВСЕГДА удаляем все старые логотипы
             clearAllLogos();
-            
+
             isLoading = true;
             currentTitle = cleanTitle;
 
-            console.log("[PlayerInfoLogo] Начинаем загрузку для:", cleanTitle);
+            console.log("[PlayerInfoLogo] Starting fetch for:", cleanTitle);
 
-            // Запрос к TMDB
-            var apiKey = "06936145fe8e20be28b02e26b55d3ce6";
-            var searchUrl = "https://api.themoviedb.org/3/search/multi?api_key=" + apiKey + "&query=" + encodeURIComponent(cleanTitle) + "&language=ru&page=1";
+            var apiKey = Lampa.TMDB.key();
+            var currentLampaLang = Lampa.Storage.get('language') || 'en';
+            var searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(cleanTitle)}&language=${currentLampaLang}&page=1`;
 
             logoTimeout = setTimeout(function() {
                 if (isLoading) {
-                    console.log("[PlayerInfoLogo] Таймаут загрузки - логотип не найден");
+                    console.log("[PlayerInfoLogo] Fetch timeout - logo not found");
                     isLoading = false;
+                    $playerInfoName.text(cleanTitle).show();
                 }
-            }, 5000); // Таймаут 5 секунд
+            }, 5000);
 
             $.get(searchUrl).done(function(data) {
-                if (!isLoading) return; // Если уже отработал таймаут
-                
-                console.log("[PlayerInfoLogo] TMDB поиск: результаты =", data.results ? data.results.length : 0);
-                
+                if (!isLoading) return;
+
+                console.log("[PlayerInfoLogo] TMDB search: results =", data.results ? data.results.length : 0);
+
                 var bestMatch = findBestMatch(data.results, cleanTitle);
-                
+
                 if (!bestMatch) {
-                    console.log("[PlayerInfoLogo] Подходящий результат не найден");
+                    console.log("[PlayerInfoLogo] No suitable result found");
                     clearTimeout(logoTimeout);
                     isLoading = false;
+                    $playerInfoName.text(cleanTitle).show();
                     return;
                 }
 
                 var isSerial = bestMatch.media_type === "tv";
                 var id = bestMatch.id;
-                var apiPath = isSerial ? "tv/" + id : "movie/" + id;
-                var logoUrl = "https://api.themoviedb.org/3/" + apiPath + "/images?api_key=" + apiKey;
+                var apiPath = isSerial ? `tv/${id}` : `movie/${id}`;
+                var logoUrl = `https://api.themoviedb.org/3/${apiPath}/images?api_key=${apiKey}`;
 
                 $.get(logoUrl).done(function(e) {
-                    if (!isLoading) return; // Если уже отработал таймаут
-                    
+                    if (!isLoading) return;
+
                     clearTimeout(logoTimeout);
                     isLoading = false;
-                    
-                    console.log("[PlayerInfoLogo] TMDB логотипы: найдено =", e.logos ? e.logos.length : 0);
-                    
-                    if (e.logos && e.logos.length > 0) {
-                        var logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; }) ||
-                                   e.logos.find(function(l) { return l.iso_639_1 === "en"; }) ||
-                                   e.logos.find(function(l) { return !l.iso_639_1; }) ||
-                                   e.logos[0];
-                        
-                        if (logo && logo.file_path) {
-                            var logoPath = "https://image.tmdb.org/t/p/w300" + logo.file_path.replace(".svg", ".png");
-                            
-                            // Проверяем, что логотипа еще нет
-                            if (!$(".player-info__logo").length) {
-                                var imageLogoHtml = createImageLogo(logoPath);
-                                $playerInfoName.before(imageLogoHtml);
-                                console.log("[PlayerInfoLogo] Изображение логотипа добавлено");
-                                return;
+
+                    console.log("[PlayerInfoLogo] TMDB logos: found =", e.logos ? e.logos.length : 0);
+
+                    var logo = null;
+                    var logoLang = null;
+
+                    // Prioritize logo based on language
+                    logo = e.logos.find(function(l) { return l.iso_639_1 === currentLampaLang; });
+                    if (logo) logoLang = currentLampaLang;
+
+                    if (!logo && currentLampaLang !== 'ru') {
+                        logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
+                        if (logo) logoLang = 'ru';
+                    }
+
+                    if (!logo && currentLampaLang !== 'en') {
+                        logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
+                        if (logo) logoLang = 'en';
+                    }
+
+                    if (!logo) {
+                        logo = e.logos[0];
+                        if (logo) logoLang = logo.iso_639_1;
+                    }
+
+                    if (logo && logo.file_path) {
+                        var logoPath = Lampa.TMDB.image(`/t/p/w300${logo.file_path.replace(".svg", ".png")}`);
+
+                        if (!$(".player-info__logo").length) {
+                            var imageLogoHtml = createImageLogo(logoPath);
+                            $playerInfoName.before(imageLogoHtml);
+                            console.log("[PlayerInfoLogo] Logo image added");
+
+                            if (logoLang !== currentLampaLang) {
+                                var titleApi = `https://api.themoviedb.org/3/${apiPath}?api_key=${apiKey}&language=${currentLampaLang}`;
+                                $.get(titleApi).done(function(data) {
+                                    var localizedTitle = isSerial ? data.name : data.title;
+                                    if (localizedTitle) {
+                                        $playerInfoName.text(localizedTitle).show();
+                                    }
+                                }).fail(function() {
+                                    console.error("[PlayerInfoLogo] Error fetching localized title");
+                                    $playerInfoName.text(cleanTitle).show();
+                                });
+                            } else {
+                                $playerInfoName.hide();
                             }
+                            return;
                         }
                     }
-                    
-                    console.log("[PlayerInfoLogo] Логотип не найден в базе");
+
+                    console.log("[PlayerInfoLogo] No logo found in database");
+                    $playerInfoName.text(cleanTitle).show();
                 }).fail(function() {
                     if (!isLoading) return;
-                    
+
                     clearTimeout(logoTimeout);
                     isLoading = false;
-                    console.error("[PlayerInfoLogo] Ошибка загрузки логотипов");
+                    console.error("[PlayerInfoLogo] Error fetching logos");
+                    $playerInfoName.text(cleanTitle).show();
                 });
             }).fail(function() {
                 if (!isLoading) return;
-                
+
                 clearTimeout(logoTimeout);
                 isLoading = false;
-                console.error("[PlayerInfoLogo] Ошибка поиска TMDB");
+                console.error("[PlayerInfoLogo] Error searching TMDB");
+                $playerInfoName.text(cleanTitle).show();
             });
         } catch (e) {
-            console.error("[PlayerInfoLogo] Ошибка:", e.message);
+            console.error("[PlayerInfoLogo] Error:", e.message);
             isLoading = false;
             if (logoTimeout) {
                 clearTimeout(logoTimeout);
             }
+            if ($playerInfoName.length) {
+                $playerInfoName.text(cleanTitle).show();
+            }
         }
     }
 
-    // Функция полной очистки
+    // Clear logo and reset state
     function clearLogo() {
         clearAllLogos();
         currentTitle = "";
@@ -397,48 +405,41 @@
             clearTimeout(logoTimeout);
             logoTimeout = null;
         }
-        console.log("[PlayerInfoLogo] Состояние очищено");
+        console.log("[PlayerInfoLogo] State cleared");
     }
 
-    // Функция принудительного обновления
+    // Force update logo
     function forceUpdateLogo() {
-        console.log("[PlayerInfoLogo] Принудительное обновление");
+        console.log("[PlayerInfoLogo] Forcing update");
         clearLogo();
         setTimeout(function() {
             displayPlayerInfoLogo();
-            restructurePlayerPanel();
         }, 1000);
     }
 
-    // Подписка на события Lampa
+    // Subscribe to Lampa events
     try {
         if (Lampa && Lampa.Listener) {
             Lampa.Listener.follow('player', function(e) {
-                console.log("[PlayerInfoLogo] Событие плеера:", e.type);
+                console.log("[PlayerInfoLogo] Player event:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
-                    setTimeout(function() {
-                        displayPlayerInfoLogo();
-                        restructurePlayerPanel();
-                    }, 2000);
+                    setTimeout(displayPlayerInfoLogo, 2000);
                 } else if (e.type === 'end' || e.type === 'stop') {
                     clearLogo();
                 }
             });
-            
+
             Lampa.Listener.follow('card', function(e) {
-                console.log("[PlayerInfoLogo] Событие карточки:", e.type);
+                console.log("[PlayerInfoLogo] Card event:", e.type);
                 if (e.type === 'start' || e.type === 'loading') {
                     clearLogo();
-                    setTimeout(function() {
-                        displayPlayerInfoLogo();
-                        restructurePlayerPanel();
-                    }, 2000);
+                    setTimeout(displayPlayerInfoLogo, 2000);
                 }
             });
 
             Lampa.Listener.follow('activity', function(e) {
-                console.log("[PlayerInfoLogo] Событие активности:", e.type);
+                console.log("[PlayerInfoLogo] Activity event:", e.type);
                 if (e.type === 'start') {
                     forceUpdateLogo();
                 } else if (e.type === 'destroy') {
@@ -448,22 +449,21 @@
 
             Lampa.Listener.follow('torrent', function(e) {
                 if (e.type === 'start') {
-                    console.log("[PlayerInfoLogo] Новый торрент");
+                    console.log("[PlayerInfoLogo] New torrent");
                     forceUpdateLogo();
                 }
             });
 
-            console.log("[PlayerInfoLogo] События подключены");
+            console.log("[PlayerInfoLogo] Events subscribed");
         }
     } catch (e) {
-        console.error("[PlayerInfoLogo] Ошибка событий:", e.message);
+        console.error("[PlayerInfoLogo] Error subscribing to events:", e.message);
     }
 
-    // DOM Observer с улучшенной логикой
+    // DOM Observer for specific elements
     var observer = new MutationObserver(function(mutations) {
         var shouldUpdate = false;
-        var shouldRestructure = false;
-        
+
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(function(node) {
@@ -475,58 +475,47 @@
                         )) {
                             shouldUpdate = true;
                         }
-                        
-                        if (node.classList && (
-                            node.classList.contains('player-panel') ||
-                            node.classList.contains('player-panel__line-two') ||
-                            $(node).find('.player-panel, .player-panel__line-two').length
-                        )) {
-                            shouldRestructure = true;
-                        }
                     }
                 });
             }
         });
-        
-        if (shouldUpdate || shouldRestructure) {
-            console.log("[PlayerInfoLogo] DOM изменился");
+
+        if (shouldUpdate) {
+            console.log("[PlayerInfoLogo] DOM changed");
             setTimeout(forceUpdateLogo, 500);
         }
     });
 
-    // Запуск observer
+    // Start observer on specific elements
     try {
-        observer.observe(document.body, {
+        var targetNode = document.querySelector('.player-info, .player-panel') || document.body;
+        observer.observe(targetNode, {
             childList: true,
             subtree: true
         });
-        console.log("[PlayerInfoLogo] Observer запущен");
+        console.log("[PlayerInfoLogo] Observer started on:", targetNode.className || 'body');
     } catch (e) {
-        console.error("[PlayerInfoLogo] Ошибка Observer:", e.message);
+        console.error("[PlayerInfoLogo] Observer error:", e.message);
     }
 
-    // Инициализация
+    // Initial check
     try {
         setTimeout(function checkDOM() {
-            console.log("[PlayerInfoLogo] Проверка DOM");
+            console.log("[PlayerInfoLogo] Checking DOM");
             displayPlayerInfoLogo();
-            restructurePlayerPanel();
             if (!$(".player-info__name").length) {
                 setTimeout(checkDOM, 2000);
             }
         }, 1500);
     } catch (e) {
-        console.error("[PlayerInfoLogo] Ошибка инициализации:", e.message);
+        console.error("[PlayerInfoLogo] Initialization error:", e.message);
     }
 
-    // Периодическая проверка (увеличил интервал до 10 секунд)
+    // Periodic check
     setInterval(function() {
         if ($(".player-info__name").length && !$(".player-info__logo").length && !isLoading) {
-            console.log("[PlayerInfoLogo] Периодическая проверка: логотип отсутствует");
+            console.log("[PlayerInfoLogo] Periodic check: logo missing");
             displayPlayerInfoLogo();
         }
-        
-        // Проверяем структуру панели
-        restructurePlayerPanel();
     }, 10000);
 }();
