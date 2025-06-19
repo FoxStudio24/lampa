@@ -10,8 +10,9 @@
     function isCardifyActive() {
         try {
             return (
-                document.querySelector('.cardify__right') !== null || // Приоритетный индикатор
-                document.querySelector('.cardify-preview, .cardify-trailer') !== null // Запасной индикатор
+                document.querySelector('.cardify__details') !== null || // Приоритетный индикатор
+                document.querySelector('.cardify__right') !== null || // Запасной индикатор
+                document.querySelector('.cardify-preview, .cardify-trailer') !== null // Дополнительный индикатор
             );
         } catch (e) {
             console.log('Ошибка проверки активности cardify:', e);
@@ -20,7 +21,7 @@
     }
 
     // Динамическое ожидание рендеринга cardify
-    function waitForCardify(callback, maxWait = 3000) {
+    function waitForCardify(callback, maxWait = 2000) {
         var startTime = Date.now();
         function check() {
             if (isCardifyActive() || Date.now() - startTime > maxWait) {
@@ -42,6 +43,8 @@
             mutations.forEach(function (mutation) {
                 Array.from(mutation.addedNodes).forEach(function (node) {
                     if (node.nodeType === 1 && (
+                        node.classList?.contains('cardify__details') ||
+                        node.querySelector?.('.cardify__details') ||
                         node.classList?.contains('cardify__right') ||
                         node.querySelector?.('.cardify__right')
                     )) {
@@ -51,10 +54,10 @@
             });
 
             if (shouldProcess) {
-                console.log('Обнаружен cardify__right, ждем рендеринга...');
+                console.log('Обнаружен cardify__details или cardify__right, добавляем рейтинги...');
                 waitForCardify(function () {
                     var movieData = getMovieData();
-                    if (movieData && !document.querySelector('.rating-container.kp-imdb-rating')) {
+                    if (movieData && !document.querySelector('.cardify-ratings-wrapper')) {
                         console.log('Обработка рейтингов после появления cardify...');
                         var movieKey = movieData.id + '_' + (movieData.media_type || 'movie');
                         processedMovies.delete(movieKey);
@@ -79,7 +82,7 @@
         }
 
         var movieKey = card.id + '_' + (card.media_type || 'movie');
-        if (processedMovies.has(movieKey) && document.querySelector('.rating-container.kp-imdb-rating')) {
+        if (processedMovies.has(movieKey) && document.querySelector('.cardify-ratings-wrapper')) {
             console.log('Фильм уже обработан:', movieKey);
             return;
         }
@@ -307,7 +310,10 @@
 
             function createStars(rating) {
                 var stars = Math.round(parseFloat(rating) / 2);
-                var starsHtml = $('<div class="rating-stars"></div>');
+                var starsHtml = $('<div class="rating-stars"></div>').css({
+                    'display': 'inline-flex',
+                    'margin-left': '5px'
+                });
                 for (var i = 0; i < 5; i++) {
                     var starSvg = i < stars ?
                         '<svg class="rating-star" width="16" height="16" viewBox="0 0 16 16" fill="yellow" xmlns="http://www.w3.org/2000/svg"><path d="M8 0L10.472 5.648L16 6.128L12 10.352L13.416 16L8 13.648L2.584 16L4 10.352L0 6.128L5.528 5.648L8 0Z"/></svg>' :
@@ -317,9 +323,18 @@
                 return starsHtml;
             }
 
-            var $tmdbContainer = $('<div class="rating-container kp-imdb-rating"></div>').append($tmdbRating).append(createStars(tmdb_rating));
-            var $kpContainer = $('<div class="rating-container kp-imdb-rating"></div>').append($kpRating).append(createStars(kp_rating));
-            var $imdbContainer = $('<div class="rating-container kp-imdb-rating"></div>').append($imdbRating).append(createStars(imdb_rating));
+            var $tmdbContainer = $('<div class="rating-container kp-imdb-rating"></div>').css({
+                'display': 'inline-block',
+                'margin-right': '15px'
+            }).append($tmdbRating, createStars(tmdb_rating));
+            var $kpContainer = $('<div class="rating-container kp-imdb-rating"></div>').css({
+                'display': 'inline-block',
+                'margin-right': '15px'
+            }).append($kpRating, createStars(kp_rating));
+            var $imdbContainer = $('<div class="rating-container kp-imdb-rating"></div>').css({
+                'display': 'inline-block',
+                'margin-right': '15px'
+            }).append($imdbRating, createStars(imdb_rating));
 
             if (tmdb_rating === '0') $tmdbContainer.addClass('hide');
             if (kp_rating === '0') $kpContainer.addClass('hide');
@@ -334,7 +349,7 @@
             var activity = Lampa.Activity.active();
             if (activity?.activity?.render) {
                 var render = activity.activity.render();
-                if (render.find('.cardify__right').length) {
+                if (render.find('.cardify__details').length) {
                     console.log('Найден cardify контейнер в активности');
                     return render;
                 }
@@ -345,6 +360,7 @@
         }
 
         var containers = [
+            '.cardify__details',
             '.cardify__right',
             '.full-start-new__body',
             '.full-start__body',
@@ -363,32 +379,37 @@
         return null;
     }
 
-    function insertRatings(render, $cardifyRight, $kpContainer, $imdbContainer) {
-        var $cardifyRight = $('.cardify__right', render);
-        var $rateLine;
+    function insertRatings(render, $tmdbContainer, $kpContainer, $imdbContainer) {
+        // Удаляем старые рейтинги
+        $('.cardify-ratings-wrapper', render).remove();
 
-        if ($cardifyRight.length) {
-            $rateLine = $cardifyRight.find('.full-start-new__rate-line');
-            console.log('Найден контейнер cardify, работаем с .cardify__right');
-        } else {
-            $rateLine = $('.full-start-new__rate-line', render);
-            console.log('Cardify не найден, используем стандартный .full-start-new__rate-line');
+        // Ищем cardify__details
+        var $cardifyDetails = $('.cardify__details', render);
+
+        if ($cardifyDetails.length) {
+            console.log('Найден cardify__details, добавляем рейтинги после него');
+            var $ratingsWrapper = $('<div class="cardify-ratings-wrapper"></div>').css({
+                'margin-top': '15px',
+                'margin-bottom': '15px',
+                'display': 'flex',
+                'align-items': 'center'
+            });
+            $ratingsWrapper.append($tmdbContainer, $kpContainer, $imdbContainer);
+            $cardifyDetails.after($ratingsWrapper);
+            console.log('Рейтинги добавлены после cardify__details');
+            return;
         }
 
-        $('.rating-container.kp-imdb-rating', $rateLine).remove();
-
+        // Fallback для случаев без cardify
+        var $rateLine = $('.full-start-new__rate-line', render);
         if ($rateLine.length) {
-            var hasPg = $rateLine.find('.full-start__pg').length;
-            var hasStatus = $rateLine.find('.full-start__status').length;
-            console.log('Состояние rate-line:', { hasPg, hasStatus });
-
+            console.log('Cardify не найден, используем .full-start-new__rate-line');
             $rateLine.prepend($tmdbContainer, $kpContainer, $imdbContainer);
             $rateLine.removeClass('hide');
-            console.log('Рейтинги добавлены в', $cardifyRight.length ? 'cardify' : 'обычный', 'контейнер');
         } else {
-            var $rightContainer = $cardifyRight.length ? $cardifyRight : $('.full-start-new__right', render);
+            var $rightContainer = $('.full-start-new__right', render);
             if ($rightContainer.length) {
-                console.log('Создаем новый .full-start-new__rate-line в', $cardifyRight.length ? 'cardify' : 'обычном', 'контейнере');
+                console.log('Создаем новый .full-start-new__rate-line в .full-start-new__right');
                 $rightContainer.append(
                     $('<div class="full-start-new__rate-line"></div>')
                         .append($tmdbContainer, $kpContainer, $imdbContainer)
@@ -474,7 +495,7 @@
             if (shouldProcess) {
                 waitForCardify(function () {
                     var movieData = getMovieData();
-                    if (movieData && !document.querySelector('.rating-container.kp-imdb-rating')) {
+                    if (movieData && !document.querySelector('.cardify-ratings-wrapper')) {
                         console.log('Обнаружено изменение DOM, обработка рейтингов...');
                         rating_kp_imdb(movieData);
                     }
@@ -514,7 +535,7 @@
                     console.log('Событие full:complite, ждем cardify...');
                     waitForCardify(function () {
                         debouncedRating(e.data.movie);
-                    }, 2000); // Увеличено до 2000 мс
+                    }, 2000);
                 }
             });
 
