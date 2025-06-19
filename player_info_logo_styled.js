@@ -134,7 +134,7 @@
         .player-panel__playpause {
             font-size: 1em;
             margin: 0 0em;
-            order: -1 !important; /* Move play/pause to the start of left section */
+            order: -1 !important;
         }
         
         .player-panel__pip, .player-panel__volume {
@@ -150,6 +150,21 @@
 
     // Append styles to head
     $('head').append(customStyles);
+
+    // Add settings for logo display
+    Lampa.SettingsApi.addParam({
+        component: "interface",
+        param: {
+            name: "player_logo_display",
+            type: "select",
+            values: { 0: "Отображать", 1: "Скрыть" },
+            default: "0"
+        },
+        field: {
+            name: "Логотипы в плеере",
+            description: "Отображает логотипы фильмов и сериалов вместо текста в плеере"
+        }
+    });
 
     // State variables
     var currentTitle = "";
@@ -167,65 +182,72 @@
     function createImageLogo(logoPath) {
         var logoId = ++uniqueLogoId;
         var logoHtml = '<div class="player-info__logo" data-logo-id="' + logoId + '">' +
-            '<img src="' + logoPath + '" alt="Logo" style="max-height: 200px; max-width: 600px;" />' +
+            '<img src="' + logoPath + '" alt="image logo" style="max-height: 200px; max-width: 600px;" />' +
             '</div>';
         return logoHtml;
     }
 
-    // Fuzzy matching for title comparison
-    function findBestMatch(results, originalTitle) {
-        if (!results || results.length === 0) return null;
+    // Get movie data from Lampa
+    function getMovieData() {
+        var movieData = null;
 
-        var cleanOriginal = originalTitle.toLowerCase()
-            .replace(/\s*\(\d{4}\).*$/, '')
-            .replace(/\s*s\d+.*$/i, '')
-            .replace(/\s*сезон.*$/i, '')
-            .replace(/[^\w\s]/g, '')
-            .trim();
-
-        console.log("[PlayerInfoLogo] Searching for:", cleanOriginal);
-
-        var bestMatch = null;
-        var highestScore = 0;
-
-        for (var i = 0; i < results.length; i++) {
-            var item = results[i];
-            var title = (item.title || item.name || "").toLowerCase()
-                .replace(/[^\w\s]/g, '')
-                .trim();
-            var originalTitle = (item.original_title || item.original_name || "").toLowerCase()
-                .replace(/[^\w\s]/g, '')
-                .trim();
-
-            // Simple fuzzy matching (Levenshtein distance could be used for more precision)
-            var score = 0;
-            if (title === cleanOriginal || originalTitle === cleanOriginal) {
-                score = 100; // Exact match
-            } else if (title.includes(cleanOriginal) || originalTitle.includes(cleanOriginal)) {
-                score = 80; // Substring match
-            } else if (cleanOriginal.includes(title) || cleanOriginal.includes(originalTitle)) {
-                score = 60; // Partial match
+        // Method 1: From active Lampa activity
+        try {
+            var activity = Lampa.Activity.active();
+            if (activity?.activity) {
+                movieData = activity.activity.data?.movie || activity.activity.movie;
+                if (movieData?.id) {
+                    console.log("[PlayerInfoLogo] Movie data retrieved from active activity:", movieData);
+                    return movieData;
+                }
             }
+        } catch (e) {
+            console.error("[PlayerInfoLogo] Error retrieving data from activity:", e.message);
+        }
 
-            if (score > highestScore) {
-                highestScore = score;
-                bestMatch = item;
+        // Method 2: From Lampa.Storage (last_movie_data)
+        if (!movieData && window.Lampa?.Storage) {
+            try {
+                var lastMovie = Lampa.Storage.get('last_movie_data');
+                if (lastMovie?.id) {
+                    movieData = lastMovie;
+                    console.log("[PlayerInfoLogo] Movie data retrieved from Lampa.Storage (last_movie_data):", movieData);
+                }
+            } catch (e) {
+                console.error("[PlayerInfoLogo] Error retrieving cached data from Lampa.Storage:", e.message);
             }
         }
 
-        if (bestMatch && highestScore >= 60) {
-            console.log("[PlayerInfoLogo] Best match found:", bestMatch.title || bestMatch.name, "Score:", highestScore);
-            return bestMatch;
+        // Method 3: Fallback to DOM title (less reliable)
+        if (!movieData) {
+            try {
+                var $playerTitle = $(".player-footer-card__title");
+                if (!$playerTitle.length) {
+                    $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title]");
+                }
+                var title = $playerTitle.length ? $playerTitle.text().trim() : "";
+                if (title) {
+                    movieData = { title: title };
+                    console.log("[PlayerInfoLogo] Fallback to DOM title:", title);
+                }
+            } catch (e) {
+                console.error("[PlayerInfoLogo] Error parsing DOM title:", e.message);
+            }
         }
 
-        console.log("[PlayerInfoLogo] No suitable match found");
-        return null;
+        return movieData;
     }
 
     // Main function to display logo
     function displayPlayerInfoLogo() {
         try {
             console.log("[PlayerInfoLogo] Starting displayPlayerInfoLogo");
+
+            // Check if logo display is enabled
+            if (Lampa.Storage.get("player_logo_display") === "1") {
+                console.log("[PlayerInfoLogo] Logo display disabled in settings");
+                return;
+            }
 
             if (isLoading) {
                 console.log("[PlayerInfoLogo] Already loading, skipping");
@@ -238,32 +260,32 @@
                 return;
             }
 
-            var $playerTitle = $(".player-footer-card__title");
-            if (!$playerTitle.length) {
-                $playerTitle = $(".card__title, .player-title, .media-title, .title, [class*=title]");
-            }
-
-            var title = $playerTitle.length ? $playerTitle.text().trim() : "";
-
-            if (!title) {
-                console.log("[PlayerInfoLogo] Title is empty");
+            var movieData = getMovieData();
+            if (!movieData || (!movieData.id && !movieData.title)) {
+                console.log("[PlayerInfoLogo] No movie data or title found");
+                if (movieData?.title) {
+                    $playerInfoName.text(movieData.title).show();
+                }
                 return;
             }
 
-            var cleanTitle = title
-                .replace(/\s*\(\d{4}\).*$/, '')
-                .replace(/\s*S\d+.*$/i, '')
-                .replace(/\s*Сезон.*$/i, '')
-                .replace(/\s*(trailer|трейлер|teaser|тизер|official|featurette).*$/i, '')
-                .replace(/\s*-.*$/, '')
-                .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
+            // Fallback to title if no ID
+            if (!movieData.id) {
+                console.log("[PlayerInfoLogo] No movie ID, displaying title only");
+                $playerInfoName.text(movieData.title).show();
+                return;
+            }
 
-            console.log("[PlayerInfoLogo] Title:", cleanTitle);
+            var isSerial = movieData.name || movieData.first_air_date || movieData.media_type === "tv";
+            var id = movieData.id;
+            var apiPath = isSerial ? `tv/${id}` : `movie/${id}`;
+            var currentLampaLang = Lampa.Storage.get('language') || 'en';
+            var apiKey = Lampa.TMDB.key();
 
-            if (currentTitle === cleanTitle) {
-                console.log("[PlayerInfoLogo] Title unchanged");
+            // Check for changes in movie ID and language
+            var titleKey = `${id}_${currentLampaLang}`;
+            if (currentTitle === titleKey) {
+                console.log("[PlayerInfoLogo] Movie ID and language unchanged");
                 return;
             }
 
@@ -274,115 +296,84 @@
             clearAllLogos();
 
             isLoading = true;
-            currentTitle = cleanTitle;
+            currentTitle = titleKey;
 
-            console.log("[PlayerInfoLogo] Starting fetch for:", cleanTitle);
+            console.log("[PlayerInfoLogo] Fetching logo for ID:", id, "Type:", isSerial ? "tv" : "movie");
 
-            var apiKey = Lampa.TMDB.key();
-            var currentLampaLang = Lampa.Storage.get('language') || 'en';
-            var searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(cleanTitle)}&language=${currentLampaLang}&page=1`;
+            var logoUrl = `https://api.themoviedb.org/3/${apiPath}/images?api_key=${apiKey}`;
 
             logoTimeout = setTimeout(function() {
                 if (isLoading) {
-                    console.log("[PlayerInfoLogo] Fetch timeout - logo not found");
+                    console.log("[PlayerInfoLogo] Logo fetch timeout");
                     isLoading = false;
-                    $playerInfoName.text(cleanTitle).show();
+                    $playerInfoName.text(movieData.title || movieData.name || "").show();
                 }
             }, 5000);
 
-            $.get(searchUrl).done(function(data) {
+            $.get(logoUrl).done(function(e_images) {
                 if (!isLoading) return;
 
-                console.log("[PlayerInfoLogo] TMDB search: results =", data.results ? data.results.length : 0);
+                clearTimeout(logoTimeout);
+                isLoading = false;
 
-                var bestMatch = findBestMatch(data.results, cleanTitle);
+                console.log("[PlayerInfoLogo] TMDB logos found:", e_images.logos ? e_images.logos.length : 0);
 
-                if (!bestMatch) {
-                    console.log("[PlayerInfoLogo] No suitable result found");
-                    clearTimeout(logoTimeout);
-                    isLoading = false;
-                    $playerInfoName.text(cleanTitle).show();
-                    return;
+                var logo = null;
+                var logoLang = null;
+
+                logo = e_images.logos.find(function(l) { return l.iso_639_1 === currentLampaLang; });
+                if (logo) logoLang = currentLampaLang;
+
+                if (!logo && currentLampaLang !== 'ru') {
+                    logo = e_images.logos.find(function(l) { return l.iso_639_1 === "ru"; });
+                    if (logo) logoLang = 'ru';
                 }
 
-                var isSerial = bestMatch.media_type === "tv";
-                var id = bestMatch.id;
-                var apiPath = isSerial ? `tv/${id}` : `movie/${id}`;
-                var logoUrl = `https://api.themoviedb.org/3/${apiPath}/images?api_key=${apiKey}`;
+                if (!logo && currentLampaLang !== 'en') {
+                    logo = e_images.logos.find(function(l) { return l.iso_639_1 === "en"; });
+                    if (logo) logoLang = 'en';
+                }
 
-                $.get(logoUrl).done(function(e) {
-                    if (!isLoading) return;
+                if (!logo) {
+                    logo = e_images.logos[0];
+                    if (logo) logoLang = logo.iso_639_1;
+                }
 
-                    clearTimeout(logoTimeout);
-                    isLoading = false;
+                if (logo && logo.file_path) {
+                    var logoPath = Lampa.TMDB.image(`/t/p/w300${logo.file_path.replace(".svg", ".png")}`);
 
-                    console.log("[PlayerInfoLogo] TMDB logos: found =", e.logos ? e.logos.length : 0);
+                    if (!$(".player-info__logo").length) {
+                        var imageLogoHtml = createImageLogo(logoPath);
+                        $playerInfoName.before(imageLogoHtml);
+                        console.log("[PlayerInfoLogo] Logo image added");
 
-                    var logo = null;
-                    var logoLang = null;
-
-                    // Prioritize logo based on language
-                    logo = e.logos.find(function(l) { return l.iso_639_1 === currentLampaLang; });
-                    if (logo) logoLang = currentLampaLang;
-
-                    if (!logo && currentLampaLang !== 'ru') {
-                        logo = e.logos.find(function(l) { return l.iso_639_1 === "ru"; });
-                        if (logo) logoLang = 'ru';
-                    }
-
-                    if (!logo && currentLampaLang !== 'en') {
-                        logo = e.logos.find(function(l) { return l.iso_639_1 === "en"; });
-                        if (logo) logoLang = 'en';
-                    }
-
-                    if (!logo) {
-                        logo = e.logos[0];
-                        if (logo) logoLang = logo.iso_639_1;
-                    }
-
-                    if (logo && logo.file_path) {
-                        var logoPath = Lampa.TMDB.image(`/t/p/w300${logo.file_path.replace(".svg", ".png")}`);
-
-                        if (!$(".player-info__logo").length) {
-                            var imageLogoHtml = createImageLogo(logoPath);
-                            $playerInfoName.before(imageLogoHtml);
-                            console.log("[PlayerInfoLogo] Logo image added");
-
-                            if (logoLang !== currentLampaLang) {
-                                var titleApi = `https://api.themoviedb.org/3/${apiPath}?api_key=${apiKey}&language=${currentLampaLang}`;
-                                $.get(titleApi).done(function(data) {
-                                    var localizedTitle = isSerial ? data.name : data.title;
-                                    if (localizedTitle) {
-                                        $playerInfoName.text(localizedTitle).show();
-                                    }
-                                }).fail(function() {
-                                    console.error("[PlayerInfoLogo] Error fetching localized title");
-                                    $playerInfoName.text(cleanTitle).show();
-                                });
-                            } else {
-                                $playerInfoName.hide();
-                            }
-                            return;
+                        if (logoLang !== currentLampaLang) {
+                            var titleApi = `https://api.themoviedb.org/3/${apiPath}?api_key=${apiKey}&language=${currentLampaLang}`;
+                            $.get(titleApi).done(function(data) {
+                                var localizedTitle = isSerial ? data.name : data.title;
+                                if (localizedTitle) {
+                                    $playerInfoName.text(localizedTitle).show();
+                                }
+                            }).fail(function() {
+                                console.error("[PlayerInfoLogo] Error fetching localized title");
+                                $playerInfoName.text(movieData.title || movieData.name || "").show();
+                            });
+                        } else {
+                            $playerInfoName.hide();
                         }
+                        return;
                     }
+                }
 
-                    console.log("[PlayerInfoLogo] No logo found in database");
-                    $playerInfoName.text(cleanTitle).show();
-                }).fail(function() {
-                    if (!isLoading) return;
-
-                    clearTimeout(logoTimeout);
-                    isLoading = false;
-                    console.error("[PlayerInfoLogo] Error fetching logos");
-                    $playerInfoName.text(cleanTitle).show();
-                });
+                console.log("[PlayerInfoLogo] No logo found, showing title");
+                $playerInfoName.text(movieData.title || movieData.name || "").show();
             }).fail(function() {
                 if (!isLoading) return;
 
                 clearTimeout(logoTimeout);
                 isLoading = false;
-                console.error("[PlayerInfoLogo] Error searching TMDB");
-                $playerInfoName.text(cleanTitle).show();
+                console.error("[PlayerInfoLogo] Error fetching logos");
+                $playerInfoName.text(movieData.title || movieData.name || "").show();
             });
         } catch (e) {
             console.error("[PlayerInfoLogo] Error:", e.message);
@@ -390,8 +381,8 @@
             if (logoTimeout) {
                 clearTimeout(logoTimeout);
             }
-            if ($playerInfoName.length) {
-                $playerInfoName.text(cleanTitle).show();
+            if ($playerInfoName.length && movieData) {
+                $playerInfoName.text(movieData.title || movieData.name || "").show();
             }
         }
     }
@@ -412,9 +403,7 @@
     function forceUpdateLogo() {
         console.log("[PlayerInfoLogo] Forcing update");
         clearLogo();
-        setTimeout(function() {
-            displayPlayerInfoLogo();
-        }, 1000);
+        setTimeout(displayPlayerInfoLogo, 1000);
     }
 
     // Subscribe to Lampa events
@@ -486,7 +475,7 @@
         }
     });
 
-    // Start observer on specific elements
+    // Start observer
     try {
         var targetNode = document.querySelector('.player-info, .player-panel') || document.body;
         observer.observe(targetNode, {
