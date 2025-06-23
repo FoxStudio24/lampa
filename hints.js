@@ -2,17 +2,6 @@
     'use strict';
 
     Lampa.Lang.add({
-        maxsm_hints_torrents: {
-            ru: "Проблемы с видео? Смените раздачу.",
-            en: "Problems with video? Change the torrent.",
-            uk: "Проблеми з відео? Змініть роздачу.",
-            be: "Праблемы з відэа? Змяні раздачу.",
-            pt: "Problemas com o vídeo? Troque o torrent.",
-            zh: "视频有问题？换个种子试试。",
-            he: "בעיות בווידאו? החלף טורנט.",
-            cs: "Problémy s videem? Změňte torrent.",
-            bg: "Проблеми с видеото? Смени торента."
-        },
         maxsm_hints_online: {
             ru: "Проблемы с видео? Смените источник или озвучку.",
             en: "Problems with video? Change the source or audio track.",
@@ -23,17 +12,6 @@
             he: "בעיות בווידאו? נסה מקור או פסקול אחר.",
             cs: "Problémy s videem? Změňte zdroj nebo dabing.",
             bg: "Проблеми с видеото? Смени източника или озвучаването."
-        },
-        maxsm_hints_incard: {
-            ru: "Карточка добавляется при появлении информации о контенте, но сам контент может отсутствовать в источниках.",
-            en: "A card appears when content information becomes available, but the content itself may be missing from sources.",
-            uk: "Картка з'являється при появі інформації про контент, але сам контент може бути відсутній у джерелах.",
-            be: "Картка з'яўляецца пры з'яўленні інфармацыі аб кантэнце, але сам кантэнт можа адсутнічаць у крыніцах.",
-            pt: "O cartão é adicionado quando há informações sobre o conteúdo, mas o próprio conteúdo pode não estar disponível nas fontes.",
-            zh: "当有内容信息时会显示卡片，但内容本身可能在来源中不存在。",
-            he: "כרטיס מופיע כשיש מידע על התוכן, אך ייתכן שהתוכן עצמו אינו זמין במקורות.",
-            cs: "Karta se zobrazí při dostupnosti informací o obsahu, ale samotný obsah může ve zdrojích chybět.",
-            bg: "Картата се добавя при наличие на информация за съдържанието, но самото съдържание може да липсва в източниците."
         }
     });
 
@@ -43,29 +21,40 @@
             showDuration: 3000,
             fadeDuration: 500,
             repeat: true
-        },
-        torrents: {
-            id: 'hint-torrent-banner',
-            showDuration: 4000,
-            fadeDuration: 500,
-            repeat: true
-        },
-        incard: {
-            id: 'hint-incard-banner',
-            showDuration: 4000,
-            fadeDuration: 500,
-            repeat: false
         }
     };
 
     function createHintText(hintText, id) {
-        return '<div id="' + id + '" style="overflow: hidden; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.07); border-radius: 0.5em; margin-left: 1.2em; margin-right: 1.2em; padding: 1.2em; font-size: 1.2em; transition: opacity 0.5s;">' + hintText + '</div>';
-
+        return '<div id="' + id + '" style="overflow: hidden; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.07); border-radius: 0.5em; margin-left: 1.2em; margin-right: 1.2em; padding: 1.2em; font-size: 1.2em; opacity: 0; transition: opacity 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s;">' + hintText + '</div>';
     }
     
-    function createHintText_incard(hintText, id) {
-        return '<div id="' + id + '" style="overflow: hidden; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.15); border-radius: 0.5em;  margin-bottom: 1.2em; padding: 0.5em;  font-size: 1.2em; transition: opacity 0.5s; line-height: 1.4;">' + hintText + '</div>';
+    function fadeInAndShow($el, duration) {
+        var height = $el[0].scrollHeight;
+        
+        // Устанавливаем начальное состояние
+        $el.css({
+            opacity: '0',
+            maxHeight: '0px',
+            marginLeft: '0px',
+            marginRight: '0px',
+            paddingTop: '0px',
+            paddingBottom: '0px'
+        });
 
+        // Force reflow
+        $el[0].offsetHeight;
+
+        // Анимация появления
+        setTimeout(function() {
+            $el.css({
+                opacity: '1',
+                maxHeight: height + 'px',
+                marginLeft: '1.2em',
+                marginRight: '1.2em',
+                paddingTop: '1.2em',
+                paddingBottom: '1.2em'
+            });
+        }, 10);
     }
     
     function fadeOutAndRemove($el, duration) {
@@ -79,20 +68,21 @@
         // Force reflow
         $el[0].offsetHeight;
     
-        // Схлопывание
+        // Анимация исчезновения
         $el.css({
-            transition: 'opacity ' + duration + 'ms, max-height ' + duration + 'ms, margin-bottom ' + duration + 'ms, padding ' + duration + 'ms',
+            transition: 'opacity ' + duration + 'ms, max-height ' + duration + 'ms, margin ' + duration + 'ms, padding ' + duration + 'ms',
             opacity: '0',
             maxHeight: '0px',
-            marginBottom: '0px',
+            marginLeft: '0px',
+            marginRight: '0px',
             paddingTop: '0px',
             paddingBottom: '0px'
         });
     
-        // Подождём чуть дольше, чем сама анимация, чтобы DOM спокойно переварил
+        // Удаляем элемент после завершения анимации
         setTimeout(function () {
             $el.remove();
-        }, duration + 50); // буфер для плавности
+        }, duration + 50);
     }
 
     function waitForElement(selector, callback) {
@@ -125,8 +115,7 @@
 
     function initializeHintFeature() {
         var shown = {
-            online: false,
-            torrents: false
+            online: false
         };
 
         Lampa.Storage.listener.follow('change', function (event) {
@@ -138,6 +127,10 @@
                         var $hint = $(createHintText(Lampa.Lang.translate('maxsm_hints_online'), CONFIG.online.id));
                         $(el).before($hint);
 
+                        // Анимация появления
+                        fadeInAndShow($hint, CONFIG.online.fadeDuration);
+
+                        // Анимация исчезновения через заданное время
                         setTimeout(function () {
                             fadeOutAndRemove($hint, CONFIG.online.fadeDuration);
                         }, CONFIG.online.showDuration);
@@ -145,32 +138,6 @@
                         shown.online = true;
                     });
                 }
-
-                if (component === 'torrents' && (CONFIG.torrents.repeat || !shown.torrents)) {
-                    waitForElement('.explorer__files-head', function (el) {
-                        var $hint = $(createHintText(Lampa.Lang.translate('maxsm_hints_torrents'), CONFIG.torrents.id));
-                        $(el).before($hint);
-
-                        setTimeout(function () {
-                            fadeOutAndRemove($hint, CONFIG.torrents.fadeDuration);
-                        }, CONFIG.torrents.showDuration);
-
-                        shown.torrents = true;
-                    });
-                }
-                
-                if (component === 'full' && (CONFIG.incard.repeat || !shown.incard)) {
-                    waitForElement('.full-start-new__head', function (el) {
-                        var $hint = $(createHintText_incard(Lampa.Lang.translate('maxsm_hints_incard'), CONFIG.incard.id));
-                        $(el).before($hint);
-
-                        setTimeout(function () {
-                            fadeOutAndRemove($hint, CONFIG.incard.fadeDuration);
-                        }, CONFIG.incard.showDuration);
-
-                        shown.incard = true;
-                    });
-                } 
             }
         });
     }
