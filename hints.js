@@ -18,7 +18,6 @@
     var CONFIG = {
         online: {
             id: 'hint-online-banner',
-            showDuration: 8000,
             fadeDuration: 600,
             repeat: true
         }
@@ -41,20 +40,6 @@
                 opacity: '1'
             });
         }, 50);
-    }
-    
-    function fadeOutAndRemove($el, duration) {
-        // Анимация исчезновения - плавное движение вверх
-        $el.css({
-            transition: 'all ' + duration + 'ms ease-in',
-            transform: 'translateY(-20px)',
-            opacity: '0'
-        });
-    
-        // Удаляем элемент после завершения анимации
-        setTimeout(function () {
-            $el.remove();
-        }, duration + 50);
     }
 
     function waitForElement(selector, callback) {
@@ -101,11 +86,6 @@
 
                         // Анимация появления
                         fadeInAndShow($hint, CONFIG.online.fadeDuration);
-
-                        // Анимация исчезновения через заданное время
-                        setTimeout(function () {
-                            fadeOutAndRemove($hint, CONFIG.online.fadeDuration);
-                        }, CONFIG.online.showDuration);
 
                         shown.online = true;
                     });
