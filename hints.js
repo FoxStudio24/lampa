@@ -18,65 +18,37 @@
     var CONFIG = {
         online: {
             id: 'hint-online-banner',
-            showDuration: 3000,
-            fadeDuration: 500,
+            showDuration: 8000,
+            fadeDuration: 600,
             repeat: true
         }
     };
 
     function createHintText(hintText, id) {
-        return '<div id="' + id + '" style="overflow: hidden; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.07); border-radius: 0.5em; margin-left: 1.2em; margin-right: 1.2em; padding: 1.2em; font-size: 1.2em; opacity: 0; transition: opacity 0.5s, max-height 0.5s, margin 0.5s, padding 0.5s;">' + hintText + '</div>';
+        return '<div id="' + id + '" style="overflow: hidden; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.07); border-radius: 0.5em; margin-left: 1.2em; margin-right: 1.2em; padding: 1.2em; font-size: 1.2em; transform: translateY(-20px); opacity: 0; transition: all 0.6s ease-out;">' + hintText + '</div>';
     }
     
     function fadeInAndShow($el, duration) {
-        var height = $el[0].scrollHeight;
+        // Элемент уже создан с начальным состоянием (translateY(-20px), opacity: 0)
         
-        // Устанавливаем начальное состояние
-        $el.css({
-            opacity: '0',
-            maxHeight: '0px',
-            marginLeft: '0px',
-            marginRight: '0px',
-            paddingTop: '0px',
-            paddingBottom: '0px'
-        });
-
         // Force reflow
         $el[0].offsetHeight;
 
-        // Анимация появления
+        // Анимация появления - плавное движение вниз
         setTimeout(function() {
             $el.css({
-                opacity: '1',
-                maxHeight: height + 'px',
-                marginLeft: '1.2em',
-                marginRight: '1.2em',
-                paddingTop: '1.2em',
-                paddingBottom: '1.2em'
+                transform: 'translateY(0px)',
+                opacity: '1'
             });
-        }, 10);
+        }, 50);
     }
     
     function fadeOutAndRemove($el, duration) {
-        var height = $el[0].scrollHeight;
-    
+        // Анимация исчезновения - плавное движение вверх
         $el.css({
-            maxHeight: height + 'px',
-            overflow: 'hidden'
-        });
-    
-        // Force reflow
-        $el[0].offsetHeight;
-    
-        // Анимация исчезновения
-        $el.css({
-            transition: 'opacity ' + duration + 'ms, max-height ' + duration + 'ms, margin ' + duration + 'ms, padding ' + duration + 'ms',
-            opacity: '0',
-            maxHeight: '0px',
-            marginLeft: '0px',
-            marginRight: '0px',
-            paddingTop: '0px',
-            paddingBottom: '0px'
+            transition: 'all ' + duration + 'ms ease-in',
+            transform: 'translateY(-20px)',
+            opacity: '0'
         });
     
         // Удаляем элемент после завершения анимации
