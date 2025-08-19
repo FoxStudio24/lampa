@@ -20,7 +20,7 @@
             name: "foxstudio_interface",  
             type: "select",  
             values: { 1: "Выключен", 0: "Включен" },  
-            default: "0"  
+            default: "1"  
         },  
         field: {  
             name: "Новый интерфейс для тв и пк",  
@@ -51,3 +51,4 @@
   
     console.log('FoxStudio Interface Plugin загружен');  
 }();
+
