@@ -6,7 +6,7 @@
             name: "logo_glav",
             type: "select",
             values: { 1: "Скрыть", 0: "Отображать" },
-            default: "1"
+            default: "0"
         },
         field: {
             name: "Логотипы вместо названий 2.0",
@@ -94,4 +94,5 @@
         }
     })))
 }();
+
 
