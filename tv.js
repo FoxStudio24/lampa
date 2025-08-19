@@ -52,11 +52,6 @@
         Lampa.Settings.listener.follow('open', function(e) {  
             if (e.name === 'interface') {  
                 // Основная настройка интерфейса  
-                e.body.append(Lampa.Template.get('settings_folder', {  
-                    title: Lampa.Lang.translate('foxstudio_interface_title'),  
-                    descr: ''  
-                }, true));  
-  
                 var foxstudio_interface = $('<div class="settings-param selector" data-type="toggle" data-name="foxstudio_interface_enabled">');  
                 foxstudio_interface.append('<div class="settings-param__name">' + Lampa.Lang.translate('foxstudio_interface_title') + '</div>');  
                 foxstudio_interface.append('<div class="settings-param__value"></div>');  
@@ -71,6 +66,7 @@
                 logo_setting.append('<div class="settings-param__name">' + Lampa.Lang.translate('foxstudio_logo_title') + '</div>');  
                 logo_setting.append('<div class="settings-param__value"></div>');  
   
+                // Добавляем элементы в конец списка настроек интерфейса  
                 e.body.append(foxstudio_interface);  
                 e.body.append(necardify_setting);  
                 e.body.append(logo_setting);  
