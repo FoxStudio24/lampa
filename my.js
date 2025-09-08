@@ -13,7 +13,9 @@
         'https://foxstudio24.github.io/lampa/necardify.js',
         'https://foxstudio24.github.io/lampa/Streaminglogo.js',
         'https://foxstudio24.github.io/lampa/mob.js',
+        'https://foxstudio24.github.io/lampa/quality.js',
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
 })();
+
