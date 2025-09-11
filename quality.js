@@ -17,6 +17,10 @@
                 -webkit-border-radius: 0.3em;    
                 -moz-border-radius: 0.3em;    
                 border-radius: 0.9em;    
+                width: auto;    
+                height: auto;    
+                display: inline-block;    
+                z-index: 2;    
             }    
         `;    
         document.head.appendChild(style);    
