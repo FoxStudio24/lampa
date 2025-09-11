@@ -19,7 +19,7 @@
                 border-radius: 0.9em;      
             }  
             .card__quality img {  
-                max-width: 100%;  
+                max-width: 50%;  
                 height: auto;  
                 display: block;  
             }  
