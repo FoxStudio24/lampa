@@ -8,7 +8,7 @@
         style.textContent = `    
             .card__quality {      
                 position: absolute;      
-                right: 0.3em;      
+                left: 0.3em;      
                 top: 0.3em;      
                 padding: 0.2em 0.3em;      
                 background: transparent;      
@@ -16,7 +16,9 @@
                 font-size: 1em;      
                 -webkit-border-radius: 0.3em;      
                 -moz-border-radius: 0.3em;      
-                border-radius: 0.9em;      
+                border-radius: 0.9em;  
+                max-width: calc(100% - 0.6em);  
+                overflow: hidden;  
             }  
             .card__quality img {  
                 max-width: 50px;  
@@ -47,13 +49,11 @@
             const textContent = element.textContent.trim().toUpperCase();  
               
             if (textContent === 'WEBDL' && qualityMap['WEBDL']) {  
-                // Для WebDL отображаем 2 изображения (4K и FLHD)  
                 const images = qualityMap['WEBDL'].map(url =>   
                     `<img src="${url}" alt="Quality">`  
                 ).join('');  
                 element.innerHTML = images;  
             } else if (qualityMap[textContent]) {  
-                // Для остальных - одно изображение  
                 element.innerHTML = `<img src="${qualityMap[textContent]}" alt="${textContent}">`;  
             }  
         });  
@@ -64,7 +64,6 @@
         addCustomStyles();  
         replaceQualityText();  
           
-        // Наблюдатель за новыми элементами  
         const observer = new MutationObserver(() => {  
             replaceQualityText();  
         });  
