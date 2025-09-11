@@ -19,10 +19,15 @@
                 border-radius: 0.9em;      
             }  
             .card__quality img {  
-                max-width: 40px;  
+                max-width: 50px;  
                 height: auto;  
                 display: inline-block;  
                 margin: 0 1px;  
+            }  
+            @media screen and (max-width: 480px) {  
+                .card__quality img {  
+                    max-width: 40px;  
+                }  
             }  
         `;    
         document.head.appendChild(style);    
@@ -34,15 +39,15 @@
             '4K': 'https://foxstudio24.github.io/lampa//quality/4к.png',  
             'FLHD': 'https://foxstudio24.github.io/lampa//quality/FLHD.png',  
             'TS': 'https://foxstudio24.github.io/lampa//quality/TS.png',  
-            'WEBDL': ['https://foxstudio24.github.io/lampa//quality/4к.png', 'https://foxstudio24.github.io/lampa//quality/FHD.png']  
+            'WEBDL': ['https://foxstudio24.github.io/lampa//quality/4к.png', 'https://foxstudio24.github.io/lampa//quality/FLHD.png']  
         };  
   
         const qualityElements = document.querySelectorAll('.card__quality');  
         qualityElements.forEach(element => {  
-            const textContent = element.textContent.trim();  
+            const textContent = element.textContent.trim().toUpperCase();  
               
             if (textContent === 'WEBDL' && qualityMap['WEBDL']) {  
-                // Для WebDL отображаем 2 изображения (4K и FHD)  
+                // Для WebDL отображаем 2 изображения (4K и FLHD)  
                 const images = qualityMap['WEBDL'].map(url =>   
                     `<img src="${url}" alt="Quality">`  
                 ).join('');  
