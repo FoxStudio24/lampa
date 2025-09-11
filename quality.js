@@ -9,7 +9,7 @@
             .card__quality {      
                 position: absolute;      
                 right: 0.3em;      
-                bottom: 3em;      
+                top: 0.3em;      
                 padding: 0.2em 0.3em;      
                 background: transparent;      
                 color: #000000;      
