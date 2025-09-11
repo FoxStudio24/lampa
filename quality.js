@@ -41,19 +41,16 @@
             '4K': 'https://foxstudio24.github.io/lampa//quality/4к.png',  
             'FLHD': 'https://foxstudio24.github.io/lampa//quality/FLHD.png',  
             'TS': 'https://foxstudio24.github.io/lampa//quality/TS.png',  
-            'WEBDL': ['https://foxstudio24.github.io/lampa//quality/4к.png', 'https://foxstudio24.github.io/lampa//quality/FLHD.png']  
+            'CAMRIP': 'https://foxstudio24.github.io/lampa//quality/TS.png',  
+            'BD': 'https://foxstudio24.github.io/lampa//quality/FLHD.png',  
+            'WEBDL': 'https://foxstudio24.github.io/lampa//quality/FLHD.png'  
         };  
   
         const qualityElements = document.querySelectorAll('.card__quality');  
         qualityElements.forEach(element => {  
             const textContent = element.textContent.trim().toUpperCase();  
               
-            if (textContent === 'WEBDL' && qualityMap['WEBDL']) {  
-                const images = qualityMap['WEBDL'].map(url =>   
-                    `<img src="${url}" alt="Quality">`  
-                ).join('');  
-                element.innerHTML = images;  
-            } else if (qualityMap[textContent]) {  
+            if (qualityMap[textContent]) {  
                 element.innerHTML = `<img src="${qualityMap[textContent]}" alt="${textContent}">`;  
             }  
         });  
