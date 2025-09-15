@@ -93,7 +93,7 @@
         }  
     }  
   
-    // Остальные функции с обработкой ошибок  
+    // Создаем модальное окно с альтернативным контентом  
     function createModal() {  
         try {  
             const modal = $(`  
@@ -161,6 +161,7 @@
         }  
     }  
   
+    // Обработчик открытия модала с правильной поддержкой пульта  
     function openYMusic() {  
         try {  
             let modal = $('.ymusic-modal');  
@@ -174,15 +175,31 @@
             if (window.Lampa && window.Lampa.Controller) {  
                 Lampa.Controller.add('ymusic', {  
                     toggle: () => {  
+                        // Устанавливаем коллекцию всех селекторов в модале  
                         Lampa.Controller.collectionSet('.ymusic-modal .selector');  
-                        Lampa.Controller.collectionFocus(false, '.ymusic-modal');  
+                        // Фокусируемся на первом элементе  
+                        Lampa.Controller.collectionFocus(0, '.ymusic-modal');  
+                    },  
+                    left: () => {  
+                        Lampa.Controller.move('left');  
+                    },  
+                    right: () => {  
+                        Lampa.Controller.move('right');  
+                    },  
+                    up: () => {  
+                        Lampa.Controller.move('up');  
+                    },  
+                    down: () => {  
+                        Lampa.Controller.move('down');  
                     },  
                     enter: () => {  
                         const focused = Lampa.Controller.focused();  
-                        if (focused && focused.hasClass('ymusic-close')) {  
-                            closeYMusic();  
-                        } else if (focused && focused.hasClass('ymusic-open-external')) {  
-                            window.open('https://music.yandex.ru/', '_blank');  
+                        if (focused) {  
+                            if (focused.hasClass('ymusic-close')) {  
+                                closeYMusic();  
+                            } else if (focused.hasClass('ymusic-open-external')) {  
+                                window.open('https://music.yandex.ru/', '_blank');  
+                            }  
                         }  
                     },  
                     back: () => {  
@@ -242,7 +259,7 @@
                 window.open('https://music.yandex.ru/', '_blank');  
             });  
   
-            // Обработчик для пульта  
+            // Обработчик для пульта - Enter на пункте меню  
             $(document).on('keydown', function(e) {  
                 if (e.keyCode === 13) {  
                     const focused = $('.menu__item.focus[data-action="ymusic"]');  
@@ -253,15 +270,24 @@
                 }  
             });  
   
-            // Стили  
+            // Обновленные стили с поддержкой фокуса  
             $('<style>').text(`  
                 .ymusic-open-external:hover,  
                 .ymusic-open-external.focus {  
                     background: #e55a2b !important;  
+                    transform: scale(1.05);  
                 }  
                 .ymusic-close:hover,  
                 .ymusic-close.focus {  
                     background: rgba(255,255,255,0.2) !important;  
+                    transform: scale(1.05);  
+                }  
+                .ymusic-modal .selector {  
+                    transition: all 0.3s ease;  
+                }  
+                .ymusic-modal .selector.focus {  
+                    outline: 2px solid #ff6b35;  
+                    outline-offset: 2px;  
                 }  
             `).appendTo('head');  
   
