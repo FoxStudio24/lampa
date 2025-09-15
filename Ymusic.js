@@ -29,8 +29,15 @@
         }  
     });  
   
+    let menuItemAdded = false;  
+  
     // Создаем пункт меню  
     function addMenuItem() {  
+        // Проверяем, не добавлен ли уже пункт  
+        if ($('[data-action="ymusic"]').length > 0) {  
+            return;  
+        }  
+  
         const menuItem = $(`  
             <li class="menu__item selector binded" data-action="ymusic">  
                 <div class="menu__ico">  
@@ -44,6 +51,14 @@
   
         // Добавляем в первую секцию меню  
         $('.menu__case:first .menu__list').append(menuItem);  
+        menuItemAdded = true;  
+    }  
+  
+    // Функция для проверки и добавления пункта меню  
+    function ensureMenuItemExists() {  
+        if (!menuItemAdded || $('[data-action="ymusic"]').length === 0) {  
+            addMenuItem();  
+        }  
     }  
   
     // Создаем модальное окно с альтернативным контентом  
@@ -150,10 +165,28 @@
   
     // Инициализация плагина  
     function init() {  
-        // Добавляем пункт меню  
+        // Добавляем пункт меню при инициализации  
         addMenuItem();  
   
-        // Обработчик клика по пункту меню  
+        // Следим за изменениями в DOM и добавляем пункт при необходимости  
+        const observer = new MutationObserver(function(mutations) {  
+            mutations.forEach(function(mutation) {  
+                if (mutation.type === 'childList') {  
+                    // Проверяем, если меню было пересоздано  
+                    if ($('.menu__case:first .menu__list').length > 0) {  
+                        ensureMenuItemExists();  
+                    }  
+                }  
+            });  
+        });  
+  
+        // Начинаем наблюдение за изменениями в body  
+        observer.observe(document.body, {  
+            childList: true,  
+            subtree: true  
+        });  
+  
+        // Обработчик клика по пункту меню (используем делегирование событий)  
         $(document).on('click', '[data-action="ymusic"]', openYMusic);  
           
         // Обработчик кнопки закрытия  
@@ -173,6 +206,9 @@
                 background: rgba(255,255,255,0.2) !important;  
             }  
         `).appendTo('head');  
+  
+        // Периодически проверяем наличие пункта меню  
+        setInterval(ensureMenuItemExists, 5000);  
   
         console.log('YMusic plugin loaded');  
     }  
