@@ -52,6 +52,26 @@
         // Добавляем в первую секцию меню  
         $('.menu__case:first .menu__list').append(menuItem);  
         menuItemAdded = true;  
+  
+        // Регистрируем обработчик для пульта  
+        registerMenuAction();  
+    }  
+  
+    // Регистрируем действие в системе Lampa  
+    function registerMenuAction() {  
+        // Добавляем обработчик в систему действий Lampa  
+        if (window.Lampa && Lampa.Activity) {  
+            Lampa.Activity.add({  
+                name: 'ymusic',  
+                component: {  
+                    create: openYMusic,  
+                    ready: function() {},  
+                    pause: function() {},  
+                    stop: function() {},  
+                    render: function() { return $('<div></div>'); }  
+                }  
+            });  
+        }  
     }  
   
     // Функция для проверки и добавления пункта меню  
@@ -146,8 +166,28 @@
         // Настройка контроллера для навигации пультом  
         Lampa.Controller.add('ymusic', {  
             toggle: () => {  
-                Lampa.Controller.collectionSet('.ymusic-modal');  
+                Lampa.Controller.collectionSet('.ymusic-modal .selector');  
                 Lampa.Controller.collectionFocus(false, '.ymusic-modal');  
+            },  
+            left: () => {  
+                Lampa.Controller.move('left');  
+            },  
+            right: () => {  
+                Lampa.Controller.move('right');  
+            },  
+            up: () => {  
+                Lampa.Controller.move('up');  
+            },  
+            down: () => {  
+                Lampa.Controller.move('down');  
+            },  
+            enter: () => {  
+                const focused = Lampa.Controller.focused();  
+                if (focused && focused.hasClass('ymusic-close')) {  
+                    closeYMusic();  
+                } else if (focused && focused.hasClass('ymusic-open-external')) {  
+                    window.open('https://music.yandex.ru/', '_blank');  
+                }  
             },  
             back: () => {  
                 closeYMusic();  
@@ -189,6 +229,17 @@
         // Обработчик клика по пункту меню (используем делегирование событий)  
         $(document).on('click', '[data-action="ymusic"]', openYMusic);  
           
+        // Обработчик для пульта - Enter на пункте меню  
+        $(document).on('keydown', function(e) {  
+            if (e.keyCode === 13) { // Enter key  
+                const focused = $('.menu__item.focus[data-action="ymusic"]');  
+                if (focused.length > 0) {  
+                    e.preventDefault();  
+                    openYMusic();  
+                }  
+            }  
+        });  
+          
         // Обработчик кнопки закрытия  
         $(document).on('click', '.ymusic-close', closeYMusic);  
           
@@ -199,10 +250,12 @@
   
         // Добавляем стили для hover эффектов  
         $('<style>').text(`  
-            .ymusic-open-external:hover {  
+            .ymusic-open-external:hover,  
+            .ymusic-open-external.focus {  
                 background: #e55a2b !important;  
             }  
-            .ymusic-close:hover {  
+            .ymusic-close:hover,  
+            .ymusic-close.focus {  
                 background: rgba(255,255,255,0.2) !important;  
             }  
         `).appendTo('head');  
