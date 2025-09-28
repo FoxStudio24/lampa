@@ -4,8 +4,8 @@
     // Информация о плагине  
     var plugin_info = {  
         name: 'Hide Reactions',  
-        version: '1.0.0',  
-        description: 'Скрывает элементы реакций на интерфейсе'  
+        version: '1.1.0',  
+        description: 'Скрывает элементы реакций и кнопку реакций на интерфейсе'  
     };  
       
     // Основная функция плагина  
@@ -16,6 +16,12 @@
             reactionsBlock.style.display = 'none';  
         }  
           
+        // Скрываем кнопку реакций  
+        var reactionButton = document.querySelector('.button--reaction');  
+        if (reactionButton) {  
+            reactionButton.style.display = 'none';  
+        }  
+          
         // Альтернативно, можно скрыть через CSS класс  
         var style = document.createElement('style');  
         style.textContent = `  
@@ -23,6 +29,12 @@
                 display: none !important;  
             }  
             .reaction {  
+                display: none !important;  
+            }  
+            .button--reaction {  
+                display: none !important;  
+            }  
+            .full-start__button.button--reaction {  
                 display: none !important;  
             }  
         `;  
