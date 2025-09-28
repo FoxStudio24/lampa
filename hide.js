@@ -3,13 +3,13 @@
       
     // Информация о плагине  
     var plugin_info = {  
-        name: 'Hide Reactions',  
-        version: '1.1.0',  
-        description: 'Скрывает элементы реакций и кнопку реакций на интерфейсе'  
+        name: 'Hide Reactions and Trailer',  
+        version: '1.2.0',  
+        description: 'Скрывает элементы реакций, кнопку реакций и кнопку трейлера на интерфейсе'  
     };  
       
     // Основная функция плагина  
-    function hideReactions() {  
+    function hideElements() {  
         // Скрываем блок реакций  
         var reactionsBlock = document.querySelector('.full-start-new__reactions');  
         if (reactionsBlock) {  
@@ -20,6 +20,12 @@
         var reactionButton = document.querySelector('.button--reaction');  
         if (reactionButton) {  
             reactionButton.style.display = 'none';  
+        }  
+          
+        // Скрываем кнопку трейлера  
+        var trailerButton = document.querySelector('.view--rutube_trailer');  
+        if (trailerButton) {  
+            trailerButton.style.display = 'none';  
         }  
           
         // Альтернативно, можно скрыть через CSS класс  
@@ -37,22 +43,28 @@
             .full-start__button.button--reaction {  
                 display: none !important;  
             }  
+            .view--rutube_trailer {  
+                display: none !important;  
+            }  
+            .full-start__button.view--rutube_trailer {  
+                display: none !important;  
+            }  
         `;  
         document.head.appendChild(style);  
     }  
       
     // Инициализация плагина  
     function startPlugin() {  
-        console.log('Hide Reactions Plugin: Запуск плагина');  
+        console.log('Hide Elements Plugin: Запуск плагина');  
           
         // Скрываем элементы сразу  
-        hideReactions();  
+        hideElements();  
           
         // Наблюдаем за изменениями DOM для динамически добавляемых элементов  
         var observer = new MutationObserver(function(mutations) {  
             mutations.forEach(function(mutation) {  
                 if (mutation.type === 'childList') {  
-                    hideReactions();  
+                    hideElements();  
                 }  
             });  
         });  
@@ -75,5 +87,5 @@
         });  
     }  
       
-    console.log('Hide Reactions Plugin загружен');  
+    console.log('Hide Elements Plugin загружен');  
 })();
