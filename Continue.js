@@ -8,6 +8,8 @@
             var itemsLine = document.createElement('div');  
             itemsLine.className = 'items-line layer--visible layer--render items-line--type-cards';  
             itemsLine.id = 'continue-watch-plugin-section';  
+            // Добавляем атрибут для предотвращения удаления при виртуализации  
+            itemsLine.setAttribute('data-persistent', 'true');  
               
             var head = document.createElement('div');  
             head.className = 'items-line__head';  
@@ -31,7 +33,6 @@
             scrollBody.className = 'scroll__body items-cards';  
             scrollBody.style.transform = 'translate3d(0px, 0px, 0px)';  
               
-            // Тестовые карточки  
             var testCards = [  
                 {  
                     title: 'Тестовый фильм 1',  
@@ -51,9 +52,13 @@
               
             testCards.forEach(function(item, index) {  
                 var card = document.createElement('div');  
+                // ИСПРАВЛЕНИЕ: Добавляем все необходимые классы для правильной навигации  
                 card.className = 'card selector layer--visible layer--render card--loaded';  
                 if (item.type === 'tv') card.className += ' card--tv';  
-                if (index === 0) card.className += ' focus';  
+                  
+                // Добавляем атрибуты для системы навигации Lampa  
+                card.setAttribute('tabindex', '0');  
+                card.setAttribute('data-focus', 'true');  
                   
                 var cardView = document.createElement('div');  
                 cardView.className = 'card__view';  
@@ -101,6 +106,23 @@
                 card.appendChild(cardTitle);  
                 card.appendChild(cardAge);  
                   
+                // ИСПРАВЛЕНИЕ: Добавляем обработчики событий для фокуса  
+                card.addEventListener('focus', function() {  
+                    this.classList.add('focus');  
+                });  
+                  
+                card.addEventListener('blur', function() {  
+                    this.classList.remove('focus');  
+                });  
+                  
+                card.addEventListener('mouseenter', function() {  
+                    this.classList.add('hover');  
+                });  
+                  
+                card.addEventListener('mouseleave', function() {  
+                    this.classList.remove('hover');  
+                });  
+                  
                 scrollBody.appendChild(card);  
             });  
               
@@ -115,42 +137,59 @@
         }  
   
         function addContinueWatchSection() {  
-            // Проверяем, есть ли уже наша секция  
             if (document.getElementById('continue-watch-plugin-section')) {  
                 return;  
             }  
   
-            // Ищем первую существующую items-line на главной странице  
             var firstItemsLine = document.querySelector('.items-line');  
             if (firstItemsLine && firstItemsLine.parentNode) {  
                 var section = createContinueWatchSection();  
                 firstItemsLine.parentNode.insertBefore(section, firstItemsLine);  
                 console.log('Continue Watch Plugin: Секция добавлена');  
+                  
+                // ИСПРАВЛЕНИЕ: Принудительно закрепляем секцию в DOM  
+                section.style.position = 'relative';  
+                section.style.zIndex = '1';  
             }  
         }  
   
-        // Постоянная проверка каждые 2 секунды  
+        // ИСПРАВЛЕНИЕ: Более агрессивная проверка с защитой от удаления  
         function startPeriodicCheck() {  
             setInterval(function() {  
-                // Проверяем, есть ли items-line на странице (значит мы на главной)  
                 var hasItemsLine = document.querySelector('.items-line');  
                 var hasOurSection = document.getElementById('continue-watch-plugin-section');  
                   
-                // Если есть items-line, но нет нашей секции - добавляем  
                 if (hasItemsLine && !hasOurSection) {  
-                    console.log('Continue Watch Plugin: Обнаружена главная без секции, добавляем');  
+                    console.log('Continue Watch Plugin: Восстанавливаем секцию');  
                     addContinueWatchSection();  
                 }  
-            }, 2000);  
+                  
+                // Дополнительная защита: если секция есть, но не на правильном месте  
+                if (hasOurSection && hasItemsLine) {  
+                    var parent = hasItemsLine.parentNode;  
+                    if (parent && hasOurSection.parentNode !== parent) {  
+                        parent.insertBefore(hasOurSection, hasItemsLine);  
+                        console.log('Continue Watch Plugin: Секция перемещена на правильное место');  
+                    }  
+                }  
+            }, 1000); // Проверяем каждую секунду для быстрого восстановления  
         }  
   
-        // Также используем MutationObserver как дополнительный механизм  
         function setupObserver() {  
             var observer = new MutationObserver(function(mutations) {  
-                var shouldCheck = false;  
-                  
                 mutations.forEach(function(mutation) {  
                     if (mutation.type === 'childList') {  
+                        // Проверяем, не была ли удалена наша секция  
+                        var removedNodes = Array.from(mutation.removedNodes);  
+                        var ourSectionRemoved = removedNodes.some(function(node) {  
+                            return node.nodeType === 1 && node.id === 'continue-watch-plugin-section';  
+                        });  
+                          
+                        if (ourSectionRemoved) {  
+                            console.log('Continue Watch Plugin: Секция была удалена, восстанавливаем');  
+                            setTimeout(addContinueWatchSection, 100);  
+                        }  
+                          
                         var addedNodes = Array.from(mutation.addedNodes);  
                         var hasItemsLine = addedNodes.some(function(node) {  
                             return node.nodeType === 1 && (  
@@ -160,22 +199,17 @@
                         });  
                           
                         if (hasItemsLine) {  
-                            shouldCheck = true;  
+                            setTimeout(function() {  
+                                var hasItemsLine = document.querySelector('.items-line');  
+                                var hasOurSection = document.getElementById('continue-watch-plugin-section');  
+                                  
+                                if (hasItemsLine && !hasOurSection) {  
+                                    addContinueWatchSection();  
+                                }  
+                            }, 200);  
                         }  
                     }  
                 });  
-                  
-                if (shouldCheck) {  
-                    setTimeout(function() {  
-                        var hasItemsLine = document.querySelector('.items-line');  
-                        var hasOurSection = document.getElementById('continue-watch-plugin-section');  
-                          
-                        if (hasItemsLine && !hasOurSection) {  
-                            console.log('Continue Watch Plugin: MutationObserver обнаружил изменения, добавляем секцию');  
-                            addContinueWatchSection();  
-                        }  
-                    }, 500);  
-                }  
             });  
   
             var appContainer = document.querySelector('#app');  
@@ -204,7 +238,7 @@
                         console.log('Continue Watch Plugin: Lampa загружена');  
                         addContinueWatchSection();  
                         setupObserver();  
-                        startPeriodicCheck(); // Запускаем постоянную проверку  
+                        startPeriodicCheck();  
                     } else {  
                         console.log('Continue Watch Plugin: Превышено время ожидания');  
                     }  
