@@ -4,25 +4,23 @@
   function startPlugin() {  
     console.log('ContinueWatching: Запуск плагина...');  
   
-    // Минимальные стили, не портящие интерфейс  
+    // Минимальные стили для прогресс-бара  
     var style = `  
       <style>  
-        .continue-watching-section {  
-          margin-bottom: 2em;  
-        }  
-        .continue-watching-title {  
-          color: rgba(255,255,255,0.8);  
-          font-size: 1.2em;  
-          margin-bottom: 1em;  
-          padding: 0 2em;  
-        }  
         .continue-progress {  
           position: absolute;  
           bottom: 0;  
           left: 0;  
           height: 3px;  
-          background: rgba(255,255,255,0.8);  
+          background: rgba(255,255,255,0.9);  
           z-index: 2;  
+          transition: width 0.3s ease;  
+        }  
+        .continue-watching-section .items-line__title {  
+          color: rgba(255,255,255,0.8);  
+          font-size: 1.2em;  
+          margin-bottom: 1em;  
+          padding: 0 2em;  
         }  
       </style>  
     `;  
@@ -36,38 +34,40 @@
       return;  
     }  
   
-    // Функция для добавления секции над items-line  
+    // Функция для добавления секции  
     function addContinueWatchingSection() {  
       console.log('ContinueWatching: Попытка добавить секцию...');  
         
-      // Ищем существующую items-line для вставки перед ней  
-      var $itemsLine = $('.items-line.layer--visible.layer--render.items-line--type-cards').first();  
+      // Ищем контейнер для вставки - главную страницу  
+      var $mainContainer = $('.full-start__body, .full-start').first();  
+      var $existingItemsLine = $mainContainer.find('.items-line').first();  
         
-      if ($itemsLine.length && !$('.continue-watching-section').length) {  
-        console.log('ContinueWatching: Найден items-line, добавляем секцию');  
+      if ($mainContainer.length && $existingItemsLine.length && !$('.continue-watching-section').length) {  
+        console.log('ContinueWatching: Найден контейнер, добавляем секцию');  
           
-        var continueSection = `  
+        // Создаем секцию в стандартном формате Lampa  
+        var continueSection = $(`  
           <div class="continue-watching-section">  
-            <div class="continue-watching-title">Продолжить просмотр</div>  
+            <div class="items-line__title">Продолжить просмотр</div>  
             <div class="items-line layer--visible layer--render items-line--type-cards" id="continue-items-line">  
-              <!-- Карточки будут добавлены динамически -->  
             </div>  
           </div>  
-        `;  
+        `);  
           
-        $itemsLine.before(continueSection);  
+        // Вставляем перед первой существующей секцией  
+        $existingItemsLine.before(continueSection);  
         loadContinueWatchingData();  
-        console.log('ContinueWatching: Секция добавлена перед items-line');  
+        console.log('ContinueWatching: Секция добавлена');  
       } else {  
-        console.log('ContinueWatching: items-line не найден или секция уже существует');  
+        console.log('ContinueWatching: Контейнер не найден или секция уже существует');  
       }  
     }  
   
-    // Загрузка данных в формате Lampa  
+    // Загрузка данных с правильной структурой карточек  
     function loadContinueWatchingData() {  
       console.log('ContinueWatching: Загрузка данных...');  
         
-      // Тестовые данные в формате Lampa  
+      // Получаем данные из системы закладок Lampac  
       var testData = [  
         {  
           title: "Тестовый фильм 1",  
@@ -75,25 +75,25 @@
           progress: 45,  
           year: 2023,  
           details: "Драма • 2ч 15мин",  
-          url: "#film1"  
+          id: 1001  
         },  
         {  
           title: "Тестовый сериал",  
-          image: "https://via.placeholder.com/300x450/333/fff?text=Series",  
+          image: "https://via.placeholder.com/300x450/333/fff?text=Series",   
           progress: 67,  
           year: 2023,  
           details: "S2E5 • Комедия",  
           season: 2,  
           episode: 5,  
-          url: "#series1"  
+          id: 1002  
         },  
         {  
           title: "Еще один фильм",  
           image: "https://via.placeholder.com/300x450/333/fff?text=Film2",  
           progress: 23,  
           year: 2022,  
-          details: "Боевик • 1ч 45мин",  
-          url: "#film2"  
+          details: "Боевик • 1ч 45мин",   
+          id: 1003  
         }  
       ];  
   
@@ -101,21 +101,9 @@
         
       if ($container.length) {  
         testData.forEach(function(item, index) {  
-          // Создаем данные в формате Lampa  
-          var itemData = {  
-            method: "link",  
-            url: item.url,  
-            title: item.title,  
-            year: item.year,  
-            details: item.details,  
-            img: item.image,  
-            continue_watching: true,  
-            progress: item.progress  
-          };  
-  
-          // Создаем карточку в стиле Lampa  
+          // Создаем карточку точно как в стандартных шаблонах Lampa  
           var card = $(`  
-            <div class="items-line__item selector ${index === 0 ? 'focus' : ''}" data-json='${JSON.stringify(itemData)}'>  
+            <div class="items-line__item selector" data-json='${JSON.stringify(item)}'>  
               <div class="items-line__item-imgbox">  
                 <img class="items-line__item-img" src="${item.image}" alt="${item.title}">  
                 <div class="continue-progress" style="width: ${item.progress}%"></div>  
@@ -127,16 +115,32 @@
             </div>  
           `);  
   
+          // Добавляем обработчики событий как в стандартных карточках  
+          card.on('hover:focus', function() {  
+            $(this).addClass('focus');  
+          }).on('hover:hover', function() {  
+            $(this).addClass('hover');  
+          }).on('hover:enter', function() {  
+            console.log('ContinueWatching: Открытие карточки:', item.title);  
+            // Здесь будет логика открытия контента  
+          });  
+  
           $container.append(card);  
         });  
   
-        // Регистрируем карточки в системе навигации Lampa  
+        // Важно: регистрируем карточки в системе навигации после добавления  
         setTimeout(function() {  
-          if (typeof Lampa.Controller !== 'undefined') {  
-            Lampa.Controller.collectionSet($container);  
-            console.log('ContinueWatching: Навигация настроена');  
+          try {  
+            if (typeof Lampa !== 'undefined' && Lampa.Controller) {  
+              // Обновляем коллекцию селекторов для навигации  
+              Lampa.Controller.collectionSet($container.find('.selector'));  
+              Lampa.Controller.collectionFocus(false, $container);  
+              console.log('ContinueWatching: Навигация настроена для', testData.length, 'карточек');  
+            }  
+          } catch (e) {  
+            console.error('ContinueWatching: Ошибка настройки навигации:', e);  
           }  
-        }, 100);  
+        }, 200);  
           
         console.log('ContinueWatching: Добавлено карточек:', testData.length);  
       } else {  
@@ -144,9 +148,9 @@
       }  
     }  
   
-    // Функция с задержкой для повторных попыток  
+    // Функция для повторных попыток с ограничением  
     function tryAddSection(attempts = 0) {  
-      if (attempts > 5) {  
+      if (attempts > 8) {  
         console.error('ContinueWatching: Превышено количество попыток');  
         return;  
       }  
@@ -154,26 +158,30 @@
       if ($('.continue-watching-section').length === 0) {  
         addContinueWatchingSection();  
         if ($('.continue-watching-section').length === 0) {  
-          setTimeout(() => tryAddSection(attempts + 1), 2000);  
+          setTimeout(() => tryAddSection(attempts + 1), 1500);  
         }  
       }  
     }  
   
-    // Запускаем с задержкой  
+    // Запускаем немедленно при готовности  
     setTimeout(() => {  
       tryAddSection();  
-    }, 3000);  
+    }, 1000);  
   
-    // Следим за изменением активности  
+    // Следим за активностью для обновления  
     Lampa.Listener.follow('activity', function (e) {  
       if (e.type === 'start') {  
-        console.log('ContinueWatching: Новая активность');  
-        setTimeout(() => tryAddSection(), 2000);  
+        console.log('ContinueWatching: Новая активность, проверка секции');  
+        setTimeout(() => {  
+          if ($('.continue-watching-section').length === 0) {  
+            tryAddSection();  
+          }  
+        }, 1000);  
       }  
     });  
   }  
   
-  // Запускаем плагин  
+  // Запуск плагина  
   if (window.appready) {  
     console.log('ContinueWatching: Приложение готово, запуск плагина...');  
     startPlugin();  
