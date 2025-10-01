@@ -4,15 +4,11 @@
     if (!window.continuewatchplugin) {  
         window.continuewatchplugin = true;  
   
-        var sectionAdded = false;  
-  
         function createContinueWatchSection() {  
-            // Создаем секцию с правильной структурой items-line  
             var itemsLine = document.createElement('div');  
             itemsLine.className = 'items-line layer--visible layer--render items-line--type-cards';  
-            itemsLine.id = 'continue-watch-plugin-section'; // Добавляем ID для идентификации  
+            itemsLine.id = 'continue-watch-plugin-section';  
               
-            // Заголовок секции  
             var head = document.createElement('div');  
             head.className = 'items-line__head';  
               
@@ -22,7 +18,6 @@
               
             head.appendChild(title);  
               
-            // Тело секции с горизонтальным скроллом  
             var body = document.createElement('div');  
             body.className = 'items-line__body';  
               
@@ -36,7 +31,7 @@
             scrollBody.className = 'scroll__body items-cards';  
             scrollBody.style.transform = 'translate3d(0px, 0px, 0px)';  
               
-            // Создаем тестовые карточки  
+            // Тестовые карточки  
             var testCards = [  
                 {  
                     title: 'Тестовый фильм 1',  
@@ -122,7 +117,6 @@
         function addContinueWatchSection() {  
             // Проверяем, есть ли уже наша секция  
             if (document.getElementById('continue-watch-plugin-section')) {  
-                console.log('Continue Watch Plugin: Секция уже существует');  
                 return;  
             }  
   
@@ -132,43 +126,58 @@
                 var section = createContinueWatchSection();  
                 firstItemsLine.parentNode.insertBefore(section, firstItemsLine);  
                 console.log('Continue Watch Plugin: Секция добавлена');  
-                sectionAdded = true;  
             }  
         }  
   
-        function checkAndAddSection() {  
-            // Проверяем, находимся ли мы на главной странице  
-            var homeContent = document.querySelector('.items-line');  
-            var isHomePage = homeContent && !document.getElementById('continue-watch-plugin-section');  
-              
-            if (isHomePage) {  
-                console.log('Continue Watch Plugin: Обнаружена главная страница, добавляем секцию');  
-                addContinueWatchSection();  
-            }  
+        // Постоянная проверка каждые 2 секунды  
+        function startPeriodicCheck() {  
+            setInterval(function() {  
+                // Проверяем, есть ли items-line на странице (значит мы на главной)  
+                var hasItemsLine = document.querySelector('.items-line');  
+                var hasOurSection = document.getElementById('continue-watch-plugin-section');  
+                  
+                // Если есть items-line, но нет нашей секции - добавляем  
+                if (hasItemsLine && !hasOurSection) {  
+                    console.log('Continue Watch Plugin: Обнаружена главная без секции, добавляем');  
+                    addContinueWatchSection();  
+                }  
+            }, 2000);  
         }  
   
-        // Наблюдатель за изменениями DOM  
+        // Также используем MutationObserver как дополнительный механизм  
         function setupObserver() {  
             var observer = new MutationObserver(function(mutations) {  
+                var shouldCheck = false;  
+                  
                 mutations.forEach(function(mutation) {  
                     if (mutation.type === 'childList') {  
-                        // Проверяем, появились ли новые элементы items-line  
                         var addedNodes = Array.from(mutation.addedNodes);  
                         var hasItemsLine = addedNodes.some(function(node) {  
                             return node.nodeType === 1 && (  
-                                node.classList && node.classList.contains('items-line') ||  
-                                node.querySelector && node.querySelector('.items-line')  
+                                (node.classList && node.classList.contains('items-line')) ||  
+                                (node.querySelector && node.querySelector('.items-line'))  
                             );  
                         });  
                           
                         if (hasItemsLine) {  
-                            setTimeout(checkAndAddSection, 100); // Небольшая задержка для стабильности  
+                            shouldCheck = true;  
                         }  
                     }  
                 });  
+                  
+                if (shouldCheck) {  
+                    setTimeout(function() {  
+                        var hasItemsLine = document.querySelector('.items-line');  
+                        var hasOurSection = document.getElementById('continue-watch-plugin-section');  
+                          
+                        if (hasItemsLine && !hasOurSection) {  
+                            console.log('Continue Watch Plugin: MutationObserver обнаружил изменения, добавляем секцию');  
+                            addContinueWatchSection();  
+                        }  
+                    }, 500);  
+                }  
             });  
   
-            // Наблюдаем за изменениями в контейнере приложения  
             var appContainer = document.querySelector('#app');  
             if (appContainer) {  
                 observer.observe(appContainer, {  
@@ -194,7 +203,8 @@
                     if (homeContent) {  
                         console.log('Continue Watch Plugin: Lampa загружена');  
                         addContinueWatchSection();  
-                        setupObserver(); // Устанавливаем наблюдатель  
+                        setupObserver();  
+                        startPeriodicCheck(); // Запускаем постоянную проверку  
                     } else {  
                         console.log('Continue Watch Plugin: Превышено время ожидания');  
                     }  
@@ -202,7 +212,6 @@
             }, 500);  
         }  
   
-        // Запускаем после загрузки DOM  
         if (document.readyState === 'loading') {  
             document.addEventListener('DOMContentLoaded', waitForLampa);  
         } else {  
