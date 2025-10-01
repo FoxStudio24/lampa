@@ -4,35 +4,13 @@
     if (!window.continuewatchplugin) {  
         window.continuewatchplugin = true;  
   
-        function waitForLampa() {  
-            var attempts = 0;  
-            var maxAttempts = 100;  
-              
-            var checkInterval = setInterval(function() {  
-                attempts++;  
-                  
-                // Ищем главную страницу с items-line  
-                var homeContent = document.querySelector('.items-line');  
-                  
-                console.log('Continue Watch Plugin: Попытка', attempts, 'найден items-line:', !!homeContent);  
-                  
-                if (homeContent || attempts >= maxAttempts) {  
-                    clearInterval(checkInterval);  
-                      
-                    if (homeContent) {  
-                        console.log('Continue Watch Plugin: Главная найдена, добавляем секцию');  
-                        addContinueWatchSection();  
-                    } else {  
-                        console.log('Continue Watch Plugin: Превышено время ожидания');  
-                    }  
-                }  
-            }, 500);  
-        }  
+        var sectionAdded = false;  
   
-        function addContinueWatchSection() {  
+        function createContinueWatchSection() {  
             // Создаем секцию с правильной структурой items-line  
             var itemsLine = document.createElement('div');  
             itemsLine.className = 'items-line layer--visible layer--render items-line--type-cards';  
+            itemsLine.id = 'continue-watch-plugin-section'; // Добавляем ID для идентификации  
               
             // Заголовок секции  
             var head = document.createElement('div');  
@@ -138,12 +116,90 @@
             itemsLine.appendChild(head);  
             itemsLine.appendChild(body);  
               
-            // Находим первую существующую items-line и добавляем перед ней  
+            return itemsLine;  
+        }  
+  
+        function addContinueWatchSection() {  
+            // Проверяем, есть ли уже наша секция  
+            if (document.getElementById('continue-watch-plugin-section')) {  
+                console.log('Continue Watch Plugin: Секция уже существует');  
+                return;  
+            }  
+  
+            // Ищем первую существующую items-line на главной странице  
             var firstItemsLine = document.querySelector('.items-line');  
             if (firstItemsLine && firstItemsLine.parentNode) {  
-                firstItemsLine.parentNode.insertBefore(itemsLine, firstItemsLine);  
-                console.log('Continue Watch Plugin: Секция добавлена перед первой items-line');  
+                var section = createContinueWatchSection();  
+                firstItemsLine.parentNode.insertBefore(section, firstItemsLine);  
+                console.log('Continue Watch Plugin: Секция добавлена');  
+                sectionAdded = true;  
             }  
+        }  
+  
+        function checkAndAddSection() {  
+            // Проверяем, находимся ли мы на главной странице  
+            var homeContent = document.querySelector('.items-line');  
+            var isHomePage = homeContent && !document.getElementById('continue-watch-plugin-section');  
+              
+            if (isHomePage) {  
+                console.log('Continue Watch Plugin: Обнаружена главная страница, добавляем секцию');  
+                addContinueWatchSection();  
+            }  
+        }  
+  
+        // Наблюдатель за изменениями DOM  
+        function setupObserver() {  
+            var observer = new MutationObserver(function(mutations) {  
+                mutations.forEach(function(mutation) {  
+                    if (mutation.type === 'childList') {  
+                        // Проверяем, появились ли новые элементы items-line  
+                        var addedNodes = Array.from(mutation.addedNodes);  
+                        var hasItemsLine = addedNodes.some(function(node) {  
+                            return node.nodeType === 1 && (  
+                                node.classList && node.classList.contains('items-line') ||  
+                                node.querySelector && node.querySelector('.items-line')  
+                            );  
+                        });  
+                          
+                        if (hasItemsLine) {  
+                            setTimeout(checkAndAddSection, 100); // Небольшая задержка для стабильности  
+                        }  
+                    }  
+                });  
+            });  
+  
+            // Наблюдаем за изменениями в контейнере приложения  
+            var appContainer = document.querySelector('#app');  
+            if (appContainer) {  
+                observer.observe(appContainer, {  
+                    childList: true,  
+                    subtree: true  
+                });  
+                console.log('Continue Watch Plugin: MutationObserver установлен');  
+            }  
+        }  
+  
+        function waitForLampa() {  
+            var attempts = 0;  
+            var maxAttempts = 100;  
+              
+            var checkInterval = setInterval(function() {  
+                attempts++;  
+                  
+                var homeContent = document.querySelector('.items-line');  
+                  
+                if (homeContent || attempts >= maxAttempts) {  
+                    clearInterval(checkInterval);  
+                      
+                    if (homeContent) {  
+                        console.log('Continue Watch Plugin: Lampa загружена');  
+                        addContinueWatchSection();  
+                        setupObserver(); // Устанавливаем наблюдатель  
+                    } else {  
+                        console.log('Continue Watch Plugin: Превышено время ожидания');  
+                    }  
+                }  
+            }, 500);  
         }  
   
         // Запускаем после загрузки DOM  
