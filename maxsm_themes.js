@@ -3,24 +3,81 @@
     
     Lampa.Lang.add({
         maxsm_themes: {
-            ru: "Темы"
+            ru: "Темы",
+            en: "Themes",
+            uk: "Теми",
+            be: "Тэмы",
+            zh: "主题",
+            pt: "Temas",
+            bg: "Теми",
+            he: "ערכות נושא",
+            cs: "Témata"
         },
         maxsm_themes_theme: {
-            ru: "Тема оформления"
+            ru: "Тема оформления",
+            en: "Interface theme",
+            uk: "Тема оформлення",
+            be: "Тэма афармлення",
+            zh: "界面主题",
+            pt: "Tema de interface",
+            bg: "Тема на интерфейса",
+            he: "ערכת נושא לממשק",
+            cs: "Téma rozhraní"
         },
         maxsm_themes_animations: {
-            ru: "Анимации"
+            ru: "Анимации",
+            en: "Animations",
+            uk: "Анімації",
+            be: "Анімацыі",
+            zh: "动画",
+            pt: "Animações",
+            bg: "Анимации",
+            he: "אנימציות",
+            cs: "Animace"
         },
         maxsm_themes_translate_tv: {
-            ru: "Переводить TV"
+            ru: "Переводить TV",
+            en: "Translate TV",
+            uk: "Перекладати TV",
+            be: "Перакладаць TV",
+            zh: "翻译 TV",
+            pt: "Traduzir TV",
+            bg: "Превеждане на TV",
+            he: "לתרגם TV",
+            cs: "Přeložit TV"
+        },
         maxsm_themes_tvcaption: {
-            ru: "СЕРИАЛ",      
+            ru: "СЕРИАЛ",       
+            en: "SERIES",   
+            uk: "СЕРІАЛ",    
+            be: "СЕРЫЯЛ",     
+            zh: "剧集",       
+            pt: "SÉRIE",     
+            bg: "СЕРИАЛ",      
+            he: "סִדְרָה",  
+            cs: "SERIÁL" 
         },
         maxsm_themes_incardtemplate: {
-            ru: "Макет содержимого карточки"
+            ru: "Макет содержимого карточки",
+            en: "Card content layout",
+            uk: "Макет вмісту картки",
+            be: "Макет змесціва карткі",
+            zh: "卡片内容布局",
+            pt: "Layout do conteúdo do cartão",
+            bg: "Оформление на съдържанието в картата",
+            he: "פריסת תוכן בכרטיס",
+            cs: "Rozvržení obsahu karty"
         },
         maxsm_themes_bigbuttons: {
-            ru: "Большие кнопки в карточке"
+            ru: "Большие кнопки в карточке",
+            en: "Large buttons in card",
+            uk: "Великі кнопки в картці",
+            be: "Вялікія кнопкі ў картцы",
+            zh: "卡片中的大按钮",
+            pt: "Botões grandes no cartão",
+            bg: "Големи бутони в картата",
+            he: "כפתורים גדולים בכרטיס",
+            cs: "Velká tlačítka v kartě"
         }
     });
     
