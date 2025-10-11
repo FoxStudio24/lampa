@@ -15,11 +15,11 @@
         'https://foxstudio24.github.io/lampa/mob.js',
         'https://foxstudio24.github.io/lampa/hide.js',
         'https://foxstudio24.github.io/lampa/play.js',
-        'https://nb557.github.io/plugins/online_mod.js',
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
 })();
+
 
 
 
