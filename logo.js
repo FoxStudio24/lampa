@@ -75,20 +75,21 @@
                                 // Определяем параметры в зависимости от устройства
                                 var isMobile = window.innerWidth <= 768;
                                 var fontSize = "0.5em";
-                                var marginTop = isMobile ? "1px" : "1px";
+                                var marginTop = "1px";
                                 var logoHeight = isMobile ? "auto" : "1.5em";
+                                var alignItems = isMobile ? "center" : "flex-start";
                                 
                                 // Если логотип не русский, показываем русское название
                                 if (!isRussianLogo && russianTitle) {
                                     a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; flex-direction: column; align-items: flex-start;">' +
+                                        '<div style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
                                             '<img style="margin-top: 5px; max-height: ' + logoHeight + ' !important; max-width: none !important; width: auto !important; height: ' + logoHeight + ' !important;" src="' + logoPath + '" />' +
                                             '<span style="margin-top: ' + marginTop + '; font-size: ' + fontSize + '; color: #fff;">' + russianTitle + '</span>' +
                                         '</div>'
                                     );
                                 } else {
                                     a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; flex-direction: column; align-items: flex-start;">' +
+                                        '<div style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
                                             '<img style="margin-top: 5px; max-height: ' + logoHeight + ' !important; max-width: none !important; width: auto !important; height: ' + logoHeight + ' !important;" src="' + logoPath + '" />' +
                                         '</div>'
                                     );
