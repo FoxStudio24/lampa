@@ -76,7 +76,7 @@
                                 var isMobile = window.innerWidth <= 768;
                                 var fontSize = "0.5em";
                                 var marginTop = "1px";
-                                var logoHeight = isMobile ? "auto" : "1.5em";
+                                var logoHeight = isMobile ? "auto" : "1em";
                                 var alignItems = isMobile ? "center" : "flex-start";
                                 
                                 // Если логотип не русский, показываем русское название
@@ -121,3 +121,4 @@
         }
     })))
 }();
+
