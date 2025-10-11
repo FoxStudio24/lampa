@@ -3,7 +3,7 @@
 
     var Defined = {
         tmdb_api_url: 'https://api.themoviedb.org/3/',
-        tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6', // Ваш TMDB API-ключ
+        tmdb_api_key: '06936145fe8e20be28b02e26b55d3ce6',
         tmdb_image_base_url: 'https://image.tmdb.org/t/p/original',
         custom_logos: {
             'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
@@ -41,7 +41,6 @@
             }
         });
 
-        // Добавляем стили для логотипа
         Lampa.Template.add('streaming_network_logo_css', `
             <style>
             .streaming-network-logo-container {
@@ -49,26 +48,18 @@
                 top: 10px;
                 right: 50px;
                 z-index: 10;
-                backdrop-filter: blur(15px); /* Эффект размытия */
-                -webkit-backdrop-filter: blur(15px); /* Поддержка для WebKit-браузеров */
             }
             .streaming-network-logo {
-                max-width: 200px; /* Увеличенный размер */
+                max-width: 200px;
                 max-height: 80px;
                 object-fit: contain;
-                border-radius: 8px; /* Небольшие закругления */
-                background: rgba(255, 255, 255, 0.2); /* Белый прозрачный фон */
-                backdrop-filter: blur(15px); /* Эффект размытия */
-                -webkit-backdrop-filter: blur(15px); /* Поддержка для WebKit-браузеров */
-                padding: 5px; /* Отступы внутри для красоты */
+                filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.4));
             }
-            /* Скрываем логотипы на мобильных устройствах (ширина до 768px) */
             @media (max-width: 768px) {
                 .streaming-network-logo-container {
                     display: none !important;
                 }
             }
-            /* Скрываем надпись "Телесеть" */
             .full-start-new__body .label--network {
                 display: none !important;
             }
@@ -76,7 +67,6 @@
         `);
         $('body').append(Lampa.Template.get('streaming_network_logo_css', {}, true));
 
-        // Функция для получения и отображения логотипа телесети (для сериалов и фильмов)
         function addStreamingNetworkLogo(e) {
             var movie = e.data.movie || e.movie;
             if (!movie || !movie.id) {
@@ -101,7 +91,6 @@
                 var logoUrl = null;
                 var providerName = '';
 
-                // Используем поле networks для сериалов и фильмов
                 var networks = response.networks || [];
                 console.log('Networks:', networks);
                 if (networks.length > 0) {
@@ -110,7 +99,6 @@
                     });
                     if (networkWithLogo) {
                         providerName = networkWithLogo.name;
-                        // Проверяем, есть ли пользовательский логотип
                         if (Defined.custom_logos[providerName]) {
                             logoUrl = Defined.custom_logos[providerName];
                             console.log('Используется пользовательский логотип для:', providerName);
@@ -133,17 +121,14 @@
 
                 console.log('URL логотипа:', logoUrl);
 
-                // Находим блок full-start-new__body
                 var fullStartBody = e.object.activity.render().find('.full-start-new__body');
                 if (!fullStartBody.length) {
                     console.log('Блок full-start-new__body не найден');
                     return;
                 }
 
-                // Удаляем старый логотип, если он есть
                 fullStartBody.find('.streaming-network-logo-container').remove();
 
-                // Добавляем контейнер с логотипом
                 var logoContainer = $('<div class="streaming-network-logo-container"></div>');
                 var logoImg = $('<img class="streaming-network-logo" src="' + logoUrl + '" alt="' + providerName + '">');
                 logoContainer.append(logoImg);
@@ -156,7 +141,6 @@
             }, false, { dataType: 'json' });
         }
 
-        // Подписываемся на событие открытия карточки контента
         Lampa.Listener.follow('full', function(e) {
             if (e.type === 'complite') {
                 addStreamingNetworkLogo(e);
