@@ -76,7 +76,7 @@
                                 var isMobile = window.innerWidth <= 768;
                                 var fontSize = "0.5em";
                                 var marginTop = isMobile ? "1px" : "1px";
-                                var logoHeight = isMobile ? "2em" : "1.5em";
+                                var logoHeight = isMobile ? "auto" : "1.5em";
                                 
                                 // Если логотип не русский, показываем русское название
                                 if (!isRussianLogo && russianTitle) {
