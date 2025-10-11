@@ -94,23 +94,10 @@
   padding: 5px 10px;
   border-radius: 4px;
   box-shadow: 0 0 5px rgba(0,0,0,0.2);
-  backdrop-filter: blur(3px);
-}
-.card--tv .card__type {
-  padding: 5px 10px;
-  border-radius: 4px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #dddddd;
-    padding: 0.3em 0.6em;
-    border: 1px solid rgba(255, 255, 255, 0.205);
-    -webkit-border-radius: 0.3em;
-    border-radius: 0.3em;
-    backdrop-filter: blur(3px);
 }
 .full-start__status {
   position: fixed;
-  top: 55px; /* ниже, чем .full-start__pg */
+  top: 55px;
   right: 10px;
   z-index: 1000;
   padding: 5px 10px;
@@ -138,13 +125,12 @@ font-size: 1em;
     justify-content: center;
     text-align: center;
     min-width: 2em;
-    backdrop-filter: blur(3px);
 }
 .full-start-new__details {
     display: flex;
-    justify-content: center; /* горизонтально */
-    align-items: center;     /* вертикально */
-    height: 100%; /* или нужная высота */
+    justify-content: center;
+    align-items: center;
+    height: 100%;
     text-align: center;
 }
 .full-start-new__tagline {
@@ -152,6 +138,12 @@ font-size: 1em;
 }
 .full-start__rate > div:first-child {
     background: rgb(0 0 0 / 0%);
+}
+.full-start-new__rate-line {
+    padding-top: 3px;
+}
+body.black--style .selectbox__content, body.black--style .modal__content, body.black--style .settings__content {
+    background-color: #0000009c !important;
 }
 }
     `;  
