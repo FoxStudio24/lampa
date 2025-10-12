@@ -59,16 +59,11 @@
         }
         
         /* Стили для правого блока */
-        .full-start-new__rate-line.skeleton-item {
-            border-radius: 10px !important;
-            margin-bottom: 12px !important;
-        }
-        
         .full-start__pg.skeleton-item,
         .full-start__status.skeleton-item,
         .full-start__rate.skeleton-item {
             border-radius: 8px !important;
-            margin-bottom: 0 !important;
+            margin: 0 !important;
         }
         
         @keyframes skeleton-loading {
@@ -93,11 +88,15 @@
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
             
-            var titleContainer = a.object.activity.render().find(".full-start-new__title");
-            var headContainer = a.object.activity.render().find(".full-start-new__head");
-            var detailsContainer = a.object.activity.render().find(".full-start-new__details");
-            var buttonsContainer = a.object.activity.render().find(".full-start-new__buttons");
-            var rateLineContainer = a.object.activity.render().find(".full-start-new__rate-line");
+            var render = a.object.activity.render();
+            var titleContainer = render.find(".full-start-new__title");
+            var headContainer = render.find(".full-start-new__head");
+            var detailsContainer = render.find(".full-start-new__details");
+            var buttonsContainer = render.find(".full-start-new__buttons");
+            var rateLineContainer = render.find(".full-start-new__rate-line");
+            
+            // Убираем существующие классы content-fade-in перед добавлением skeleton
+            render.find('.content-fade-in').removeClass('content-fade-in');
             
             // Добавляем skeleton класс ко всем элементам
             titleContainer.addClass('skeleton-item');
