@@ -11,6 +11,66 @@
             max-width: none !important;
             width: auto !important;
         }
+        
+        /* Skeleton loader стили */
+        .skeleton-item {
+            background: linear-gradient(90deg, #2a2a2a 5%, #3a3a3a 25%, #2a2a2a 55%) !important;
+            background-size: 200% 100% !important;
+            animation: skeleton-loading 1.5s infinite !important;
+            border-radius: 99px !important;
+            color: transparent !important;
+            pointer-events: none !important;
+            overflow: hidden !important;
+        }
+        
+        .skeleton-item * {
+            visibility: hidden !important;
+        }
+        
+        .full-start-new__buttons .skeleton-item {
+            border-radius: 1em !important;
+            margin-left: 0 !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .full-start-new__title.skeleton-item {
+            border-radius: 6px !important;
+            min-height: 1.2em !important;
+            max-height: 1.2em !important;
+            width: 150px !important;
+            display: block !important;
+            margin-left: 0 !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .full-start-new__head.skeleton-item {
+            border-radius: 10px !important;
+            max-width: 250px !important;
+            display: block !important;
+            margin-left: 0 !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .full-start-new__details.skeleton-item,
+        .cardify__details.skeleton-item {
+            border-radius: 10px !important;
+            margin-left: 0 !important;
+            margin-bottom: 12px !important;
+        }
+        
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .content-fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     `;
     document.head.appendChild(style);
     
@@ -20,13 +80,37 @@
             var isSerial = e.name || e.first_air_date;
             var apiPath = isSerial ? "tv/" + e.id : "movie/" + e.id;
             
-            // Скрываем контент до загрузки логотипа
-            var contentContainer = a.object.activity.render().find(".full-start-new__body");
-            contentContainer.css("opacity", "0");
+            var titleContainer = a.object.activity.render().find(".full-start-new__title");
+            var headContainer = a.object.activity.render().find(".full-start-new__head");
+            var detailsContainer = a.object.activity.render().find(".full-start-new__details");
+            var buttonsContainer = a.object.activity.render().find(".full-start-new__buttons");
+            
+            // Добавляем skeleton класс ко всем элементам
+            titleContainer.addClass('skeleton-item');
+            headContainer.addClass('skeleton-item');
+            detailsContainer.addClass('skeleton-item');
+            buttonsContainer.find('.full-start__button').addClass('skeleton-item');
             
             // Получаем русское название из переводов
             var translationsApi = Lampa.TMDB.api(apiPath + "/translations?api_key=" + Lampa.TMDB.key());
             console.log("API URL для переводов:", translationsApi);
+            
+            var removeSkeletons = function() {
+                headContainer.removeClass('skeleton-item').addClass('content-fade-in').css({
+                    'max-width': '',
+                    'display': '',
+                    'margin-left': '',
+                    'margin-bottom': ''
+                });
+                detailsContainer.removeClass('skeleton-item').addClass('content-fade-in').css({
+                    'margin-left': '',
+                    'margin-bottom': ''
+                });
+                buttonsContainer.find('.full-start__button').removeClass('skeleton-item').addClass('content-fade-in').css({
+                    'margin-left': '',
+                    'margin-bottom': ''
+                });
+            };
             
             $.get(translationsApi, (function(translationsData) {
                 var russianTitle = null;
@@ -69,6 +153,7 @@
                             var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
                             console.log("Отображаем логотип:", logoPath);
 
+
                             // Предзагружаем изображение
                             var img = new Image();
                             img.onload = function() {
@@ -79,46 +164,94 @@
                                 var logoHeight = isMobile ? "auto" : "1em";
                                 var alignItems = isMobile ? "center" : "flex-start";
                                 
+                                // Убираем skeleton со всех элементов
+                                removeSkeletons();
+                                titleContainer.removeClass('skeleton-item').css({
+                                    'min-height': '',
+                                    'max-height': '',
+                                    'width': '',
+                                    'display': '',
+                                    'margin-left': '',
+                                    'margin-bottom': ''
+                                });
+                                
                                 // Если логотип не русский, показываем русское название
                                 if (!isRussianLogo && russianTitle) {
-                                    a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
+                                    titleContainer.html(
+                                        '<div class="content-fade-in" style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
                                             '<img style="margin-top: 5px; max-height: ' + logoHeight + ' !important; max-width: none !important; width: auto !important; height: ' + logoHeight + ' !important;" src="' + logoPath + '" />' +
                                             '<span style="margin-top: ' + marginTop + '; font-size: ' + fontSize + '; color: #fff;">' + russianTitle + '</span>' +
                                         '</div>'
                                     );
                                 } else {
-                                    a.object.activity.render().find(".full-start-new__title").html(
-                                        '<div style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
+                                    titleContainer.html(
+                                        '<div class="content-fade-in" style="display: flex; flex-direction: column; align-items: ' + alignItems + ';">' +
                                             '<img style="margin-top: 5px; max-height: ' + logoHeight + ' !important; max-width: none !important; width: auto !important; height: ' + logoHeight + ' !important;" src="' + logoPath + '" />' +
                                         '</div>'
                                     );
                                 }
-                                // Показываем контент
-                                contentContainer.css("opacity", "1");
                             };
                             img.onerror = function() {
                                 console.log("Ошибка загрузки изображения логотипа");
-                                contentContainer.css("opacity", "1");
+                                removeSkeletons();
+                                titleContainer.removeClass('skeleton-item').css({
+                                    'min-height': '',
+                                    'max-height': '',
+                                    'width': '',
+                                    'display': '',
+                                    'margin-left': '',
+                                    'margin-bottom': ''
+                                });
                             };
                             img.src = logoPath;
                         } else {
                             console.log("Логотип невалидный (нет file_path):", logo);
-                            contentContainer.css("opacity", "1");
+                            removeSkeletons();
+                            titleContainer.removeClass('skeleton-item').css({
+                                'min-height': '',
+                                'max-height': '',
+                                'width': '',
+                                'display': '',
+                                'margin-left': '',
+                                'margin-bottom': ''
+                            });
                         }
                     } else {
                         console.log("Логотипы отсутствуют");
-                        contentContainer.css("opacity", "1");
+                        removeSkeletons();
+                        titleContainer.removeClass('skeleton-item').css({
+                            'min-height': '',
+                            'max-height': '',
+                            'width': '',
+                            'display': '',
+                            'margin-left': '',
+                            'margin-bottom': ''
+                        });
                     }
                 })).fail(function() {
                     console.log("Ошибка запроса логотипов");
-                    contentContainer.css("opacity", "1");
+                    removeSkeletons();
+                    titleContainer.removeClass('skeleton-item').css({
+                        'min-height': '',
+                        'max-height': '',
+                        'width': '',
+                        'display': '',
+                        'margin-left': '',
+                        'margin-bottom': ''
+                    });
                 });
             })).fail(function() {
                 console.log("Ошибка запроса переводов, используем оригинальное название");
-                contentContainer.css("opacity", "1");
+                removeSkeletons();
+                titleContainer.removeClass('skeleton-item').css({
+                    'min-height': '',
+                    'max-height': '',
+                    'width': '',
+                    'display': '',
+                    'margin-left': '',
+                    'margin-bottom': ''
+                });
             });
         }
     })))
 }();
-
