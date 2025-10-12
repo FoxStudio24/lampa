@@ -58,6 +58,19 @@
             margin-bottom: 12px !important;
         }
         
+        /* Стили для правого блока */
+        .full-start-new__rate-line.skeleton-item {
+            border-radius: 10px !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .full-start__pg.skeleton-item,
+        .full-start__status.skeleton-item,
+        .full-start__rate.skeleton-item {
+            border-radius: 8px !important;
+            margin-bottom: 0 !important;
+        }
+        
         @keyframes skeleton-loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
@@ -84,12 +97,18 @@
             var headContainer = a.object.activity.render().find(".full-start-new__head");
             var detailsContainer = a.object.activity.render().find(".full-start-new__details");
             var buttonsContainer = a.object.activity.render().find(".full-start-new__buttons");
+            var rateLineContainer = a.object.activity.render().find(".full-start-new__rate-line");
             
             // Добавляем skeleton класс ко всем элементам
             titleContainer.addClass('skeleton-item');
             headContainer.addClass('skeleton-item');
             detailsContainer.addClass('skeleton-item');
             buttonsContainer.find('.full-start__button').addClass('skeleton-item');
+            
+            // Добавляем skeleton для правого блока
+            rateLineContainer.find('.full-start__pg').addClass('skeleton-item');
+            rateLineContainer.find('.full-start__status').addClass('skeleton-item');
+            rateLineContainer.find('.full-start__rate').addClass('skeleton-item');
             
             // Получаем русское название из переводов
             var translationsApi = Lampa.TMDB.api(apiPath + "/translations?api_key=" + Lampa.TMDB.key());
@@ -110,6 +129,11 @@
                     'margin-left': '',
                     'margin-bottom': ''
                 });
+                
+                // Убираем skeleton с правого блока
+                rateLineContainer.find('.full-start__pg').removeClass('skeleton-item').addClass('content-fade-in');
+                rateLineContainer.find('.full-start__status').removeClass('skeleton-item').addClass('content-fade-in');
+                rateLineContainer.find('.full-start__rate').removeClass('skeleton-item').addClass('content-fade-in');
             };
             
             $.get(translationsApi, (function(translationsData) {
@@ -152,7 +176,6 @@
                         if (logo && logo.file_path) {
                             var logoPath = Lampa.TMDB.image("/t/p/w300" + logo.file_path.replace(".svg", ".png"));
                             console.log("Отображаем логотип:", logoPath);
-
 
                             // Предзагружаем изображение
                             var img = new Image();
