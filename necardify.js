@@ -137,6 +137,16 @@
 
       _classCallCheck(this, Player);
       
+      // Улучшенная детекция Apple TV
+      var ua = (navigator && navigator.userAgent) ? String(navigator.userAgent).toLowerCase() : '';
+      var np = (navigator && navigator.platform) ? String(navigator.platform).toLowerCase() : '';
+      this.isAppleTV = (typeof Lampa !== 'undefined' && Lampa.Platform && Lampa.Platform.is && Lampa.Platform.is('apple_tv')) ||
+                       ua.indexOf('appletv') !== -1 ||
+                       np.indexOf('appletv') !== -1;
+      
+      // Для Apple TV будем использовать изолированный iframe вместо YT API
+      // (без раннего выхода, чтобы сохранить общую разметку плеера)
+      
       // Добавляем обработчик изменения размера окна
       this.resizeHandler = function() {
         if (_this.display) {
@@ -174,9 +184,11 @@
       this.display = false;
       this.ended = false;
       this.listener = Lampa.Subscribe();
+      this.videoId = video.id; // Сохраняем ID видео
+      
       this.html = $("\n            <div class=\"cardify-trailer\">\n                <div class=\"cardify-trailer__remote\">\n                    <div class=\"cardify-trailer__remote-icon\">\n                        <svg width=\"37\" height=\"37\" viewBox=\"0 0 37 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                            <path d=\"M32.5196 7.22042L26.7992 12.9408C27.8463 14.5217 28.4561 16.4175 28.4561 18.4557C28.4561 20.857 27.6098 23.0605 26.1991 24.7844L31.8718 30.457C34.7226 27.2724 36.4561 23.0667 36.4561 18.4561C36.4561 14.2059 34.983 10.2998 32.5196 7.22042Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <path d=\"M31.262 31.1054L31.1054 31.262C31.158 31.2102 31.2102 31.158 31.262 31.1054Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <path d=\"M29.6917 32.5196L23.971 26.7989C22.3901 27.846 20.4943 28.4557 18.4561 28.4557C16.4179 28.4557 14.5221 27.846 12.9412 26.7989L7.22042 32.5196C10.2998 34.983 14.2059 36.4561 18.4561 36.4561C22.7062 36.4561 26.6123 34.983 29.6917 32.5196Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <path d=\"M5.81349 31.2688L5.64334 31.0986C5.69968 31.1557 5.7564 31.2124 5.81349 31.2688Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <path d=\"M5.04033 30.4571L10.7131 24.7844C9.30243 23.0605 8.4561 20.857 8.4561 18.4557C8.4561 16.4175 9.06588 14.5217 10.113 12.9408L4.39251 7.22037C1.9291 10.2998 0.456055 14.2059 0.456055 18.4561C0.456054 23.0667 2.18955 27.2724 5.04033 30.4571Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <path d=\"M6.45507 5.04029C9.63973 2.18953 13.8455 0.456055 18.4561 0.456055C23.0667 0.456054 27.2724 2.18955 30.4571 5.04034L24.7847 10.7127C23.0609 9.30207 20.8573 8.45575 18.4561 8.45575C16.0549 8.45575 13.8513 9.30207 12.1275 10.7127L6.45507 5.04029Z\" fill=\"white\" fill-opacity=\"0.28\"/>\n                            <circle cx=\"18.4565\" cy=\"18.4561\" r=\"7\" fill=\"white\"/>\n                        </svg>\n                    </div>\n                    <div class=\"cardify-trailer__remote-text\">" + Lampa.Lang.translate('cardify_enable_sound') + "</div>\n                </div>\n                <div class=\"cardify-trailer__youtube\">\n                    <div class=\"cardify-trailer__youtube-iframe\"></div>\n                    <div class=\"cardify-trailer__youtube-line one\"></div>\n                    <div class=\"cardify-trailer__youtube-line two\"></div>\n                </div>\n                <div class=\"cardify-trailer__controlls\">\n                    <div class=\"cardify-trailer__title\"></div>\n                </div>\n            </div>\n        ");
 
-      if (typeof YT !== 'undefined' && YT.Player) {
+      if (!this.isAppleTV && typeof YT !== 'undefined' && YT.Player) {
         console.log('Cardify: YouTube API Ð´Ð¾ÑÑ‚ÑƒÐ¿ÐµÐ½, Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ Ð¿Ð»ÐµÐµÑ€Ð°...');
         try {
           this.youtube = new YT.Player(this.html.find('.cardify-trailer__youtube-iframe')[0], {
@@ -196,7 +208,13 @@
               'origin': window.location.origin,
               'suggestedQuality': 'hd1080',
               'setPlaybackQuality': 'hd1080',
-              'mute': 1
+              'mute': 1,
+              'wmode': 'transparent',
+              'iv_load_policy': 3,
+              'allowsInlineMediaPlayback': true,
+              'webkit-playsinline': 1,
+              'playsInline': 1,
+              'widget_referrer': window.location.origin
             },
             videoId: video.id,
             events: {
@@ -259,20 +277,66 @@
           _this.loaded = false;
           _this.listener.send('error');
         }
-      } else {
-        console.error('Cardify: YouTube API Ð½Ðµ Ð´Ð¾ÑÑ‚ÑƒÐ¿ÐµÐ½');
+      } else if (!this.isAppleTV) {
+        console.error('Cardify: YouTube API не доступен');
         _this.loaded = false;
         _this.listener.send('error');
+      } else {
+        // Apple TV: создаём изолированный iframe без API
+        try {
+          var iframeContainer = this.html.find('.cardify-trailer__youtube-iframe');
+          var iframe = document.createElement('iframe');
+          iframe.setAttribute('allow', 'autoplay; encrypted-media');
+          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+          iframe.setAttribute('frameborder', '0');
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.setAttribute('referrerpolicy', 'no-referrer');
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          // Загружаем nocookie-домен и отключаем всё, что может вызвать переход
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + this.videoId +
+                       '?playsinline=1&rel=0&modestbranding=1&autoplay=0&controls=0&fs=0&enablejsapi=0';
+          iframeContainer.empty();
+          iframeContainer.append(iframe);
+          this.appleIframe = iframe;
+          this.loaded = true;
+          this.listener.send('loaded');
+        } catch (e) {
+          console.error('Cardify: Ошибка подготовки iframe для Apple TV:', e);
+          this.loaded = false;
+          this.listener.send('error');
+        }
       }
     }
 
     _createClass(Player, [{
       key: "play",
       value: function play() {
+        // Ветка для Apple TV: запускаем воспроизведение в изолированном iframe
+        if (this.isAppleTV) {
+          try {
+            if (this.appleIframe) {
+              // Перезадаём src с autoplay=1, чтобы не триггерить нативное приложение
+              var base = 'https://www.youtube-nocookie.com/embed/' + this.videoId;
+              var params = '?playsinline=1&rel=0&modestbranding=1&autoplay=1&controls=0&fs=0&enablejsapi=0&mute=1';
+              if (!this._applePlayedOnce) {
+                this.appleIframe.src = base + params;
+                this._applePlayedOnce = true;
+              }
+            }
+          } catch (e) {
+            console.error('Cardify: Ошибка inline-воспроизведения на Apple TV:', e);
+          }
+          return;
+        }
+        
+        // Обычное воспроизведение через IFrame API
         try {
-          this.youtube.playVideo();
+          if (this.youtube && typeof this.youtube.playVideo === 'function') {
+            this.youtube.playVideo();
+          }
         } catch (e) {
-          console.error('Cardify: ÐžÑˆÐ¸Ð±ÐºÐ° Ð²Ð¾ÑÐ¿Ñ€Ð¾Ð¸Ð·Ð²ÐµÐ´ÐµÐ½Ð¸Ñ Ð²Ð¸Ð´ÐµÐ¾:', e);
+          console.error('Cardify: Ошибка воспроизведения видео:', e);
         }
       }
     }, {
