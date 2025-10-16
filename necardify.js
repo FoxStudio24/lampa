@@ -286,16 +286,16 @@
         try {
           var iframeContainer = this.html.find('.cardify-trailer__youtube-iframe');
           var iframe = document.createElement('iframe');
-          iframe.setAttribute('allow', 'autoplay; encrypted-media');
-          iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+          iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture; accelerometer; gyroscope');
+          // Без sandbox, чтобы не блокировать воспроизведение на tvOS
           iframe.setAttribute('frameborder', '0');
           iframe.setAttribute('allowfullscreen', '');
-          iframe.setAttribute('referrerpolicy', 'no-referrer');
           iframe.style.width = '100%';
           iframe.style.height = '100%';
           // Загружаем nocookie-домен и отключаем всё, что может вызвать переход
-          iframe.src = 'https://www.youtube-nocookie.com/embed/' + this.videoId +
-                       '?playsinline=1&rel=0&modestbranding=1&autoplay=0&controls=0&fs=0&enablejsapi=0';
+          // На Apple TV используем www.youtube.com вместо nocookie для улучшения совместимости
+          iframe.src = 'https://www.youtube.com/embed/' + this.videoId +
+                       '?playsinline=1&rel=0&modestbranding=1&autoplay=0&controls=0&fs=0&enablejsapi=0&mute=1';
           iframeContainer.empty();
           iframeContainer.append(iframe);
           this.appleIframe = iframe;
@@ -317,7 +317,7 @@
           try {
             if (this.appleIframe) {
               // Перезадаём src с autoplay=1, чтобы не триггерить нативное приложение
-              var base = 'https://www.youtube-nocookie.com/embed/' + this.videoId;
+              var base = 'https://www.youtube.com/embed/' + this.videoId;
               var params = '?playsinline=1&rel=0&modestbranding=1&autoplay=1&controls=0&fs=0&enablejsapi=0&mute=1';
               if (!this._applePlayedOnce) {
                 this.appleIframe.src = base + params;
