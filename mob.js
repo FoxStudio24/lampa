@@ -1,9 +1,6 @@
 (function() {
     'use strict';
     
-    // Проверка версии Lampa 3.0.0 и выше
-    if (Lampa.Manifest && Lampa.Manifest.app_digital < 300) return;
-    
     Lampa.Platform.tv();
 
     let observer;
@@ -96,16 +93,20 @@
                 border-radius: 0 !important;
                 mask-image: linear-gradient(to bottom, 
                     rgba(0, 0, 0, 0) 0%,
-                    rgba(0, 0, 0, 0.6) 10%,
-                    rgba(0, 0, 0, 1) 20%,
+                    rgba(0, 0, 0, 0.3) 5%,
+                    rgba(0, 0, 0, 0.6) 12%,
+                    rgba(0, 0, 0, 0.85) 20%,
+                    rgba(0, 0, 0, 1) 30%,
                     rgba(0, 0, 0, 1) 70%,
                     rgba(0, 0, 0, 0.8) 85%,
                     rgba(0, 0, 0, 0.4) 95%,
                     rgba(0, 0, 0, 0) 100%) !important;
                 -webkit-mask-image: linear-gradient(to bottom, 
                     rgba(0, 0, 0, 0) 0%,
-                    rgba(0, 0, 0, 0.6) 10%,
-                    rgba(0, 0, 0, 1) 20%,
+                    rgba(0, 0, 0, 0.3) 5%,
+                    rgba(0, 0, 0, 0.6) 12%,
+                    rgba(0, 0, 0, 0.85) 20%,
+                    rgba(0, 0, 0, 1) 30%,
                     rgba(0, 0, 0, 1) 70%,
                     rgba(0, 0, 0, 0.8) 85%,
                     rgba(0, 0, 0, 0.4) 95%,
