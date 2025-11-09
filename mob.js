@@ -68,13 +68,6 @@
                 margin: 0 auto !important;
                 box-sizing: border-box !important;
             }
-            .full-start-new__title img {
-                margin-top: 5px !important;
-                max-height: 125px !important;
-                display: block !important;
-                position: relative !important;
-                z-index: 2 !important;
-            }
             
             /* Плавное затухание постера снизу */
             .full-start-new__poster {
@@ -95,6 +88,27 @@
                     rgba(0, 0, 0, 1) 50%,
                     rgba(0, 0, 0, 0.8) 70%,
                     rgba(0, 0, 0, 0.4) 85%,
+                    rgba(0, 0, 0, 0) 100%) !important;
+            }
+            
+            /* Плавное затухание обложки снизу и сверху */
+            .full-start-new__img {
+                border-radius: 0 !important;
+                mask-image: linear-gradient(to bottom, 
+                    rgba(0, 0, 0, 0) 0%,
+                    rgba(0, 0, 0, 0.6) 10%,
+                    rgba(0, 0, 0, 1) 20%,
+                    rgba(0, 0, 0, 1) 70%,
+                    rgba(0, 0, 0, 0.8) 85%,
+                    rgba(0, 0, 0, 0.4) 95%,
+                    rgba(0, 0, 0, 0) 100%) !important;
+                -webkit-mask-image: linear-gradient(to bottom, 
+                    rgba(0, 0, 0, 0) 0%,
+                    rgba(0, 0, 0, 0.6) 10%,
+                    rgba(0, 0, 0, 1) 20%,
+                    rgba(0, 0, 0, 1) 70%,
+                    rgba(0, 0, 0, 0.8) 85%,
+                    rgba(0, 0, 0, 0.4) 95%,
                     rgba(0, 0, 0, 0) 100%) !important;
             }
             
@@ -341,7 +355,6 @@
     function initAllPlugins() {
         initBlurPlugin();    // Запускаем отключение blur и базовые стили
         initMobileStyles();  // Запускаем мобильные стили
-        initLogoPlugin();    // Запускаем логотипы (встроенные без настроек)
     }
 
     function startPlugin() {
