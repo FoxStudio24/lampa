@@ -1,19 +1,5 @@
 (function() {
     'use strict';
-    
-    // Проверяем платформу - если это НЕ Android, выходим
-    const platform = Lampa.Platform.get();
-    if (platform !== 'android') {
-        console.log('[combined-plugin] Плагин работает только на Android устройствах. Текущая платформа:', platform);
-        return;
-    }
-    
-    // Дополнительная проверка через user agent
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (!isMobile) {
-        console.log('[combined-plugin] Плагин работает только на мобильных устройствах');
-        return;
-    }
 
     let observer;
     window.logoplugin = true;
@@ -30,95 +16,129 @@
         var style = document.createElement('style');
         style.id = 'no-blur-plugin-styles';
         style.textContent = `
-            .full-start__poster,
-            .full-start-new__poster,
-            .full-start__poster img,
-            .full-start-new__poster img,
-            .screensaver__slides-slide img,
-            .screensaver__bg,
-            .card--collection .card__img {
-                filter: none !important;
-                -webkit-filter: none !important;
-            }
-            
-            .background {
-                background: #000 !important;
-            }
-            
-            .full-start-new__right {
-                background: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                outline: none !important;
-            }
-            .full-start-new__right::before, 
-            .full-start-new__right::after {
-                background: none !important;
-                box-shadow: none !important;
-                border: none !important;
-                opacity: 0 !important;
-                content: unset !important;
-            }
-            
-            .full-start-new__title {
-                position: relative !important;
-                width: 100% !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                min-height: 70px !important;
-                margin: 0 auto !important;
-                box-sizing: border-box !important;
-            }
-            
-            .full-start-new__poster {
-                position: relative !important;
-                overflow: visible !important;
-            }
-            
-            .full-start-new__poster img,
-            .full--poster {
-                mask-image: linear-gradient(to bottom, 
-                    rgba(0, 0, 0, 1) 0%,
-                    rgba(0, 0, 0, 1) 50%,
-                    rgba(0, 0, 0, 0.8) 70%,
-                    rgba(0, 0, 0, 0.4) 85%,
-                    rgba(0, 0, 0, 0) 100%) !important;
-                -webkit-mask-image: linear-gradient(to bottom, 
-                    rgba(0, 0, 0, 1) 0%,
-                    rgba(0, 0, 0, 1) 50%,
-                    rgba(0, 0, 0, 0.8) 70%,
-                    rgba(0, 0, 0, 0.4) 85%,
-                    rgba(0, 0, 0, 0) 100%) !important;
-            }
-            
-            .full-start-new__img {
-                border-radius: 0 !important;
-                mask-image: linear-gradient(to bottom, 
-                    rgba(0, 0, 0, 0) 0%,
-                    rgba(0, 0, 0, 0.3) 5%,
-                    rgba(0, 0, 0, 0.6) 12%,
-                    rgba(0, 0, 0, 0.85) 20%,
-                    rgba(0, 0, 0, 1) 30%,
-                    rgba(0, 0, 0, 1) 70%,
-                    rgba(0, 0, 0, 0.8) 85%,
-                    rgba(0, 0, 0, 0.4) 95%,
-                    rgba(0, 0, 0, 0) 100%) !important;
-                -webkit-mask-image: linear-gradient(to bottom, 
-                    rgba(0, 0, 0, 0) 0%,
-                    rgba(0, 0, 0, 0.3) 5%,
-                    rgba(0, 0, 0, 0.6) 12%,
-                    rgba(0, 0, 0, 0.85) 20%,
-                    rgba(0, 0, 0, 1) 30%,
-                    rgba(0, 0, 0, 1) 70%,
-                    rgba(0, 0, 0, 0.8) 85%,
-                    rgba(0, 0, 0, 0.4) 95%,
-                    rgba(0, 0, 0, 0) 100%) !important;
-            }
-            
-            .full-start-new__head {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6) !important;
+            @media screen and (max-width: 480px) {
+                .full-start__poster,
+                .full-start-new__poster,
+                .full-start__poster img,
+                .full-start-new__poster img,
+                .screensaver__slides-slide img,
+                .screensaver__bg,
+                .card--collection .card__img {
+                    filter: none !important;
+                    -webkit-filter: none !important;
+                }
+                
+                .background {
+                    background: #000 !important;
+                }
+                
+                .full-start-new__right {
+                    background: none !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                    outline: none !important;
+                }
+                .full-start-new__right::before, 
+                .full-start-new__right::after {
+                    background: none !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    opacity: 0 !important;
+                    content: unset !important;
+                }
+                
+                .full-start-new__title {
+                    position: relative !important;
+                    width: 100% !important;
+                    display: flex !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    min-height: 70px !important;
+                    margin: 0 auto !important;
+                    box-sizing: border-box !important;
+                }
+                
+                .full-start-new__poster {
+                    position: relative !important;
+                    overflow: visible !important;
+                }
+                
+                .full-start-new__poster img,
+                .full--poster {
+                    mask-image: linear-gradient(to bottom, 
+                        rgba(0, 0, 0, 1) 0%,
+                        rgba(0, 0, 0, 1) 50%,
+                        rgba(0, 0, 0, 0.8) 70%,
+                        rgba(0, 0, 0, 0.4) 85%,
+                        rgba(0, 0, 0, 0) 100%) !important;
+                    -webkit-mask-image: linear-gradient(to bottom, 
+                        rgba(0, 0, 0, 1) 0%,
+                        rgba(0, 0, 0, 1) 50%,
+                        rgba(0, 0, 0, 0.8) 70%,
+                        rgba(0, 0, 0, 0.4) 85%,
+                        rgba(0, 0, 0, 0) 100%) !important;
+                }
+                
+                .full-start-new__img {
+                    border-radius: 0 !important;
+                    mask-image: linear-gradient(to bottom, 
+                        rgba(0, 0, 0, 0) 0%,
+                        rgba(0, 0, 0, 0.3) 5%,
+                        rgba(0, 0, 0, 0.6) 12%,
+                        rgba(0, 0, 0, 0.85) 20%,
+                        rgba(0, 0, 0, 1) 30%,
+                        rgba(0, 0, 0, 1) 70%,
+                        rgba(0, 0, 0, 0.8) 85%,
+                        rgba(0, 0, 0, 0.4) 95%,
+                        rgba(0, 0, 0, 0) 100%) !important;
+                    -webkit-mask-image: linear-gradient(to bottom, 
+                        rgba(0, 0, 0, 0) 0%,
+                        rgba(0, 0, 0, 0.3) 5%,
+                        rgba(0, 0, 0, 0.6) 12%,
+                        rgba(0, 0, 0, 0.85) 20%,
+                        rgba(0, 0, 0, 1) 30%,
+                        rgba(0, 0, 0, 1) 70%,
+                        rgba(0, 0, 0, 0.8) 85%,
+                        rgba(0, 0, 0, 0.4) 95%,
+                        rgba(0, 0, 0, 0) 100%) !important;
+                }
+                
+                .full-start-new__head {
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6) !important;
+                }
+                
+                .full-start-new__right, .full-start__left {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                }
+                
+                .full-start-new__buttons, .full-start-new__rate-line, .full-start__buttons, .full-start__details {
+                    justify-content: center !important;
+                    align-items: center !important;
+                    display: flex !important;
+                    flex-direction: row !important;
+                    gap: 0.5em !important;
+                    flex-wrap: wrap !important;
+                }
+                
+                .full-start-new__details, .full-descr__details, .full-descr__tags {
+                    justify-content: center !important;
+                    align-items: center !important;
+                    display: flex !important;
+                    flex-direction: row !important;
+                    flex-wrap: wrap !important;
+                }
+                
+                .full-descr__text, .full-start-new__title, .full-start-new__tagline, .full-start__title, .full-start__title-original {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    text-align: center !important;
+                }
             }
         `;
         document.head.appendChild(style);
@@ -135,18 +155,24 @@
         setTimeout(applyBaseStyles, 1000);
 
         setInterval(function() {
-            if (window.lampa_settings && window.lampa_settings.blur_poster !== false) {
-                window.lampa_settings.blur_poster = false;
+            if (window.innerWidth <= 480) {
+                if (window.lampa_settings && window.lampa_settings.blur_poster !== false) {
+                    window.lampa_settings.blur_poster = false;
+                }
             }
         }, 1000);
     }
 
     // ===== ФУНКЦИИ ДЛЯ МОБИЛЬНЫХ СТИЛЕЙ =====
     function initMobileStyles() {
+        if (window.innerWidth > 480) return;
+        
         applyMobileStyles();
         
         if (typeof Lampa.Listener !== 'undefined' && typeof Lampa.Listener.follow === 'function') {
             Lampa.Listener.follow('app', function(e) {
+                if (window.innerWidth > 480) return;
+                
                 if (e.type === 'full' || e.type === 'card') {
                     applyMobileStyles();
                     setTimeout(applyMobileStyles, 50);
@@ -171,9 +197,13 @@
     }
 
     function startDOMObserver() {
+        if (window.innerWidth > 480) return;
+        
         stopDOMObserver();
         
         observer = new MutationObserver(function(mutations) {
+            if (window.innerWidth > 480) return;
+            
             let shouldApplyStyles = false;
             
             mutations.forEach(function(mutation) {
@@ -227,53 +257,14 @@
     }
 
     function applyMobileStyles() {
-        const styles = {
-            '.full-start-new__right, .full-start__left': {
-                'display': 'flex',
-                'flex-direction': 'column',
-                'justify-content': 'center',
-                'align-items': 'center'
-            },
-            
-            '.full-start-new__buttons, .full-start-new__rate-line, .full-start__buttons, .full-start__details': {
-                'justify-content': 'center',
-                'align-items': 'center',
-                'display': 'flex',
-                'flex-direction': 'row',
-                'gap': '0.5em',
-                'flex-wrap': 'wrap'
-            },
-            
-            '.full-start-new__details, .full-descr__details, .full-descr__tags': {
-                'justify-content': 'center',
-                'align-items': 'center',
-                'display': 'flex',
-                'flex-direction': 'row',
-                'flex-wrap': 'wrap'
-            },
-            
-            '.full-descr__text, .full-start-new__title, .full-start-new__tagline, .full-start__title, .full-start__title-original': {
-                'display': 'flex',
-                'flex-direction': 'row',
-                'justify-content': 'center',
-                'align-items': 'center',
-                'text-align': 'center'
-            }
-        };
-
-        Object.keys(styles).forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(element => {
-                Object.keys(styles[selector]).forEach(property => {
-                    element.style[property] = styles[selector][property];
-                });
-            });
-        });
-
+        if (window.innerWidth > 480) return;
+        
         applySectionHeadStyles();
     }
 
     function applySectionHeadStyles() {
+        if (window.innerWidth > 480) return;
+        
         const sectionTitles = [
             'Рекомендации',
             'Режиссер', 
@@ -301,6 +292,8 @@
     // ===== ФУНКЦИИ ДЛЯ ЛОГОТИПОВ =====
     function initLogoPlugin() {
         Lampa.Listener.follow('full', function(e) {
+            if (window.innerWidth > 480) return;
+            
             if (e.type === 'complite') {
                 var data = e.data.movie;
                 var type = data.name ? 'tv' : 'movie';
