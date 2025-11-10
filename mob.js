@@ -1,13 +1,19 @@
 (function() {
     'use strict';
     
-    // Проверяем, что это мобильное устройство
-    if (!Lampa.Platform.is('mobile')) {
-        console.log('[combined-plugin] Плагин работает только на мобильных устройствах');
+    // Проверяем платформу - если это НЕ Android, выходим
+    const platform = Lampa.Platform.get();
+    if (platform !== 'android') {
+        console.log('[combined-plugin] Плагин работает только на Android устройствах. Текущая платформа:', platform);
         return;
     }
     
-    Lampa.Platform.tv();
+    // Дополнительная проверка через user agent
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobile) {
+        console.log('[combined-plugin] Плагин работает только на мобильных устройствах');
+        return;
+    }
 
     let observer;
     window.logoplugin = true;
