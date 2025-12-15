@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Страница не найдена</title>
+    <style>
+        @font-face {
+            font-family: 'buttonbold';
+            src: url('../Font/TTFirsNeue-DemiBold.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'textbold';
+            src: url('../Font/TTFirsNeue-Bold.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'text';
+            src: url('../Font/TTFirsNeue-Light.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'textregular';
+            src: url('../Font/TTFirsNeue-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            font-family: 'textregular', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .error-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .error-code {
+            font-size: 280px;
+            font-weight: bold;
+            font-family: 'textbold', sans-serif;
+            background: linear-gradient(to bottom, #ffffff, #000000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: slideUp 0.8s ease forwards;
+        }
+
+        .icon {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateY(50px) scaleX(1.5);
+            width: 250px;
+            height: auto;
+            opacity: 0;
+            animation: slideUpIcon 0.8s ease forwards;
+            animation-delay: 0.15s;
+        }
+
+        .message {
+            color: #fff;
+            font-size: 34px;
+            font-family: 'Impact', 'textbold', sans-serif;
+            margin-bottom: 40px;
+            line-height: 1.5;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: slideUp 0.8s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        .home-link {
+            display: inline-block;
+            color: #000;
+            background-color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-family: 'buttonbold', sans-serif;
+            padding: 12px 30px;
+            border-radius: 30px;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: slideUp 0.8s ease forwards;
+            animation-delay: 0.6s;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUpIcon {
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0) scaleX(1.5);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 150px;
+            }
+
+            .icon {
+                width: 150px;
+            }
+
+            .message {
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+
+            .home-link {
+                font-size: 16px;
+                padding: 10px 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-code {
+                font-size: 100px;
+            }
+
+            .icon {
+                width: 100px;
+            }
+
+            .message {
+                font-size: 18px;
+                margin-bottom: 25px;
+            }
+
+            .home-link {
+                font-size: 14px;
+                padding: 8px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-wrapper">
+            <div class="error-code">404</div>
+            <img src="ico/врядли.png" alt="404" class="icon">
+        </div>
+        <div class="message">
+            Сомневаюсь что такая<br>
+            страница существует
+        </div>
+        <a href="/" class="home-link">На главную</a>
+    </div>
+</body>
+</html>
