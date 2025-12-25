@@ -10,15 +10,14 @@
     // Загружаем плагины  
     Lampa.Utils.putScriptAsync([  
         'https://foxstudio24.github.io/lampa/logo.js',  
-        'https://foxstudio24.github.io/lampa/necardify.js',
-        'https://foxstudio24.github.io/lampa/Streaminglogo.js',
+        'https://darkestclouds.github.io/plugins/applecation/applecation.min.js',
         'https://foxstudio24.github.io/lampa/mob.js',
         'https://foxstudio24.github.io/lampa/hide.js',
-        'https://foxstudio24.github.io/lampa/play.js',
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
 })();
+
 
 
 
