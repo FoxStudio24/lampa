@@ -13,11 +13,11 @@
         'https://darkestclouds.github.io/plugins/applecation/applecation.min.js',
         'https://foxstudio24.github.io/lampa/mob.js',
         'https://foxstudio24.github.io/lampa/hide.js',
-        ' https://foxstudio24.github.io/lampa/Quality/Quality.js',
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
 })();
+
 
 
 
