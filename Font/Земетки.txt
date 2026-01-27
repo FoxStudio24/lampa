@@ -1,4 +1,0 @@
-font-family: 'textbold', sans-serif; Для толстого текста 
-font-family: 'buttonbold', sans-serif; Для кнопок 
-font-family: 'text', sans-serif; Для обычного текста 
-font-family: 'textregular', sans-serif; Для текста средняя толщина
