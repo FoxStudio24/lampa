@@ -9,12 +9,13 @@
       
     // Загружаем плагины  
     Lampa.Utils.putScriptAsync([  
-        'http://honeyxcat.github.io/lampa-logo/lampa-logo.js',  
+        'https://foxstudio24.github.io/lampa/mob.js',  
         'https://darkestclouds.github.io/plugins/applecation/applecation.min.js',
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
 })();
+
 
 
 
