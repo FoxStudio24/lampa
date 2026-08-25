@@ -11,7 +11,6 @@
     Lampa.Utils.putScriptAsync([  
         'https://foxstudio24.github.io/lampa/mob.js',
         'https://darkestclouds.github.io/plugins/applecation/applecation.min.js',  
-        'https://cub.red/plugin/youtube-player',     
     ], function () {  
         console.log('Logo и Necardify плагины загружены');  
     });  
